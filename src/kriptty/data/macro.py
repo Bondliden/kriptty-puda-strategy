@@ -214,7 +214,7 @@ class MacroDataCollector:
                 *(self._fred(session, sid) for sid in series.values()),
                 self._fear_greed(session), return_exceptions=True)
         raw: dict[str, dict] = {}
-        for (name, sid), s in zip(series.items(), results[:-1]):
+        for (name, sid), s in zip(series.items(), results[:-1], strict=True):
             if isinstance(s, Exception) or len(s) < 2:
                 log.warning("Macro: sin datos de %s (%s)", sid, s if isinstance(s, Exception) else "vacío")
                 continue

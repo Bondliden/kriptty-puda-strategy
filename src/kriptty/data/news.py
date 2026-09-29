@@ -15,7 +15,7 @@ import hashlib
 import logging
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import aiohttp
 
@@ -60,7 +60,7 @@ def _parse_date(value: str | None) -> datetime | None:
         from dateutil import parser
 
         dt = parser.parse(value)
-        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
     except (ValueError, OverflowError):
         return None
 
@@ -116,7 +116,7 @@ class NewsCollector:
             tasks = [self._rss(session, n, u, w) for n, (u, w) in RSS_FEEDS.items()]
             tasks += [self._cryptopanic(session, asset), self._newsdata(session, keywords[0])]
             results = await asyncio.gather(*tasks, return_exceptions=True)
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=lookback_hours)
+        cutoff = datetime.now(UTC) - timedelta(hours=lookback_hours)
         seen: set[str] = set()
         articles: list[Article] = []
         for res in results:
