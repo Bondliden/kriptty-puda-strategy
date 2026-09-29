@@ -9,9 +9,10 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
-import time
 from pathlib import Path
 from typing import Any
+
+from . import clock
 
 
 class StateStore:
@@ -55,7 +56,7 @@ class StateStore:
     def journal(self, **row: Any) -> None:
         cols = ["account", "tag", "symbol", "side", "amount", "price", "stop_loss", "take_profit",
                 "mode", "status", "detail"]
-        values = [time.time()] + [row.get(c) for c in cols]
+        values = [clock.now()] + [row.get(c) for c in cols]
         with self._lock, self._conn:
             self._conn.execute(
                 f"INSERT INTO journal (ts, {', '.join(cols)}) VALUES ({', '.join('?' * len(values))})",

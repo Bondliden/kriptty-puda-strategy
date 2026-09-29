@@ -29,6 +29,7 @@ dev = ["pytest>=8.3", "pytest-asyncio>=0.25", "ruff>=0.8"]
 [project.scripts]
 kriptty-engine = "kriptty.engine:cli"
 kriptty-mcp = "kriptty.mcp_server:cli"
+kriptty-backtest = "kriptty.backtest:cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kriptty"]

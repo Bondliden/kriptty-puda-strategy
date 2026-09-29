@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import logging
-import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
+from .. import clock
 from ..config import Settings
 from ..data.macro import MacroProvider
 from ..exchange.client import ExchangeClient
@@ -64,7 +64,7 @@ class Strategy(ABC):
             self.last_error = repr(e)
             self.log.exception("❌ Error en ciclo: %s", e)
         finally:
-            self.last_run = time.time()
+            self.last_run = clock.now()
 
     async def start(self) -> None:  # solo event-driven
         raise NotImplementedError
@@ -93,7 +93,7 @@ class Strategy(ABC):
             price=entry if order_type == "limit" else None,
             stop_loss=client.price_to_precision(symbol, stop_loss),
             take_profit=client.price_to_precision(symbol, take_profit) if take_profit else None,
-            tag=self.account_id, client_id=f"{self.account_id.lower()}-{int(time.time() * 1000)}",
+            tag=self.account_id, client_id=f"{self.account_id.lower()}-{int(clock.now() * 1000)}",
         )
         self.log.info("🚀 %s %s | entry≈%.6g SL=%.6g TP=%s | riesgo %.2f%% | %s", side.upper(), symbol,
                       entry, stop_loss, f"{take_profit:.6g}" if take_profit else "-", risk_pct * 100, reason)

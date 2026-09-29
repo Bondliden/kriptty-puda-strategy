@@ -21,6 +21,8 @@ _ids = itertools.count(1)
 
 
 class PaperExchangeClient(ExchangeClient):
+    fee_rate = TAKER_FEE
+
     def __init__(self, account_id: str, settings: Settings):
         super().__init__(account_id, None, settings)
         self.usdt = {"swap": settings.dry_run_equity, "spot": settings.dry_run_equity}
@@ -29,22 +31,25 @@ class PaperExchangeClient(ExchangeClient):
         self.limits: list[dict] = []
         self.spot_stops: list[dict] = []
         self.status: dict[str, str] = {}
+        self.fees_paid = 0.0
 
     # ── Simulación ──────────────────────────────────────────────────────
     def _fill(self, symbol: str, side: str, amount: float, price: float,
               sl: float | None = None, tp: float | None = None) -> None:
+        if ":" not in symbol and side == "sell":
+            amount = min(amount, self.coins.get(symbol.split("/")[0], 0.0))
+        self.fees_paid += amount * price * self.fee_rate
         if ":" not in symbol:
             base = symbol.split("/")[0]
             if side == "buy":
-                self.usdt["spot"] -= amount * price * (1 + TAKER_FEE)
+                self.usdt["spot"] -= amount * price * (1 + self.fee_rate)
                 self.coins[base] = self.coins.get(base, 0.0) + amount
             else:
-                amount = min(amount, self.coins.get(base, 0.0))
                 self.coins[base] = self.coins.get(base, 0.0) - amount
-                self.usdt["spot"] += amount * price * (1 - TAKER_FEE)
+                self.usdt["spot"] += amount * price * (1 - self.fee_rate)
             return
 
-        self.usdt["swap"] -= amount * price * TAKER_FEE
+        self.usdt["swap"] -= amount * price * self.fee_rate
         direction = "long" if side == "buy" else "short"
         pos = self.book.get(symbol)
         if pos is None:

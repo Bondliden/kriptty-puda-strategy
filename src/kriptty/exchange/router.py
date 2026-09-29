@@ -10,8 +10,8 @@ Responsabilidades:
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime
 
+from .. import clock
 from ..config import ACCOUNT_IDS, Settings, load_credentials
 from ..risk.guard import OrderRejected, validate_order
 from ..risk.models import OrderRequest, Position
@@ -49,7 +49,7 @@ class AccountRouter:
     # ── Kill-switch diario ──────────────────────────────────────────────
     async def check_daily_loss(self, account_id: str, account: str = "swap") -> bool:
         """True si la cuenta puede abrir posiciones hoy."""
-        today = datetime.now(UTC).date().isoformat()
+        today = clock.utcnow().date().isoformat()
         key = f"{account_id}:{account}"
         record = self.state.get("daily_equity", key)
         equity = await self.client(account_id).equity(account)

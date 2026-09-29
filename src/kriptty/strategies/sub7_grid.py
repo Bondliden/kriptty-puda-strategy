@@ -15,11 +15,10 @@ precio en el SL, la pérdida no supere el 4% del equity (el original no lo acota
 """
 from __future__ import annotations
 
-import time
-from datetime import UTC, datetime
-
+from .. import clock
 from ..exchange.client import perp
 from ..indicators import atr, bollinger, last
+from ..risk.guard import OrderRejected
 from ..risk.models import OrderRequest
 from .base import Strategy
 
@@ -51,7 +50,7 @@ class GridStrategy(Strategy):
     async def run_cycle(self) -> None:
         grid = self.get_state("grid")
         price = await self.client.last_price(self.symbol)
-        today = datetime.now(UTC).date().isoformat()
+        today = clock.utcnow().date().isoformat()
         resets = self.get_state("resets", {"date": today, "count": 0})
         if resets["date"] != today:
             resets = {"date": today, "count": 0}
@@ -67,7 +66,7 @@ class GridStrategy(Strategy):
         if resets["count"] >= self.MAX_RESETS_DAY:
             self.log.info("⏸  %d resets hoy: grid en pausa hasta mañana", resets["count"])
             return
-        if grid and time.time() - grid["built_at"] > self.REBUILD_H * 3600:
+        if grid and clock.now() - grid["built_at"] > self.REBUILD_H * 3600:
             await self._teardown("reconfiguración 24H")
             grid = None
         if grid is None:
@@ -106,7 +105,7 @@ class GridStrategy(Strategy):
         if amount <= 0:
             self.log.info("Capital insuficiente para el grid (%.8g < mínimo)", amount_raw)
             return
-        grid = {"built_at": time.time(), "step": step, "amount": amount, "sl": sl,
+        grid = {"built_at": clock.now(), "step": step, "amount": amount, "sl": sl,
                 "sl_low": sl, "sl_high": upper + 0.5 * step, "levels": {}}
         for lv in buy_levels:
             res = await self._place_buy(lv, amount, sl, step)
@@ -119,7 +118,11 @@ class GridStrategy(Strategy):
         c = self.client
         order = OrderRequest(self.symbol, "buy", amount, "limit", c.price_to_precision(self.symbol, level),
                              stop_loss=c.price_to_precision(self.symbol, sl), tag="SUB7:buy")
-        return await self.ctx.router.execute(self.account_id, order, leverage=self.leverage)
+        try:
+            return await self.ctx.router.execute(self.account_id, order, leverage=self.leverage)
+        except OrderRejected as e:  # p. ej. kill-switch diario: el nivel queda sin orden
+            self.log.warning("Compra del grid en %.2f no enviada: %s", level, e)
+            return None
 
     async def _maintain(self, grid: dict) -> None:
         client = self.client

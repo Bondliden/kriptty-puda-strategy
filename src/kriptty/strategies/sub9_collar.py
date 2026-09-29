@@ -20,8 +20,7 @@ Rebalanceo cada 6H si el ratio efectivo se desvía > 0.05 del objetivo.
 """
 from __future__ import annotations
 
-import time
-
+from .. import clock
 from ..exchange.client import perp
 from ..indicators import ema, last
 from ..risk.models import OrderRequest
@@ -57,7 +56,7 @@ class CollarStrategy(Strategy):
     async def run_cycle(self) -> None:
         client = self.client
         st = self.get_state("state", {"asset": None, "cooldown_until": 0, "last_rebalance": 0, "capital": None})
-        if time.time() < st["cooldown_until"]:
+        if clock.now() < st["cooldown_until"]:
             return
         asset = st["asset"] or await self._pick_asset()
         symbol = perp(asset)
@@ -67,10 +66,10 @@ class CollarStrategy(Strategy):
         if pos and st["capital"] and pos.unrealized_pnl < -self.MAX_NET_DRAWDOWN * st["capital"]:
             await self.ctx.router.close_position(self.account_id, pos,
                                                  f"drawdown neto > {self.MAX_NET_DRAWDOWN:.0%}", "SUB9")
-            st.update(asset=None, cooldown_until=time.time() + self.COOLDOWN_H * 3600, capital=None)
+            st.update(asset=None, cooldown_until=clock.now() + self.COOLDOWN_H * 3600, capital=None)
             self.set_state("state", st)
             return
-        if pos and time.time() - st["last_rebalance"] < self.REBALANCE_EVERY_H * 3600:
+        if pos and clock.now() - st["last_rebalance"] < self.REBALANCE_EVERY_H * 3600:
             return
 
         dash = await self.ctx.macro.get()
@@ -106,5 +105,5 @@ class CollarStrategy(Strategy):
         elif pos and sl and sl > (st.get("sl") or 0):  # el SL sigue a la EMA200 (solo hacia arriba)
             await self.ctx.router.update_stop_loss(self.account_id, pos, sl, "SUB9")
             st["sl"] = sl
-        st["last_rebalance"] = time.time()
+        st["last_rebalance"] = clock.now()
         self.set_state("state", st)

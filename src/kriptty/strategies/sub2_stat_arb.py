@@ -11,11 +11,10 @@
 """
 from __future__ import annotations
 
-import time
-
 import numpy as np
 import pandas as pd
 
+from .. import clock
 from .base import Strategy
 
 
@@ -62,7 +61,7 @@ class StatArbStrategy(Strategy):
         opened = self.get_state("opened_at", {})
         for p in positions:
             ts = opened.get(p.symbol)
-            if ts and time.time() - ts > self.TIME_STOP_H * 3600:
+            if ts and clock.now() - ts > self.TIME_STOP_H * 3600:
                 await self.ctx.router.close_position(self.account_id, p, "time stop 48h", self.account_id)
                 opened.pop(p.symbol, None)
         live = {p.symbol for p in positions}
@@ -120,5 +119,5 @@ class StatArbStrategy(Strategy):
                 continue
             if await self.open_position(sym, "buy", price, sl, tp, self.RISK_PCT,
                                         reason=f"lag={lag:.1f}% corr={corr:.2f} R:R={rr:.2f}"):
-                opened[sym] = time.time()
+                opened[sym] = clock.now()
         self.set_state("opened_at", opened)

@@ -14,7 +14,7 @@ from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ACCOUNT_IDS = ["MAIN"] + [f"SUB{i}" for i in range(1, 10)]
+ACCOUNT_IDS = ["MAIN"] + [f"SUB{i}" for i in range(1, 12)]
 
 ACCOUNT_DESCRIPTIONS = {
     "MAIN": "Cuenta principal — gestión de capital",
@@ -27,6 +27,8 @@ ACCOUNT_DESCRIPTIONS = {
     "SUB7": "Grid adaptativo (Bollinger + ATR)",
     "SUB8": "DCA inteligente (RSI + EMA200 semanal)",
     "SUB9": "Collar dinámico (exposición neta por régimen macro)",
+    "SUB10": "Pairs trading por cointegración (market-neutral)",
+    "SUB11": "Seguimiento de tendencia SuperTrend 4H",
 }
 
 
@@ -38,6 +40,7 @@ class Settings(BaseSettings):
     bitget_uta: bool = False
 
     # SUB3 queda fuera por defecto: depende de copy trading nativo y de traderIds manuales.
+    # SUB10 y SUB11 (nuevas) también: activarlas tras validarlas con kriptty-backtest.
     enabled_strategies: str = "SUB1,SUB2,SUB4,SUB5,SUB6,SUB7,SUB8,SUB9"
 
     state_path: str = "data/state.db"

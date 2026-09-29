@@ -12,7 +12,7 @@ async def test_every_scheduled_strategy_has_a_valid_trigger(ctx):
             continue
         sched = dict(strategy.schedule)
         scheduler.add_job(strategy.safe_run, sched.pop("trigger"), id=account_id, **sched)
-    assert len(scheduler.get_jobs()) == 8  # SUB4 es event-driven
+    assert len(scheduler.get_jobs()) == 10  # SUB4 es event-driven
 
 
 async def test_safe_run_captures_errors(ctx):

@@ -4,16 +4,18 @@ Cada 48H por activo:
     filtro estructural: precio > EMA200 SEMANAL (si no hay 200 semanas de
     historial, no se compra — fail-closed)
     RSI diario: > 60 no compra · 40-60 ×1.0 · 30-40 ×1.5 · < 30 ×2.0
-SL: precio medio × 0.80 como orden plan de venta spot sobre TODO el saldo; se
-recoloca tras cada compra/venta parcial. Si el nuevo stop no se puede colocar,
-se vende el saldo (fail-safe): la posición nunca queda sin protección.
+SL: orden plan de venta spot sobre TODO el saldo en max(medio × 0.80,
+precio × 0.76). La segunda parte (detectada con el backtester) evita que, tras
+una subida fuerte, el stop quede a > 25% del precio (el guardián rechazaba las
+compras) y protege beneficios: sube con el precio, nunca baja salvo por una
+nueva compra que baje el medio. Si el stop no se puede colocar, se vende el
+saldo (fail-safe): la posición nunca queda sin protección.
 TP: RSI > 70 y PnL > 8% → vende 25% · RSI > 80 y PnL > 15% → vende 50% más.
 Máx. 10 entradas por activo; si salta el SL se reinicia el ciclo.
 """
 from __future__ import annotations
 
-import time
-
+from .. import clock
 from ..exchange.client import spot
 from ..indicators import ema, last, rsi
 from ..risk.models import OrderRequest
@@ -40,6 +42,8 @@ class SmartDCAStrategy(Strategy):
     INTERVAL_H = 48
     MAX_ENTRIES = 10
     SL_FROM_AVG = 0.20
+    MAX_STOP_DISTANCE = 0.24  # < 25% del guardián de riesgo
+    RESTOP_STEP = 0.02
     TP1 = (70, 0.08, 0.25)
     TP2 = (80, 0.15, 0.50)
 
@@ -68,6 +72,9 @@ class SmartDCAStrategy(Strategy):
         r = last(rsi(daily["close"], 14))
         price = await client.last_price(symbol)
 
+        if st["qty"] > 0 and self.stop_price(st["cost"] / st["qty"], price) > (st.get("stop_price") or 0) * (1 + self.RESTOP_STEP):
+            st["stop_id"] = await self._reprotect(symbol, st, price)  # el stop sigue al precio
+
         if st["qty"] > 0:
             avg = st["cost"] / st["qty"]
             pnl = price / avg - 1
@@ -81,10 +88,10 @@ class SmartDCAStrategy(Strategy):
                         st["cost"] *= 1 - qty / st["qty"]
                         st["qty"] -= qty
                         st[flag] = True
-                        st["stop_id"] = await self._reprotect(symbol, st)
+                        st["stop_id"] = await self._reprotect(symbol, st, price)
                         self.log.info("💰 %s %s: vendido %.6g (RSI %.0f, PnL %.1f%%)", asset, flag, qty, r, pnl * 100)
 
-        if time.time() - st["last_buy"] < self.INTERVAL_H * 3600 or st["entries"] >= self.MAX_ENTRIES:
+        if clock.now() - st["last_buy"] < self.INTERVAL_H * 3600 or st["entries"] >= self.MAX_ENTRIES:
             self.set_state(asset, st)
             return
         weekly = await client.ohlcv(symbol, "1w", 260)
@@ -106,20 +113,23 @@ class SmartDCAStrategy(Strategy):
             self.set_state(asset, st)
             return
         new_avg = (st["cost"] + qty * price) / (st["qty"] + qty)
-        order = OrderRequest(symbol, "buy", qty, stop_loss=client.price_to_precision(symbol, new_avg * (1 - self.SL_FROM_AVG)),
+        order = OrderRequest(symbol, "buy", qty, stop_loss=client.price_to_precision(symbol, self.stop_price(new_avg, price)),
                              tag="SUB8:dca")
         result = await self.ctx.router.execute(self.account_id, order)
         fill = float(result.get("average") or price)
         st.update(cost=st["cost"] + qty * fill, qty=st["qty"] + qty, entries=st["entries"] + 1,
-                  last_buy=time.time(), tp1=False, tp2=False)
+                  last_buy=clock.now(), tp1=False, tp2=False)
         # El router dejó un stop para esta compra; lo sustituimos por uno único para todo el saldo.
         partial_stop = (result.get("stop_order") or {}).get("id")
-        st["stop_id"] = await self._reprotect(symbol, st, extra_old=[partial_stop])
+        st["stop_id"] = await self._reprotect(symbol, st, price, extra_old=[partial_stop])
         self.log.info("🛒 %s DCA #%d: %.6g @ %.2f (×%.1f, RSI %.1f) medio=%.2f SL=%.2f", asset, st["entries"],
-                      qty, fill, mult, r, st["cost"] / st["qty"], st["cost"] / st["qty"] * (1 - self.SL_FROM_AVG))
+                      qty, fill, mult, r, st["cost"] / st["qty"], st.get("stop_price") or 0)
         self.set_state(asset, st)
 
-    async def _reprotect(self, symbol: str, st: dict, extra_old: list | None = None) -> str | None:
+    def stop_price(self, avg: float, price: float) -> float:
+        return max(avg * (1 - self.SL_FROM_AVG), price * (1 - self.MAX_STOP_DISTANCE))
+
+    async def _reprotect(self, symbol: str, st: dict, price: float, extra_old: list | None = None) -> str | None:
         client = self.client
         old_ids = [i for i in [st.get("stop_id"), *(extra_old or [])] if i]
         for oid in old_ids:  # cancelar primero libera el saldo que el nuevo stop necesita
@@ -129,13 +139,14 @@ class SmartDCAStrategy(Strategy):
                 self.log.debug("cancel stop %s: %s", oid, e)
         if st["qty"] <= 0:
             return None
-        sl = client.price_to_precision(symbol, st["cost"] / st["qty"] * (1 - self.SL_FROM_AVG))
+        sl = client.price_to_precision(symbol, self.stop_price(st["cost"] / st["qty"], price))
         qty = client.amount_to_precision(symbol, st["qty"])
         try:
             stop = await client.place_spot_stop(symbol, qty, sl)
         except Exception:
             self.log.exception("❌ No se pudo recolocar el SL de %s: vendiendo para no quedar desprotegido", symbol)
             await self.ctx.router.execute(self.account_id, OrderRequest(symbol, "sell", qty, tag="SUB8:failsafe"))
-            st.update(cost=0.0, qty=0.0, entries=0)
+            st.update(cost=0.0, qty=0.0, entries=0, stop_price=None)
             return None
+        st["stop_price"] = sl
         return stop.get("id")

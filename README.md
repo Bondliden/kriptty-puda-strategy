@@ -1,9 +1,10 @@
 # Kriptty Puda Strategy
 
-Sistema de trading algorítmico multi-subcuenta para **Bitget**: 1 cuenta principal + 9
+Sistema de trading algorítmico multi-subcuenta para **Bitget**: 1 cuenta principal + 11
 subcuentas, una estrategia independiente por subcuenta, **Stop Loss obligatorio** en toda
-orden y un **servidor MCP** para consultarlo (y opcionalmente operarlo) desde Antigravity,
-Claude u otro cliente MCP.
+orden, un **backtester** que ejecuta el mismo código de las estrategias sobre histórico y un
+**servidor MCP** para consultarlo (y opcionalmente operarlo) desde Antigravity, Claude u otro
+cliente MCP.
 
 > Revisión y cambios respecto al diseño original: [`docs/REVISION.md`](docs/REVISION.md).
 
@@ -18,8 +19,14 @@ Claude u otro cliente MCP.
 | SUB5 | Macro-shorting (solo cortos) | cada 6H | máximo 7D + 0.3% |
 | SUB6 | Funding rate arbitrage delta-neutral | 5 min / escaneo 30 min | basis > 1.5%, emergencia +10% |
 | SUB7 | Grid adaptativo BB + ATR | 5 min | ruptura de rango |
-| SUB8 | DCA inteligente spot (BTC/ETH) | diario (compra cada 48H) | precio medio − 20% |
+| SUB8 | DCA inteligente spot (BTC/ETH) | diario (compra cada 48H) | max(medio − 20%, precio − 24%) |
 | SUB9 | Collar dinámico por régimen macro | 15 min / rebalanceo 6H | EMA200 − 1% (máx. 15%) |
+| SUB10 | Pairs trading por cointegración *(nueva, desactivada)* | cada 1H | z-score ±4, −3% del par, ±10% por pata |
+| SUB11 | SuperTrend 4H stop-and-reverse *(nueva, desactivada)* | cada 4H | línea SuperTrend (trailing) |
+
+SUB10 y SUB11 están inspiradas en los controladores `stat_arb` y `supertrend_v1` de
+[Hummingbot](https://github.com/hummingbot/hummingbot/tree/master/controllers), adaptadas al
+sistema (timeframes mayores, apalancamiento bajo, SL obligatorio).
 
 ## Arquitectura
 
@@ -32,7 +39,9 @@ src/kriptty/
 │   └── router.py        # AccountRouter: guardián SL, kill-switch, diario
 ├── risk/                # guard.py (regla SL), sizing.py, models.py
 ├── data/                # news.py, sentiment.py, macro.py (dashboard SUB5/SUB9)
-├── strategies/          # sub1 … sub9
+├── strategies/          # sub1 … sub11
+├── backtest/            # histórico Bitget + simulación con el mismo código de estrategias
+├── clock.py             # reloj real o simulado (backtest)
 ├── engine.py            # APScheduler + tareas event-driven supervisadas
 ├── mcp_server.py        # SDK oficial MCP v2 (stdio / Streamable HTTP)
 └── state.py             # SQLite: estado de estrategias + diario de órdenes
@@ -44,7 +53,7 @@ src/kriptty/
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env            # TRADING_MODE=dry_run por defecto
-pytest                          # 46 tests, sin red
+pytest                          # 60 tests, sin red
 kriptty-engine --once SUB5      # un ciclo de una estrategia
 kriptty-engine                  # todas las habilitadas
 ```
@@ -57,12 +66,35 @@ docker compose up -d --build
 docker compose logs -f engine
 ```
 
+## Backtesting
+
+```bash
+kriptty-backtest --strategy SUB11 --start 2025-01-01 --end 2026-09-01
+kriptty-backtest --strategy SUB10 --start 2025-06-01 --symbols BTC/USDT:USDT,ETH/USDT:USDT
+kriptty-backtest --strategy SUB5 --start 2025-01-01 --macro-score -4   # régimen macro fijo
+```
+
+- Descarga el histórico de Bitget (OHLCV y funding, endpoints públicos, sin API key) y lo
+  guarda en `data/history/`; `--offline` reutiliza la caché.
+- Ejecuta **el mismo código** de la estrategia con el reloj simulado y el calendario real de
+  cada una (cron/intervalo), pasando por el mismo guardián de riesgo.
+- Ejecución conservadora: límites y SL/TP con el máximo/mínimo de la vela; si una vela toca SL
+  y TP se asume el SL; gaps se ejecutan a la apertura; comisión taker 0.06% / maker 0.02%;
+  slippage 2 pb; funding histórico aplicado a las posiciones.
+- Resultado: retorno, CAGR, drawdown máximo, Sharpe, % de aciertos, profit factor, comisiones
+  y funding, frente a comprar y mantener. Curva de equity y operaciones en `data/backtests/`.
+- No backtesteables: SUB1 (no hay histórico de noticias) y SUB3 (copy trading nativo).
+  SUB5/SUB9 usan un score macro fijo (`--macro-score`): el histórico macro no se reproduce.
+- Calentamiento por defecto: 300 días para SUB5/SUB9 (EMA200 diaria) y ~4 años para SUB8
+  (EMA200 semanal).
+
 ### Camino recomendado hacia real
 
-1. **`dry_run`**: precios reales, órdenes simuladas. Revisa logs y `get_order_journal`.
-2. **`demo`**: crea API keys de *Demo Trading* en Bitget para cada subcuenta. Mínimo 2–4
+1. **`backtest`**: al menos 12–24 meses por estrategia, con comisiones reales.
+2. **`dry_run`**: precios reales, órdenes simuladas. Revisa logs y `get_order_journal`.
+3. **`demo`**: crea API keys de *Demo Trading* en Bitget para cada subcuenta. Mínimo 2–4
    semanas por estrategia.
-3. **`live`**: `TRADING_MODE=live` + `CONFIRM_LIVE_TRADING=yes`. API keys **sin permiso de
+4. **`live`**: `TRADING_MODE=live` + `CONFIRM_LIVE_TRADING=yes`. API keys **sin permiso de
    retiro** y con lista blanca de IP. Empieza con pocas estrategias y capital reducido.
 
 Capital por subcuenta: la mayoría opera en futuros USDT-M; **SUB8** opera en spot y **SUB6**
@@ -85,5 +117,5 @@ estado compartidos (SQLite) pero no las posiciones simuladas del motor.
 
 ## Aviso
 
-Software experimental. Ninguna estrategia está backtesteada y los rendimientos del diseño
-original son estimaciones. Operar con apalancamiento puede suponer la pérdida total del capital.
+Software experimental. Los rendimientos del diseño original son estimaciones sin respaldo:
+ejecuta el backtester sobre histórico real antes de activar cualquier estrategia. Operar con apalancamiento puede suponer la pérdida total del capital.

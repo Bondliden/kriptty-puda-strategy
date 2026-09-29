@@ -17,10 +17,10 @@ posiciones de 23:00 a 00:00 UTC, riesgo 1%.
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC, datetime
 
 import pandas as pd
 
+from .. import clock
 from ..exchange.client import perp
 from ..indicators import atr, ema, last, rsi
 from .base import Strategy
@@ -90,7 +90,7 @@ class ScalpingStrategy(Strategy):
 
     # ── Límites diarios ─────────────────────────────────────────────────
     def _day(self) -> dict:
-        today = datetime.now(UTC).date().isoformat()
+        today = clock.utcnow().date().isoformat()
         d = self.get_state("day")
         if not d or d.get("date") != today:
             d = {"date": today, "trades": {}, "start_equity": None, "paused": False}
@@ -114,7 +114,7 @@ class ScalpingStrategy(Strategy):
 
     # ── Gestión de posiciones ───────────────────────────────────────────
     async def _manage(self, pos, atr_value: float) -> None:
-        if datetime.now(UTC).hour >= self.CUTOFF_HOUR_UTC:
+        if clock.utcnow().hour >= self.CUTOFF_HOUR_UTC:
             await self.ctx.router.close_position(self.account_id, pos, "cierre intradía 23:00 UTC", self.account_id)
             return
         sign = 1 if pos.side == "long" else -1
@@ -139,7 +139,7 @@ class ScalpingStrategy(Strategy):
             await self._manage(mine, atr_value)
             return
         self.ctx.state.delete(self.account_id, f"sl:{symbol}")
-        if (datetime.now(UTC).hour >= self.CUTOFF_HOUR_UTC or len(positions) >= self.MAX_POSITIONS
+        if (clock.utcnow().hour >= self.CUTOFF_HOUR_UTC or len(positions) >= self.MAX_POSITIONS
                 or not await self._can_trade(symbol)):
             return
         m5 = await client.ohlcv(symbol, "5m", 60)

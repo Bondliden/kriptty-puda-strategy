@@ -240,3 +240,65 @@ async def test_sub9_circuit_breaker_closes_and_cools_down(ctx):
     await strat.run_cycle()
     assert await client.positions() == []
     assert strat.get_state("state")["cooldown_until"] > 0
+
+
+# ── SUB10 ───────────────────────────────────────────────────────────────
+def test_sub10_pair_stats_detects_cointegration():
+    from kriptty.strategies.sub10_pairs import pair_stats
+
+    rng = np.random.default_rng(2)
+    b = 50 * np.exp(np.cumsum(rng.normal(0, 0.01, 400)))
+    spread = np.zeros(400)
+    for i in range(1, 400):
+        spread[i] = 0.85 * spread[i - 1] + rng.normal(0, 0.01)
+    a = 3 * b**1.2 * np.exp(spread)
+    st = pair_stats(a, b)
+    assert st["beta"] == pytest.approx(1.2, abs=0.05)
+    assert st["adf"] < -3.34 and 2 <= st["half_life"] <= 10
+    unrelated = pair_stats(50 * np.exp(np.cumsum(rng.normal(0, 0.01, 400))), b)
+    assert unrelated["adf"] > -3.34 or unrelated["half_life"] > 72
+
+
+async def test_sub10_closes_surviving_leg_when_other_is_stopped(ctx):
+    from kriptty.risk.models import OrderRequest
+    from kriptty.strategies.sub10_pairs import PairsTradingStrategy
+
+    strat = PairsTradingStrategy(ctx)
+    client = strat.client
+    eth = "ETH/USDT:USDT"
+    client.prices.update({BTC: 100.0, eth: 50.0})
+    await ctx.router.execute("SUB10", OrderRequest(BTC, "buy", 1.0, stop_loss=90))
+    strat.set_state("pairs", {"BTC|ETH": {"a": BTC, "b": eth, "side": 1, "beta": 1.0, "gross": 150,
+                                          "opened": 0, "entry_z": -2.5}})
+    await strat._manage(pairs := strat.get_state("pairs"))
+    assert pairs == {} and await client.positions() == []
+
+
+# ── SUB11 ───────────────────────────────────────────────────────────────
+def test_sub11_signal_follows_trend():
+    from kriptty.strategies.sub11_supertrend import supertrend_signal
+
+    x = np.arange(200)
+    up = make_candles(200, 100, tf="4h")
+    up["close"] = 100 * np.exp(0.004 * x)
+    up["open"] = up["close"].shift(1).fillna(100)
+    up["high"], up["low"] = up[["open", "close"]].max(axis=1) * 1.002, up[["open", "close"]].min(axis=1) * 0.998
+    signal, line, distance, direction = supertrend_signal(up, 20, 4.0, 5.0)
+    assert direction == 1 and signal == 1 and line < up["close"].iloc[-1]
+    assert supertrend_signal(up, 20, 4.0, 0.5)[0] == 0  # demasiado lejos de la línea: no persigue
+
+
+async def test_sub11_reverses_on_trend_change(ctx):
+    from kriptty.risk.models import OrderRequest
+    from kriptty.strategies.sub11_supertrend import SuperTrendStrategy
+
+    strat = SuperTrendStrategy(ctx)
+    strat.ASSETS = ["BTC"]
+    client = strat.client
+    down = make_candles(200, 100, drift=-0.01, vol=0.003, tf="4h", seed=4)
+    client.candles[(BTC, "4h")] = down
+    client.prices[BTC] = float(down["close"].iloc[-1])
+    await ctx.router.execute("SUB11", OrderRequest(BTC, "buy", 1.0, stop_loss=client.prices[BTC] * 0.8))
+    await strat.run_cycle()
+    (pos,) = await client.positions()
+    assert pos.side == "short" and pos.stop_loss > client.prices[BTC]

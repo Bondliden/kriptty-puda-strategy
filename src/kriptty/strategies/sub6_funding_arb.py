@@ -18,8 +18,8 @@ Salidas (ambas patas): basis > 1.5%, funding < 0 o APY < 8%.
 from __future__ import annotations
 
 import asyncio
-import time
 
+from .. import clock
 from ..risk.models import OrderRequest
 from .base import Strategy
 
@@ -56,8 +56,8 @@ class FundingArbStrategy(Strategy):
 
     async def run_cycle(self) -> None:
         await self.manage_pairs()
-        if time.time() - self.get_state("last_scan", 0) >= self.SCAN_EVERY_S:
-            self.set_state("last_scan", time.time())
+        if clock.now() - self.get_state("last_scan", 0) >= self.SCAN_EVERY_S:
+            self.set_state("last_scan", clock.now())
             await self.scan_and_open()
 
     # ── Gestión ─────────────────────────────────────────────────────────
@@ -147,7 +147,7 @@ class FundingArbStrategy(Strategy):
 
         for apy, perp_sym, spot_sym, price in candidates[: self.MAX_PAIRS - len(pairs)]:
             if await self._open_pair(perp_sym, spot_sym, price, apy):
-                pairs[perp_sym] = {"spot": spot_sym, "opened": time.time(), "apy_at_open": apy}
+                pairs[perp_sym] = {"spot": spot_sym, "opened": clock.now(), "apy_at_open": apy}
                 self.set_state("pairs", pairs)
 
     async def _open_pair(self, perp_sym: str, spot_sym: str, price: float, apy: float) -> bool:

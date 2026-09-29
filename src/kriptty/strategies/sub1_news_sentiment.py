@@ -9,8 +9,9 @@ original aplicaba 2.5 sobre la distancia del SL, es decir 3.75 × ATR).
 from __future__ import annotations
 
 import math
-from datetime import UTC, datetime
+from datetime import datetime
 
+from .. import clock
 from ..data.news import Article, NewsCollector
 from ..data.sentiment import SentimentAnalyzer
 from ..exchange.client import perp
@@ -54,7 +55,7 @@ class NewsSentimentStrategy(Strategy):
         return self._analyzer
 
     def weighted_score(self, articles: list[Article], now: datetime | None = None) -> float:
-        now = now or datetime.now(UTC)
+        now = now or clock.utcnow()
         total_w = weighted = 0.0
         for a in articles:
             age_h = max((now - a.published).total_seconds() / 3600, 0)

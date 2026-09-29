@@ -101,3 +101,40 @@ mano por librerías mantenidas.
 - Ninguna estrategia está backtesteada: los rendimientos del documento original
   (Sharpe 3–5, APY 15–40%…) son estimaciones sin respaldo. Antes de dinero real, al menos
   2–4 semanas en `demo` por estrategia.
+
+## 6. Ampliación: backtesting y nuevas estrategias (29/09/2026)
+
+### Backtester (`kriptty-backtest`)
+Ejecuta el **mismo código** de las estrategias sobre histórico de Bitget con un reloj
+simulado (`kriptty/clock.py`), el calendario real de cada estrategia y el mismo guardián de
+riesgo. Ejecución conservadora: fills intrabarra con máximo/mínimo, SL antes que TP en la
+misma vela, gaps a la apertura, taker 0.06% / maker 0.02%, slippage 2 pb y funding histórico.
+Métricas: retorno, CAGR, drawdown, Sharpe, % aciertos, profit factor, comisiones, funding y
+comparación con comprar y mantener.
+
+Limitaciones: SUB1 (sin histórico de noticias) y SUB3 (copy trading nativo) no se pueden
+backtestear; SUB5/SUB9 usan un score macro fijo; SUB4 exige velas de 1m (descargas grandes).
+
+### Nuevas estrategias (inspiradas en controladores de Hummingbot v2)
+| Sub | Origen | Adaptación |
+|---|---|---|
+| SUB10 Pairs trading | `stat_arb` (1m, 20x, modo hedge, TP 0.08% por pata) | 1H, 2x, one-way; β por MCO sobre log-precios, filtro ADF < −3.34 y vida media 2–72h; entrada \|z\| ≥ 2, salida \|z\| ≤ 0.5, stop \|z\| ≥ 4 o −3% del par, 5 días máx.; un símbolo no puede estar en dos pares |
+| SUB11 SuperTrend | `supertrend_v1` (3m, entrada a < 1% de la línea) | 4H, SuperTrend(20, 4) stop-and-reverse, SL = línea (trailing), riesgo 1%, filtro anti-persecución ≤ 5 ATR |
+
+Ambas están **desactivadas por defecto**: activarlas en `ENABLED_STRATEGIES` solo tras
+backtestearlas con datos reales.
+
+### Fallos encontrados gracias al backtester
+23. **SUB8**: tras una subida fuerte, "precio medio − 20%" quedaba a > 25% del precio y el
+    guardián rechazaba todas las compras. El stop pasa a `max(medio − 20%, precio − 24%)`,
+    que además sigue al precio y protege beneficios.
+24. **SUB7**: con el kill-switch diario activo, la reconstrucción del grid lanzaba excepciones
+    en cada ciclo en lugar de pausarse limpiamente.
+25. **SUB11** (diseño Hummingbot): con 4×ATR la línea se mantiene a 3.4–4.6 ATR del precio en
+    tendencia; el filtro de proximidad casi nunca se cumplía → se cambió a stop-and-reverse.
+26. El grid (SUB7) pagaba comisión taker en las órdenes límite en la simulación: se modela
+    maker, que es lo que cobra Bitget a una límite que reposa en el libro.
+
+### Pendiente
+- Ejecutar los backtests con **datos reales** (este entorno de desarrollo no tiene acceso a
+  Bitget; el backtester se ha validado con series sintéticas y 60 tests).
