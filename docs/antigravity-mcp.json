@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "kriptty": {
+      "serverUrl": "http://localhost:8765/mcp"
+    },
+    "kriptty-local": {
+      "command": "kriptty-mcp",
+      "args": ["--transport", "stdio"],
+      "env": { "TRADING_MODE": "dry_run", "MCP_READ_ONLY": "true" }
+    }
+  }
+}

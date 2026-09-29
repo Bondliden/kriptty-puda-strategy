@@ -1,0 +1,32 @@
+# Kriptty Puda Strategy — motor de trading + servidor MCP.
+# Arranque: cp .env.example .env  (rellenar)  →  docker compose up -d --build
+services:
+  engine:
+    build: .
+    container_name: kriptty-engine
+    restart: unless-stopped
+    env_file: .env
+    command: ["kriptty-engine"]
+    volumes:
+      - kriptty-data:/app/data
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  mcp:
+    build: .
+    container_name: kriptty-mcp
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8765
+    command: ["kriptty-mcp", "--transport", "streamable-http"]
+    ports:
+      # Solo en localhost: el servidor MCP puede ver saldos y (si se habilita) operar.
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - kriptty-data:/app/data
+
+volumes:
+  kriptty-data:
