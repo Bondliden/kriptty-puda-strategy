@@ -9,7 +9,7 @@ description = "Kriptty Puda Strategy — sistema multi-subcuenta para Bitget con
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "ccxt>=4.5.80",
+    "ccxt>=4.5.84",  # 4.5.82: ledger UTA v3 (fetchLedger)
     "mcp[cli]>=2.2",
     "aiohttp>=3.12",
     "numpy>=2.2",
@@ -30,6 +30,7 @@ dev = ["pytest>=8.3", "pytest-asyncio>=0.25", "ruff>=0.8"]
 kriptty-engine = "kriptty.engine:cli"
 kriptty-mcp = "kriptty.mcp_server:cli"
 kriptty-backtest = "kriptty.backtest:cli"
+kriptty-stress = "kriptty.backtest.stress_run:cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kriptty"]

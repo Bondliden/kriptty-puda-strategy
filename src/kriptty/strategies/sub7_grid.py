@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from .. import clock
 from ..exchange.client import perp
-from ..indicators import atr, bollinger, last
+from ..indicators import atr, bollinger, ema, last
 from ..risk.guard import OrderRejected
 from ..risk.models import OrderRequest
 from .base import Strategy
@@ -42,6 +42,10 @@ class GridStrategy(Strategy):
     MAX_RESETS_DAY = 3
     CAPITAL_FRACTION = 0.6
     MAX_GRID_LOSS = 0.04
+    # Filtro de tendencia (añadido tras el test de estrés de 3 años: en un bear market el grid
+    # se reconstruía cada día y encadenaba pérdidas del 4% hasta −94%). Solo se monta el grid
+    # si la EMA20 diaria no cae más de este % en 5 días.
+    MAX_DOWNTREND_5D = 0.03
 
     @property
     def symbol(self) -> str:
@@ -85,7 +89,12 @@ class GridStrategy(Strategy):
         client = self.client
         await client.load_markets()
         h4 = await client.ohlcv(self.symbol, "4h", 60)
-        d1 = await client.ohlcv(self.symbol, "1d", 30)
+        d1 = await client.ohlcv(self.symbol, "1d", 60)
+        e20 = ema(d1["close"], 20)
+        if len(e20) >= 26 and e20.iloc[-1] / e20.iloc[-6] - 1 < -self.MAX_DOWNTREND_5D:
+            self.log.info("📉 Tendencia bajista (EMA20 diaria %.1f%% en 5 días): sin grid",
+                          (e20.iloc[-1] / e20.iloc[-6] - 1) * 100)
+            return
         lower_s, _, upper_s = bollinger(h4["close"], 20, 2.0)
         lower, upper = last(lower_s), last(upper_s)
         cell_target = 0.5 * last(atr(d1, 14))

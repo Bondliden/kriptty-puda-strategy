@@ -9,6 +9,8 @@ cliente MCP.
 > Revisión y cambios respecto al diseño original: [`docs/REVISION.md`](docs/REVISION.md).
 > Explicación interactiva de las estrategias (abrir en el navegador): [`docs/estrategias-puda.html`](docs/estrategias-puda.html).
 > Presentación en diapositivas, con la estructura del documento original: [`docs/presentacion-estrategias.html`](docs/presentacion-estrategias.html).
+> Presentación interactiva con simuladores, test de estrés de 3 años y novedades de octubre 2026: [`docs/presentacion-interactiva.html`](docs/presentacion-interactiva.html).
+> Hoja de ruta para lanzar el token PUDA en El Salvador (CNAD): [`docs/lanzamiento-el-salvador.html`](docs/lanzamiento-el-salvador.html).
 
 ## Estrategias
 
@@ -55,7 +57,7 @@ src/kriptty/
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env            # TRADING_MODE=dry_run por defecto
-pytest                          # 60 tests, sin red
+pytest                          # 75 tests, sin red
 kriptty-engine --once SUB5      # un ciclo de una estrategia
 kriptty-engine                  # todas las habilitadas
 ```
@@ -89,6 +91,24 @@ kriptty-backtest --strategy SUB5 --start 2025-01-01 --macro-score -4   # régime
   SUB5/SUB9 usan un score macro fijo (`--macro-score`): el histórico macro no se reproduce.
 - Calentamiento por defecto: 300 días para SUB5/SUB9 (EMA200 diaria) y ~4 años para SUB8
   (EMA200 semanal).
+
+### Test de estrés de 3 años
+
+```bash
+kriptty-stress --scenarios ciclo,bear,lateral --seeds 3 --out data/stress          # código actual
+kriptty-stress --scenarios ciclo --seeds 1 --cost-mult 2 --out data/stress_x2       # costes ×2
+kriptty-stress --report despues=data/stress --out data/stress_report.json          # informe agregado
+python scripts/embed_stress.py data/stress_report.json                              # → presentación
+```
+
+Ejecuta las 9 estrategias backtesteables con su calendario real y el guardián de riesgo sobre
+mercados **sintéticos** de 3 años (`backtest/stress.py`): ciclo completo con crashes tipo LUNA/FTX,
+bear market prolongado y lateral con flash crashes, varias trayectorias Monte Carlo cada uno.
+Modelo: factor de mercado con volatilidad agrupada, colas gruesas y crashes correlacionados;
+componente idiosincrático con reversión parcial; funding persistente ligado al régimen; spot con
+basis; macro observable con 30 días de retraso. SUB4 se prueba en velas de 1m en el mes del mayor
+crash de cada trayectoria. Mide supervivencia y control del riesgo, **no** predice rentabilidad.
+Resultados y hallazgos: [`docs/presentacion-interactiva.html`](docs/presentacion-interactiva.html).
 
 ### Camino recomendado hacia real
 

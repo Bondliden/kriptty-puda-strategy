@@ -46,6 +46,35 @@ class AccountRouter:
                 self._clients[account_id] = ExchangeClient(account_id, creds, self.settings)
         return self._clients[account_id]
 
+    # ── Corte por drawdown desde máximos ────────────────────────────────
+    async def check_drawdown(self, account_id: str) -> bool:
+        """True si la cuenta no está en pausa por drawdown (equity spot + futuros vs. su máximo)."""
+        exempt = {a.strip().upper() for a in self.settings.drawdown_exempt.split(",") if a.strip()}
+        if account_id in exempt or self.settings.max_drawdown_pct <= 0:
+            return True
+        client = self.client(account_id)
+        equity = await client.equity("swap") + await client.equity("spot")
+        now = clock.now()
+        record = self.state.get("drawdown", account_id) or {"peak": equity, "halted_until": 0.0}
+        if record.get("halted_until", 0.0) > now:
+            return False
+        if record.get("halted_until", 0.0):
+            record = {"peak": equity, "halted_until": 0.0}  # fin de la pausa: nuevo máximo de referencia
+        record["peak"] = max(record["peak"], equity)
+        if record["peak"] > 0 and (record["peak"] - equity) / record["peak"] > self.settings.max_drawdown_pct:
+            record["halted_until"] = now + self.settings.drawdown_cooldown_days * 86_400
+            log.warning("🛑 [%s] Drawdown %.1f%% desde máximos > %.0f%%: sin aperturas durante %d días.",
+                        account_id, (record["peak"] - equity) / record["peak"] * 100,
+                        self.settings.max_drawdown_pct * 100, self.settings.drawdown_cooldown_days)
+            self.state.set("drawdown", account_id, record)
+            return False
+        self.state.set("drawdown", account_id, record)
+        return True
+
+    async def can_open(self, account_id: str, account: str = "swap") -> bool:
+        """Kill-switch diario de la cartera indicada + corte por drawdown de la subcuenta."""
+        return await self.check_daily_loss(account_id, account) and await self.check_drawdown(account_id)
+
     # ── Kill-switch diario ──────────────────────────────────────────────
     async def check_daily_loss(self, account_id: str, account: str = "swap") -> bool:
         """True si la cuenta puede abrir posiciones hoy."""
@@ -80,6 +109,8 @@ class AccountRouter:
             opening = not order.reduce_only and not (order.is_spot and order.side == "sell")
             if opening and not await self.check_daily_loss(account_id, "spot" if order.is_spot else "swap"):
                 raise OrderRejected(f"[{account_id}] kill-switch diario activo")
+            if opening and not await self.check_drawdown(account_id):
+                raise OrderRejected(f"[{account_id}] pausa por drawdown desde máximos")
         except OrderRejected as e:
             self.state.journal(**journal, status="rejected", detail=str(e))
             log.warning("%s", e)

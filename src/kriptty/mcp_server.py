@@ -147,7 +147,9 @@ def cli() -> None:
     else:
         security = TransportSecuritySettings(
             allowed_hosts=[h.strip() for h in settings.mcp_allowed_hosts.split(",") if h.strip()])
-        mcp.run("streamable-http", host=settings.mcp_host, port=settings.mcp_port, transport_security=security)
+        mcp.run("streamable-http", host=settings.mcp_host, port=settings.mcp_port, transport_security=security,
+                stateless_http=settings.mcp_stateless_http,
+                session_idle_timeout=settings.mcp_session_idle_timeout)
 
 
 if __name__ == "__main__":

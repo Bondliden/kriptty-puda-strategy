@@ -53,6 +53,21 @@ async def supervise(strategy: Strategy) -> None:
         delay = min(delay * 2, 300)
 
 
+async def check_clock(ctx, strategies) -> None:
+    """Avisa si el reloj local se desvía del de Bitget (firmas rechazadas, velas mal cortadas)."""
+    if not strategies:
+        return
+    try:
+        offset = await ctx.router.client(strategies[0].account_id).clock_offset_ms()
+    except Exception as e:  # noqa: BLE001 — sin red no se bloquea el arranque
+        log.warning("No se pudo comprobar la hora de Bitget: %s", e)
+        return
+    if abs(offset) > ctx.settings.max_clock_offset_ms:
+        log.warning("⏰ El reloj local se desvía %.0f ms del de Bitget: sincroniza con NTP", offset)
+    else:
+        log.info("⏰ Reloj sincronizado con Bitget (desfase %.0f ms)", offset)
+
+
 async def run(only: set[str] | None = None) -> None:
     ctx = build_context()
     strategies = build_strategies(ctx, only)
@@ -60,6 +75,7 @@ async def run(only: set[str] | None = None) -> None:
              ctx.settings.bitget_uta, [s.account_id for s in strategies])
     if ctx.settings.trading_mode == "live":
         log.warning("⚠️  MODO LIVE: se enviarán órdenes con dinero real")
+    await check_clock(ctx, strategies)
 
     scheduler = AsyncIOScheduler(timezone="UTC")
     tasks: list[asyncio.Task] = []
