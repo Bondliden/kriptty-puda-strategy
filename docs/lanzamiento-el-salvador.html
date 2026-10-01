@@ -127,10 +127,17 @@ footer ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; overflow-wra
   .tags { grid-column: 2; justify-content: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+
+.langs { display: flex; gap: 4px; justify-self: start; font: 500 12px var(--mono); }
+.langs a, .langs span { padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
+.langs span { color: var(--ink); background: var(--gold); border-color: var(--gold); }
+.langs a:hover { color: var(--fg); border-color: var(--gold); }
+.langs a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 </style>
 
 <div class="wrap">
   <header class="head">
+    <nav class="langs" aria-label="Idioma"><span aria-current="true">ES</span><a href="lanzamiento-el-salvador.en.html" hreflang="en" lang="en" data-alt="https://claude.ai/artifact/RtAbV6poAgfu6JPCLQW5Ay">EN</a></nav>
     <span class="eyebrow">PeludaCoin (PUDA) · hoja de ruta · octubre 2026</span>
     <h1>Crear y lanzar PUDA en <em>El Salvador</em></h1>
     <p class="lead">Pasos para emitir el token con la Ley de Emisión de Activos Digitales (LEAD) y la Comisión Nacional de Activos Digitales (CNAD). La hoja de ruta empieza con un único profesional en el prelanzamiento, el auditor, y explica qué más exige la ley antes de vender.</p>
@@ -342,4 +349,8 @@ footer ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; overflow-wra
   }
   render();
 })();
+</script>
+<script>
+// En la versión publicada como artifact, el otro idioma vive en otra URL.
+(() => { if (!/^file:/.test(location.href)) document.querySelectorAll(".langs a[data-alt]").forEach(a => { if (a.dataset.alt) a.href = a.dataset.alt; }); })();
 </script>
