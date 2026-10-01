@@ -66,8 +66,16 @@ Más de 5x no cubre más y solo aumenta el riesgo de la propia SUB5. Detalle en 
 
 ## Configuración propuesta (`.env`)
 
+Las 11 subcuentas, un agente en cada una: SUB5, SUB6, SUB8, SUB9 y SUB10 con dinero real desde el
+día 1; SUB1, SUB2, SUB4, SUB7 y SUB11 en Bitget Demo hasta graduarse (90 días, en beneficio y con caída
+≤ 10%), después con como mucho 100.000 $; SUB3 en espera de la API de copy trading de Bitget.
+`kriptty-engine --status` muestra el modo, el límite, los días, el resultado y la graduación de cada una.
+
 ```
-ENABLED_STRATEGIES=SUB5,SUB6,SUB8,SUB9,SUB10
+TRADING_MODE=live                 # con CONFIRM_LIVE_TRADING=yes
+ENABLED_STRATEGIES=SUB1,SUB2,SUB4,SUB5,SUB6,SUB7,SUB8,SUB9,SUB10,SUB11
+ACCOUNT_MODES=SUB1=demo,SUB2=demo,SUB4=demo,SUB7=demo,SUB11=demo
+MAX_MARGIN_BY_ACCOUNT=SUB1=0.1,SUB2=0.1,SUB4=0.1,SUB7=0.1,SUB11=0.1
 MAX_MARGIN_PCT=0.2                # 200.000 $ de cada subcuenta de 1 M$
 CAPITAL_RAMP=0.25,0.5,0.75,1      # 50k → 100k → 150k → 200k, un escalón por mes en beneficio
 LEVERAGE=SUB6=3,SUB9=3,SUB10=3    # SUB5 ya va a 3x; SUB8 opera en spot

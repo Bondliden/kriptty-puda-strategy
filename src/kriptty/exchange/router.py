@@ -34,16 +34,16 @@ class AccountRouter:
         if account_id not in ACCOUNT_IDS:
             raise ValueError(f"Cuenta desconocida: {account_id}")
         if account_id not in self._clients:
-            if self.settings.trading_mode == "dry_run":
+            mode = self.settings.mode_for(account_id)
+            if mode == "dry_run":
                 self._clients[account_id] = PaperExchangeClient(account_id, self.settings)
             else:
                 creds = load_credentials(account_id)
                 if creds is None:
                     raise RuntimeError(
-                        f"Faltan BITGET_{account_id}_API_KEY/SECRET/PASSPHRASE para modo "
-                        f"{self.settings.trading_mode}"
+                        f"Faltan BITGET_{account_id}_API_KEY/SECRET/PASSPHRASE para modo {mode}"
                     )
-                self._clients[account_id] = ExchangeClient(account_id, creds, self.settings)
+                self._clients[account_id] = ExchangeClient(account_id, creds, self.settings, mode=mode)
         return self._clients[account_id]
 
     # ── Corte por drawdown desde máximos ────────────────────────────────
@@ -89,6 +89,55 @@ class AccountRouter:
         self.state.set("drawdown", account_id, record)
         return True
 
+    # ── Etapa de cada agente y graduación ──────────────────────────────
+    async def track_stage(self, account_id: str) -> dict:
+        """Registra cómo le va a la subcuenta en su modo actual (desde cuándo, resultado, drawdown
+        máximo) y avisa una vez cuando una subcuenta en dry_run/demo cumple los criterios de
+        graduación. No cambia de modo por su cuenta: pasar a dinero real lo decide una persona."""
+        account_id = account_id.upper()
+        mode = self.settings.mode_for(account_id)
+        client = self.client(account_id)
+        equity = await client.equity("swap") + await client.equity("spot")
+        now = clock.now()
+        rec = self.state.get("stage", account_id)
+        if not rec or rec.get("mode") != mode:
+            rec = {"mode": mode, "since": now, "start": equity, "peak": equity, "max_dd": 0.0, "ready": False}
+        rec["peak"] = max(rec["peak"], equity)
+        if rec["peak"] > 0:
+            rec["max_dd"] = max(rec["max_dd"], (rec["peak"] - equity) / rec["peak"])
+        rec.update(equity=equity, updated=now)
+        days = (now - rec["since"]) / 86_400
+        ready = (mode != "live" and days >= self.settings.graduation_days and equity > rec["start"]
+                 and rec["max_dd"] <= self.settings.graduation_max_dd)
+        if ready and not rec["ready"]:
+            nxt = "demo" if mode == "dry_run" else "dinero real"
+            log.warning("🎓 [%s] Lista para pasar a %s: %.0f días en %s, %+.1f%%, drawdown máximo %.1f%%. "
+                        "Cámbialo en ACCOUNT_MODES cuando lo decidas.", account_id, nxt, days, mode,
+                        (equity / rec["start"] - 1) * 100 if rec["start"] else 0, rec["max_dd"] * 100)
+        rec["ready"] = ready
+        self.state.set("stage", account_id, rec)
+        return rec
+
+    def agents_status(self, accounts: list[str]) -> list[dict]:
+        """Resumen por subcuenta: modo, límite de capital actual (con la rampa) y etapa."""
+        out = []
+        for acc in accounts:
+            rec = self.state.get("stage", acc) or {}
+            ramp = self.state.get("ramp", acc) or {}
+            start, eq = rec.get("start") or 0, rec.get("equity") or 0
+            out.append({
+                "account": acc, "mode": self.settings.mode_for(acc),
+                "capital_limit_pct": round(self.capital_limit(acc) * 100, 2),
+                "capital_limit_usd": round(self.capital_limit(acc) * eq, 2) if eq else None,
+                "ramp_step": ramp.get("stage", 0) + 1 if self._ramp_steps() else None,
+                "days_in_mode": round((clock.now() - rec["since"]) / 86_400, 1) if rec else 0,
+                "return_pct": round((eq / start - 1) * 100, 2) if start else None,
+                "max_dd_pct": round(rec.get("max_dd", 0) * 100, 2),
+                "ready_to_graduate": rec.get("ready", False),
+                "drawdown": self.state.get("drawdown", acc) or {},
+            })
+        return out
+
     # ── Rampa de capital ────────────────────────────────────────────────
     def _ramp_steps(self) -> list[float]:
         return [float(x) for x in self.settings.capital_ramp.split(",") if x.strip()]
@@ -96,7 +145,7 @@ class AccountRouter:
     def capital_limit(self, account_id: str) -> float:
         """Fracción de la subcuenta que se puede comprometer ahora (margen en futuros, capital en
         spot): MAX_MARGIN_PCT por el escalón actual de la rampa."""
-        base = min(1.0, self.settings.max_margin_pct)
+        base = self.settings.margin_limit_for(account_id)
         steps = self._ramp_steps()
         if not steps:
             return base
@@ -178,7 +227,7 @@ class AccountRouter:
         ref_price = order.price if order.order_type == "limit" else await client.last_price(order.symbol)
         journal = dict(account=account_id, tag=order.tag, symbol=order.symbol, side=order.side,
                        amount=order.amount, price=ref_price, stop_loss=order.stop_loss,
-                       take_profit=order.take_profit, mode=self.settings.trading_mode)
+                       take_profit=order.take_profit, mode=self.settings.mode_for(account_id))
         try:
             validate_order(order, ref_price, self.settings.max_sl_distance_pct)
             opening = not order.reduce_only and not (order.is_spot and order.side == "sell")
@@ -231,7 +280,7 @@ class AccountRouter:
         await client.replace_stop_loss(position, new_sl)
         self.state.journal(account=account_id, tag=tag, symbol=position.symbol, side="sl_update",
                            amount=position.amount, price=position.mark_price, stop_loss=new_sl,
-                           take_profit=None, mode=self.settings.trading_mode, status="sent", detail="")
+                           take_profit=None, mode=self.settings.mode_for(account_id), status="sent", detail="")
         log.info("🔄 [%s|%s] SL %s → %.6g", account_id, tag, position.symbol, new_sl)
 
     async def close_position(self, account_id: str, position: Position, reason: str, tag: str = "") -> dict:
@@ -240,7 +289,7 @@ class AccountRouter:
         result = await client.close_position(position, tag)
         self.state.journal(account=account_id, tag=tag, symbol=position.symbol, side="close",
                            amount=position.amount, price=position.mark_price, stop_loss=None,
-                           take_profit=None, mode=self.settings.trading_mode, status="sent", detail=reason)
+                           take_profit=None, mode=self.settings.mode_for(account_id), status="sent", detail=reason)
         log.info("🔒 [%s|%s] Cerrada %s %s: %s", account_id, tag, position.side, position.symbol, reason)
         return result
 

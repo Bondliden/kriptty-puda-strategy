@@ -52,7 +52,7 @@ class CopyGuardianStrategy(Strategy):
         return data.get("trackingList") or data.get("trackingInfoList") or []
 
     async def run_cycle(self) -> None:
-        if self.ctx.settings.trading_mode == "dry_run":
+        if self.ctx.settings.mode_for(self.account_id) == "dry_run":
             self.log.info("SUB3 necesita copy trading real (demo/live); en dry_run no hace nada.")
             return
         if not await self.ctx.router.check_daily_loss(self.account_id):

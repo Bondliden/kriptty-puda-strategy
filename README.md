@@ -57,8 +57,9 @@ src/kriptty/
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env            # TRADING_MODE=dry_run por defecto
-pytest                          # 75 tests, sin red
+pytest                          # 88 tests, sin red
 kriptty-engine --once SUB5      # un ciclo de una estrategia
+kriptty-engine --status         # estado de cada agente: modo, límite, días, resultado y graduación
 kriptty-engine                  # todas las habilitadas
 ```
 

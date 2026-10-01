@@ -65,15 +65,17 @@ def is_crypto_market(symbol: str, market: dict | None = None, extra_excluded: se
 class ExchangeClient:
     """Una instancia por cuenta/subcuenta (cada una con sus propias API keys)."""
 
-    def __init__(self, account_id: str, credentials: Credentials | None, settings: Settings):
+    def __init__(self, account_id: str, credentials: Credentials | None, settings: Settings,
+                 mode: str | None = None):
         self.account_id = account_id
         self.settings = settings
+        self.mode = mode or settings.trading_mode
         config: dict[str, Any] = {"enableRateLimit": True, "options": {"defaultType": "swap"}}
         if credentials:
             config.update(apiKey=credentials.api_key, secret=credentials.secret,
                           password=credentials.passphrase)
         self.ex = ccxt.bitget(config)
-        if settings.trading_mode == "demo":
+        if self.mode == "demo":
             self.ex.set_sandbox_mode(True)
         if settings.bitget_uta:
             self.ex.options["uta"] = True
