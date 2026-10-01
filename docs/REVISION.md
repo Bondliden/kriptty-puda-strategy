@@ -166,6 +166,18 @@ código que opera en vivo (162 ejecuciones). Mide supervivencia y control del ri
 31. **Pausas por drawdown encadenadas**: nuevo corte del 25% (14 días) y **parada dura del 40%**
     desde el máximo histórico, que no se reinicia (requiere revisión manual).
 32. **SUB4 y SUB7 desactivadas por defecto**: perdían en todos los escenarios.
+33. **SUB5 parada para siempre**: su circuit breaker del 5% no tenía salida (el máximo nunca se
+    reiniciaba), así que tras el primer −5% la cuenta short dejaba de operar para siempre. En el test
+    de estrés se paró en las 9 trayectorias a los 1–13 meses, antes de las caídas que debía cubrir.
+    Ahora pausa 7 días y reinicia el máximo; la parada dura del router (−40%) sigue por encima.
+
+### Apalancamiento de la cuenta short (SUB5)
+`scripts/hedge_short.py` combina SUB5 a 2x, 3x, 5x, 7x y 10x (margen ≤ 20%, riesgo escalado) con las
+demás cuentas. La beta a la baja de las demás (días con BTC < −3%) suma ≈ 0,47 por cuenta
+(SUB2 0,21 · SUB8 0,19 · SUB9 0,11 · SUB11 −0,04 · SUB6 y SUB10 ≈ 0); peor caso ≈ 0,95. Con margen
+del 20%, el apalancamiento que la cubre es 0,47 / 0,20 ≈ 2,4 → **3x** (5x como máximo para el peor
+caso). Por encima, el short no cubre más (entra tarde: la señal macro va con 30 días de retraso) y solo
+aumenta su propio drawdown: −28% a 3x, −37% a 5x, −46% a 7x (riesgo escalado en ambos niveles de convicción).
 
 ### Novedades del ecosistema aplicadas
 - ccxt ≥ 4.5.84 (ledger de la cuenta unificada UTA v3).

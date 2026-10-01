@@ -122,7 +122,9 @@ class PairsTradingStrategy(Strategy):
         client = self.client
         await client.load_markets()
         pa, pb = await client.last_price(a), await client.last_price(b)
-        gross = await client.equity() * self.CAPITAL_PER_PAIR
+        # el tope por par respeta el límite de capital (margen ≤ MAX_MARGIN_PCT × rampa) entre los pares
+        gross = await client.equity() * min(self.CAPITAL_PER_PAIR,
+                                            self.capital_limit * self.leverage * 0.98 / self.MAX_PAIRS)
         beta = st["beta"]
         qa = client.amount_to_precision(a, gross / (1 + beta) / pa, pa)
         qb = client.amount_to_precision(b, gross * beta / (1 + beta) / pb, pb)

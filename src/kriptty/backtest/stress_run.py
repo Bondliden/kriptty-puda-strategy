@@ -18,6 +18,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ..config import Settings
+from ..strategies import leverage_overrides
 from . import stress
 from .market import HistoricalMarket
 from .runner import DEFAULT_SYMBOLS, run_backtest
@@ -43,7 +45,11 @@ def _worst_month(sm: stress.SyntheticMarket, start: pd.Timestamp) -> pd.Timestam
     return max(start, (drop - pd.Timedelta(days=10)).floor("D"))
 
 
-def run_one(scenario: str, seed: int, account: str, cost_mult: float = 1.0) -> dict:
+def run_one(scenario: str, seed: int, account: str, cost_mult: float = 1.0, leverage: float | None = None,
+            max_margin: float | None = None, scale_risk: bool | None = None, settings: dict | None = None) -> dict:
+    """``scale_risk``: escala el riesgo por operación con el apalancamiento (por defecto solo
+    sin ``max_margin``). Con ``max_margin`` y ``scale_risk`` el tamaño crece con el apalancamiento
+    pero el margen sigue limitado. ``settings``: otros ajustes de ``Settings`` (rampa, límites de drawdown)."""
     logging.disable(logging.CRITICAL)
     t0 = time.time()
     sm = stress.generate(scenario, seed=seed)
@@ -57,12 +63,17 @@ def run_one(scenario: str, seed: int, account: str, cost_mult: float = 1.0) -> d
     market, tf = _market(sm, account, rng)
     res = asyncio.run(run_backtest(account, market, start.to_pydatetime(), end.to_pydatetime(), equity=EQUITY,
                                    fee_rate=0.0006 * cost_mult, maker_fee=0.0002 * cost_mult,
-                                   slippage_bps=2.0 * cost_mult, macro=stress.SeriesMacro(sm.macro)))
+                                   slippage_bps=2.0 * cost_mult, macro=stress.SeriesMacro(sm.macro),
+                                   overrides=leverage_overrides(account, leverage,
+                                                                scale=max_margin is None if scale_risk is None else scale_risk),
+                                   settings_overrides={**({"max_margin_pct": max_margin} if max_margin else {}),
+                                                       **(settings or {})} or None))
     m = res.metrics
     daily = res.equity.resample("1D").last().dropna()
     btc = sm.candles["BTC/USDT:USDT"]["close"]
     return {
         "scenario": scenario, "seed": seed, "account": account, "cost_mult": cost_mult, "timeframe": tf,
+        "leverage": leverage, "max_margin": max_margin, "scale_risk": scale_risk, "settings": settings or {},
         "start": str(start.date()), "end": str(end.date()), "seconds": round(time.time() - t0, 1),
         "metrics": {k: (None if isinstance(v, float) and not np.isfinite(v) else round(float(v), 4))
                     for k, v in m.items()},
@@ -111,6 +122,15 @@ def cli() -> None:
     p.add_argument("--seed-offset", type=int, default=0)
     p.add_argument("--strategies", default=",".join(STRATEGIES))
     p.add_argument("--cost-mult", type=float, default=1.0, help="multiplica comisiones y slippage")
+    p.add_argument("--leverage", type=float, default=None,
+                   help="simula otro apalancamiento (escala riesgo y exposición en la misma proporción)")
+    p.add_argument("--max-margin", type=float, default=None,
+                   help="margen máximo por subcuenta (p. ej. 0.2); con --leverage, el riesgo no se escala")
+    p.add_argument("--scale-risk", action="store_true",
+                   help="con --max-margin, escala también el riesgo por operación con el apalancamiento")
+    p.add_argument("--set", action="append", default=[], metavar="AJUSTE=VALOR",
+                   help="ajuste de Settings para la simulación (p. ej. capital_ramp=0.25,0.5,1)")
+    p.add_argument("--tag", default="", help="sufijo de los archivos de resultados")
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--out", default="data/stress")
     p.add_argument("--report", nargs="+", metavar="ETIQUETA=CARPETA",
@@ -125,19 +145,26 @@ def cli() -> None:
         return
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    jobs = [(sc, a.seed_offset + s, acc, a.cost_mult) for sc in a.scenarios.split(",") for s in range(a.seeds)
+    overrides = {}
+    for item in a.set:
+        key, value = item.split("=", 1)
+        default = Settings.model_fields[key].default
+        overrides[key] = type(default)(value) if not isinstance(default, str) else value
+    jobs = [(sc, a.seed_offset + s, acc, a.cost_mult, a.leverage, a.max_margin,
+             True if a.scale_risk else None, overrides) for sc in a.scenarios.split(",") for s in range(a.seeds)
             for acc in a.strategies.split(",")]
     jobs.sort(key=lambda j: j[2] not in ("SUB2", "SUB6", "SUB11", "SUB10"))  # las lentas primero
     with ProcessPoolExecutor(a.workers) as pool:
         futures = {pool.submit(run_one, *j): j for j in jobs}
         for f in as_completed(futures):
-            sc, seed, acc, cm = futures[f]
+            sc, seed, acc, cm, lev, mm, sr, _ = futures[f]
             try:
                 r = f.result()
             except Exception as e:  # noqa: BLE001
                 print(f"✗ {sc} seed={seed} {acc}: {e!r}", flush=True)
                 continue
-            name = f"{sc}_s{seed}_{acc}_c{cm:g}.json"
+            name = (f"{sc}_s{seed}_{acc}_c{cm:g}" + (f"_x{lev:g}" if lev else "")
+                    + (f"_m{mm:g}" if mm else "") + ("_r" if sr else "") + (f"_{a.tag}" if a.tag else "") + ".json")
             (out / name).write_text(json.dumps(r))
             m = r["metrics"]
             print(f"✓ {sc:8s} seed={seed} {acc:6s} ret {m['total_return_pct']:+8.1f}%  dd {m['max_drawdown_pct']:6.1f}%  "

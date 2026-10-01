@@ -80,7 +80,8 @@ class CollarStrategy(Strategy):
         below_trend = ema_floor is None or price <= ema_floor
         sl = None if below_trend else max(ema_floor, price * (1 - self.MAX_SL_PCT))
         equity = await client.equity()
-        capital = st["capital"] or equity * self.CAPITAL_FRACTION
+        capital = min(st["capital"] or equity * self.CAPITAL_FRACTION,
+                      equity * self.capital_limit * self.leverage * 0.98)  # margen ≤ límite × rampa
         target = 0.0 if below_trend else capital * (1 - ratio)
         current = pos.notional if pos and pos.side == "long" else 0.0
         self.log.info("Régimen %s → cobertura %.0f%% | %s nocional actual %.2f objetivo %.2f",

@@ -158,3 +158,87 @@ async def test_backtest_rejects_orders_without_margin():
     with pytest.raises(ccxt.InsufficientFunds):  # +333 margen > equity, como en el exchange
         await c.place(OrderRequest(PERP, "buy", 10.0, stop_loss=95))
     assert c.rejected_margin == 1
+
+
+async def test_margin_cap_rejects_orders_over_limit(ctx):
+    ctx.settings.max_margin_pct = 0.20
+    client = ctx.router.client("SUB11")
+    client.usdt = {"swap": 10_000.0, "spot": 0.0}
+    client.prices[PERP] = 100.0
+    # 7x: 1.4× el equity de nocional = 20% de margen → permitido
+    await ctx.router.execute("SUB11", OrderRequest(PERP, "buy", 140.0, stop_loss=95), leverage=7)
+    with pytest.raises(OrderRejected, match="margen"):
+        await ctx.router.execute("SUB11", OrderRequest(PERP, "buy", 10.0, stop_loss=95), leverage=7)
+    # reducir la posición nunca se bloquea
+    await ctx.router.execute("SUB11", OrderRequest(PERP, "sell", 50.0, reduce_only=True), leverage=7)
+
+
+def test_leverage_overrides_scale_exposure():
+    from kriptty.backtest.stress_run import leverage_overrides
+    assert leverage_overrides("SUB11", 7) == {"leverage": 7, "RISK_PCT": pytest.approx(0.01 * 7 / 3)}
+    assert leverage_overrides("SUB11", 7, scale=False) == {"leverage": 7}
+    assert leverage_overrides("SUB6", 7) == {"leverage": 7}
+    assert leverage_overrides("SUB8", 7) == {}
+
+
+def test_sub5_leverage_scales_both_risk_levels():
+    from kriptty.backtest.stress_run import leverage_overrides
+    out = leverage_overrides("SUB5", 6)
+    assert out == {"leverage": 6, "RISK_PCT": pytest.approx(0.045), "RISK_PCT_STRONG": pytest.approx(0.06)}
+
+
+async def test_spot_capital_respects_max_margin(ctx):
+    from kriptty.strategies.sub8_dca import SmartDCAStrategy
+    ctx.settings.max_margin_pct = 0.2
+    strat = SmartDCAStrategy(ctx)
+    assert strat.capital_limit == 0.2
+    ctx.settings.max_margin_pct = 1.0
+    assert strat.capital_limit == 1.0
+
+
+async def test_capital_ramp_steps_up_and_down(ctx):
+    from kriptty import clock
+    ctx.settings.max_margin_pct = 0.2
+    ctx.settings.capital_ramp = "0.25,0.5,1"
+    router, client = ctx.router, ctx.router.client("SUB9")
+    try:
+        clock.set_time(1_800_000_000)
+        await router.update_ramp("SUB9")
+        assert router.capital_limit("SUB9") == pytest.approx(0.05)  # 25% de 200k = 50k de 1 M$
+        clock.set_time(1_800_000_000 + 31 * 86400)
+        client.usdt["swap"] += 100
+        await router.update_ramp("SUB9")  # escalón en beneficio → sube
+        assert router.capital_limit("SUB9") == pytest.approx(0.10)
+        client.usdt["swap"] -= 2_000  # −10% del equity total desde el inicio del escalón → baja
+        await router.update_ramp("SUB9")
+        assert router.capital_limit("SUB9") == pytest.approx(0.05)
+    finally:
+        clock.set_time(None)
+
+
+def test_engine_applies_leverage_setting(ctx):
+    from kriptty.engine import build_strategies
+    ctx.settings.leverage = "SUB10=3, SUB5=3"
+    (s10,) = build_strategies(ctx, {"SUB10"})
+    assert s10.leverage == 3 and s10.CAPITAL_PER_PAIR == pytest.approx(0.25 * 3 / 2)
+    (s5,) = build_strategies(ctx, {"SUB5"})
+    assert s5.leverage == 3 and s5.RISK_PCT == pytest.approx(0.0225)
+
+
+async def test_max_hold_closes_old_positions(ctx):
+    from kriptty import clock
+    from kriptty.strategies.sub11_supertrend import SuperTrendStrategy
+    ctx.settings.max_hold_hours = 48
+    strat = SuperTrendStrategy(ctx)
+    client = strat.client
+    client.prices[PERP] = 100.0
+    try:
+        clock.set_time(1_800_000_000)
+        await ctx.router.execute("SUB11", OrderRequest(PERP, "buy", 1.0, stop_loss=95), leverage=3)
+        await strat.enforce_max_hold()
+        assert len(await client.positions()) == 1
+        clock.set_time(1_800_000_000 + 49 * 3600)
+        await strat.enforce_max_hold()
+        assert await client.positions() == []
+    finally:
+        clock.set_time(None)

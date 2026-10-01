@@ -99,7 +99,13 @@ kriptty-stress --scenarios ciclo,bear,lateral --seeds 3 --out data/stress       
 kriptty-stress --scenarios ciclo --seeds 1 --cost-mult 2 --out data/stress_x2       # costes ×2
 kriptty-stress --report despues=data/stress --out data/stress_report.json          # informe agregado
 python scripts/embed_stress.py data/stress_report.json                              # → presentación
+kriptty-stress --leverage 7 --max-margin 0.2 --scale-risk --out data/stress_x7m20r   # 7x, margen ≤ 20%
+python scripts/hedge_short.py --others data/stress_x7m20 --sub8 data/stress --sweep data/stress_sub5
+python scripts/export_runs.py despues=data/stress --out estrategia/datos/ejecuciones.csv
 ```
+
+La presentación del plan completo (sociedad, ICO, backtest, estrés y rentabilidad) está en
+[`estrategia/`](estrategia/LEEME.md), con todas las ejecuciones en `estrategia/datos/`.
 
 Ejecuta las 9 estrategias backtesteables con su calendario real y el guardián de riesgo sobre
 mercados **sintéticos** de 3 años (`backtest/stress.py`): ciclo completo con crashes tipo LUNA/FTX,
