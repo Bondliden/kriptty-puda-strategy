@@ -181,6 +181,14 @@ código que opera en vivo (162 ejecuciones). Mide supervivencia y control del ri
   ≤ `GRADUATION_MAX_DD`. No cambia de modo por su cuenta. Consulta: `kriptty-engine --status` y la
   herramienta MCP `get_agents_status`.
 
+### La reserva que respalda PUDA nunca se arriesga
+`ANNUAL_LOSS_BUDGET_USD`: presupuesto anual de pérdidas de todo el sistema, sumando el equity de las
+subcuentas que operan con dinero real frente al del 1 de enero. Al agotarse, el router rechaza toda
+apertura (y `can_open` devuelve False) hasta el año siguiente; las posiciones abiertas siguen con su
+stop loss. Se fija igual o por debajo del rendimiento anual de la reserva, que queda en custodia fuera
+del exchange: en el peor año la reserva termina al 100%. `record_deposit()` ajusta la referencia en
+aportaciones y retiradas.
+
 ### Apalancamiento de la cuenta short (SUB5)
 `scripts/hedge_short.py` combina SUB5 a 2x, 3x, 5x, 7x y 10x (margen ≤ 20%, riesgo escalado) con las
 demás cuentas. La beta a la baja de las demás (días con BTC < −3%) suma ≈ 0,47 por cuenta

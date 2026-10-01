@@ -290,3 +290,44 @@ async def test_graduation_flags_demo_account(ctx):
         assert st["mode"] == "demo" and st["ready_to_graduate"] and st["return_pct"] == pytest.approx(2.5)
     finally:
         clock.set_time(None)
+
+
+async def test_annual_loss_budget_stops_every_account(ctx):
+    from kriptty import clock
+    from kriptty.risk.guard import OrderRejected
+    ctx.settings.enabled_strategies = "SUB5,SUB6"
+    ctx.settings.annual_loss_budget_usd = 1_000
+    router = ctx.router
+    try:
+        clock.set_time(1_800_000_000)
+        assert await router.check_loss_budget()  # referencia: 2 subcuentas × 20.000 = 40.000
+        router.client("SUB5").usdt["swap"] -= 600
+        clock.set_time(1_800_000_000 + 600)
+        assert await router.check_loss_budget()  # −600 < 1.000
+        router.client("SUB6").usdt["spot"] -= 500
+        clock.set_time(1_800_000_000 + 1200)
+        assert not await router.check_loss_budget()  # −1.100 ≥ 1.000: se para todo
+        router.client("SUB5").prices[PERP] = 100.0
+        with pytest.raises(OrderRejected, match="presupuesto"):
+            await router.execute("SUB5", OrderRequest(PERP, "sell", 1.0, stop_loss=105))
+        assert not await router.can_open("SUB6")
+        clock.set_time(1_800_000_000 + 400 * 86400)  # año siguiente: nueva referencia
+        assert await router.check_loss_budget()
+    finally:
+        clock.set_time(None)
+
+
+async def test_loss_budget_ignores_deposits(ctx):
+    from kriptty import clock
+    ctx.settings.enabled_strategies = "SUB5"
+    ctx.settings.annual_loss_budget_usd = 1_000
+    router = ctx.router
+    try:
+        clock.set_time(1_800_000_000)
+        assert await router.check_loss_budget()
+        router.client("SUB5").usdt["swap"] -= 5_000  # retirada de 5.000, no es pérdida
+        router.record_deposit(-5_000)
+        clock.set_time(1_800_000_000 + 600)
+        assert await router.check_loss_budget()
+    finally:
+        clock.set_time(None)

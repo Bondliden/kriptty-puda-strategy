@@ -195,9 +195,53 @@ class AccountRouter:
         if equity > 0 and margin > limit * equity * 1.0001:
             raise OrderRejected(f"[{account_id}] margen {margin / equity:.0%} del equity > máximo {limit:.0%}")
 
+    # ── Presupuesto anual de pérdidas de todo el sistema ───────────────
+    def _budget_accounts(self) -> list[str]:
+        """Subcuentas que cuentan para el presupuesto: las habilitadas que van en el modo general
+        (con TRADING_MODE=live, solo las de dinero real; las de demo usan fondos ficticios)."""
+        return [a for a in sorted(self.settings.enabled) if self.settings.mode_for(a) == self.settings.trading_mode]
+
+    async def check_loss_budget(self) -> bool:
+        """True si el sistema aún puede abrir posiciones. Suma el equity de las subcuentas que
+        cuentan y lo compara con el del inicio del año natural; si la pérdida acumulada llega a
+        ANNUAL_LOSS_BUDGET_USD, se para todo hasta el año siguiente. Se reevalúa cada 5 minutos."""
+        budget = self.settings.annual_loss_budget_usd
+        if budget <= 0:
+            return True
+        now = clock.now()
+        year = clock.utcnow().year
+        rec = self.state.get("loss_budget", "system") or {}
+        if rec.get("year") == year and rec.get("halted"):
+            return False
+        if rec.get("year") == year and now - rec.get("checked", 0) < 300:
+            return True
+        total = 0.0
+        for acc in self._budget_accounts():
+            client = self.client(acc)
+            total += await client.equity("swap") + await client.equity("spot")
+        if rec.get("year") != year:
+            rec = {"year": year, "start": total, "halted": False}
+        rec["checked"], rec["equity"] = now, total
+        rec["start"] += rec.pop("deposits", 0.0)
+        loss = rec["start"] - total
+        if loss >= budget:
+            rec["halted"] = True
+            log.critical("⛔ Presupuesto anual de pérdidas agotado: %.0f USD de %.0f. Ninguna subcuenta abre "
+                         "posiciones hasta el %d.", loss, budget, year + 1)
+        self.state.set("loss_budget", "system", rec)
+        return not rec["halted"]
+
+    def record_deposit(self, amount: float) -> None:
+        """Ajusta la referencia del presupuesto al añadir (positivo) o retirar (negativo) capital en las
+        subcuentas que cuentan, para que una aportación o retirada no se tome por beneficio o pérdida."""
+        rec = self.state.get("loss_budget", "system") or {}
+        rec["deposits"] = rec.get("deposits", 0.0) + amount
+        self.state.set("loss_budget", "system", rec)
+
     async def can_open(self, account_id: str, account: str = "swap") -> bool:
-        """Kill-switch diario de la cartera indicada + corte por drawdown de la subcuenta."""
-        return await self.check_daily_loss(account_id, account) and await self.check_drawdown(account_id)
+        """Presupuesto anual del sistema + kill-switch diario de la cartera + corte por drawdown."""
+        return (await self.check_loss_budget() and await self.check_daily_loss(account_id, account)
+                and await self.check_drawdown(account_id))
 
     # ── Kill-switch diario ──────────────────────────────────────────────
     async def check_daily_loss(self, account_id: str, account: str = "swap") -> bool:
@@ -233,6 +277,8 @@ class AccountRouter:
             opening = not order.reduce_only and not (order.is_spot and order.side == "sell")
             if opening and not await self.check_daily_loss(account_id, "spot" if order.is_spot else "swap"):
                 raise OrderRejected(f"[{account_id}] kill-switch diario activo")
+            if opening and not await self.check_loss_budget():
+                raise OrderRejected(f"[{account_id}] presupuesto anual de pérdidas del sistema agotado")
             if opening:
                 await self.update_ramp(account_id)
             if opening and not await self.check_drawdown(account_id):
