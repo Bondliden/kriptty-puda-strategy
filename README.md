@@ -7,6 +7,7 @@ orden, un **backtester** que ejecuta el mismo código de las estrategias sobre h
 cliente MCP.
 
 > Revisión y cambios respecto al diseño original: [`docs/REVISION.md`](docs/REVISION.md).
+> Explicación interactiva de las estrategias (abrir en el navegador): [`docs/estrategias-puda.html`](docs/estrategias-puda.html).
 
 ## Estrategias
 
