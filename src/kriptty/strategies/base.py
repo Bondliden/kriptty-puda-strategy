@@ -88,7 +88,7 @@ class Strategy(ABC):
         # posiciones): con SL muy ajustados el sizing por riesgo pedía hasta 3× el equity en una
         # sola posición y las comisiones se comían la cuenta (SUB2 en el test de estrés).
         open_notional = sum(abs(p.amount * p.mark_price) for p in await self.positions() if ":" in p.symbol)
-        total_cap = equity * self.leverage * max_notional_pct
+        total_cap = equity * self.leverage * max_notional_pct * min(1.0, self.ctx.settings.max_margin_pct)
         slots = getattr(self, "MAX_POSITIONS", None) or getattr(self, "MAX_OPEN", None) or 1
         max_notional = max(0.0, min(total_cap / slots, total_cap - open_notional))
         raw = risk_based_amount(equity, risk_pct, entry, stop_loss, max_notional=max_notional)

@@ -89,6 +89,23 @@ class AccountRouter:
         self.state.set("drawdown", account_id, record)
         return True
 
+    async def check_margin(self, account_id: str, order: OrderRequest, price: float, leverage: int) -> None:
+        """Rechaza la orden si el margen comprometido en futuros superaría MAX_MARGIN_PCT del
+        equity de la subcuenta. Una orden que reduce o invierte una posición no suma margen."""
+        limit = self.settings.max_margin_pct
+        if limit >= 1.0:
+            return
+        client = self.client(account_id)
+        positions = [p for p in await client.positions() if ":" in p.symbol]
+        side = "long" if order.side == "buy" else "short"
+        if any(p.symbol == order.symbol and p.side != side for p in positions):
+            return
+        notional = sum(abs(p.amount * p.mark_price) for p in positions) + order.amount * price
+        equity = await client.equity("swap") + await client.equity("spot")
+        margin = notional / max(leverage, 1)
+        if equity > 0 and margin > limit * equity * 1.0001:
+            raise OrderRejected(f"[{account_id}] margen {margin / equity:.0%} del equity > máximo {limit:.0%}")
+
     async def can_open(self, account_id: str, account: str = "swap") -> bool:
         """Kill-switch diario de la cartera indicada + corte por drawdown de la subcuenta."""
         return await self.check_daily_loss(account_id, account) and await self.check_drawdown(account_id)
@@ -129,6 +146,8 @@ class AccountRouter:
                 raise OrderRejected(f"[{account_id}] kill-switch diario activo")
             if opening and not await self.check_drawdown(account_id):
                 raise OrderRejected(f"[{account_id}] pausa por drawdown desde máximos")
+            if opening and not order.is_spot:
+                await self.check_margin(account_id, order, ref_price, leverage or self.settings.default_leverage)
         except OrderRejected as e:
             self.state.journal(**journal, status="rejected", detail=str(e))
             log.warning("%s", e)

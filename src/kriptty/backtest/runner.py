@@ -123,11 +123,13 @@ def build_trigger(strategy: Strategy, start: datetime, base_s: int):
 async def run_backtest(account_id: str, market: HistoricalMarket, start: datetime, end: datetime, *,
                        equity: float = 10_000.0, macro_score: float = 0.0, fee_rate: float = 0.0006,
                        slippage_bps: float = 2.0, maker_fee: float = 0.0002,
-                       overrides: dict | None = None, macro=None) -> BacktestResult:
+                       overrides: dict | None = None, macro=None,
+                       settings_overrides: dict | None = None) -> BacktestResult:
     account_id = account_id.upper()
     if account_id in UNSUPPORTED:
         raise ValueError(f"{account_id} no es backtesteable: {UNSUPPORTED[account_id]}")
-    settings = Settings(trading_mode="dry_run", state_path=":memory:", dry_run_equity=equity)
+    settings = Settings(trading_mode="dry_run", state_path=":memory:", dry_run_equity=equity,
+                        **(settings_overrides or {}))
     state = StateStore(":memory:")
     router = AccountRouter(settings, state)
     client = BacktestClient(account_id, settings, market, fee_rate, slippage_bps, maker_fee)

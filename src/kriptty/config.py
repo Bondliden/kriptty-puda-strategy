@@ -62,6 +62,10 @@ class Settings(BaseSettings):
     # tras las pausas), la subcuenta deja de abrir hasta revisión manual (borrar el estado
     # "drawdown" de esa cuenta). Evita que pausas sucesivas del 25% se encadenen.
     max_total_drawdown_pct: float = 0.40
+    # Margen máximo comprometido en futuros por subcuenta, como fracción de su equity
+    # (spot + futuros). 0.20 = no usar más del 20% de cada cuenta aunque el apalancamiento sea
+    # 7x (exposición máxima = 0.20 × 7 = 1.4× el equity). 1.0 = sin límite adicional.
+    max_margin_pct: float = 1.0
     # Cuentas que acumulan en caídas por diseño (DCA) y quedan fuera del corte.
     drawdown_exempt: str = "SUB8"
     default_leverage: int = 3

@@ -43,7 +43,30 @@ def _worst_month(sm: stress.SyntheticMarket, start: pd.Timestamp) -> pd.Timestam
     return max(start, (drop - pd.Timedelta(days=10)).floor("D"))
 
 
-def run_one(scenario: str, seed: int, account: str, cost_mult: float = 1.0) -> dict:
+# Atributos que escalan la exposición al cambiar el apalancamiento (ver ``leverage_overrides``).
+_EXPOSURE_ATTRS = ("RISK_PCT", "CAPITAL_FRACTION", "CAPITAL_PER_PAIR")
+
+
+def leverage_overrides(account: str, leverage: float | None, scale: bool = True) -> dict:
+    """Simula operar con otro apalancamiento: fija ``leverage`` y escala en la misma proporción
+    el riesgo por operación y la fracción de capital expuesta (el tamaño de las posiciones crece
+    igual que el apalancamiento). SUB6 solo cambia el apalancamiento de la pata de futuros: su
+    pata spot no se apalanca. SUB8 opera en spot y no cambia."""
+    from ..strategies import REGISTRY
+    if not leverage or account == "SUB8":
+        return {}
+    cls = REGISTRY[account]
+    factor = leverage / cls.leverage
+    out: dict = {"leverage": int(leverage)}
+    if scale and account != "SUB6":
+        for attr in _EXPOSURE_ATTRS:
+            if hasattr(cls, attr):
+                out[attr] = getattr(cls, attr) * factor
+    return out
+
+
+def run_one(scenario: str, seed: int, account: str, cost_mult: float = 1.0, leverage: float | None = None,
+            max_margin: float | None = None) -> dict:
     logging.disable(logging.CRITICAL)
     t0 = time.time()
     sm = stress.generate(scenario, seed=seed)
@@ -57,12 +80,15 @@ def run_one(scenario: str, seed: int, account: str, cost_mult: float = 1.0) -> d
     market, tf = _market(sm, account, rng)
     res = asyncio.run(run_backtest(account, market, start.to_pydatetime(), end.to_pydatetime(), equity=EQUITY,
                                    fee_rate=0.0006 * cost_mult, maker_fee=0.0002 * cost_mult,
-                                   slippage_bps=2.0 * cost_mult, macro=stress.SeriesMacro(sm.macro)))
+                                   slippage_bps=2.0 * cost_mult, macro=stress.SeriesMacro(sm.macro),
+                                   overrides=leverage_overrides(account, leverage, scale=max_margin is None),
+                                   settings_overrides={"max_margin_pct": max_margin} if max_margin else None))
     m = res.metrics
     daily = res.equity.resample("1D").last().dropna()
     btc = sm.candles["BTC/USDT:USDT"]["close"]
     return {
         "scenario": scenario, "seed": seed, "account": account, "cost_mult": cost_mult, "timeframe": tf,
+        "leverage": leverage, "max_margin": max_margin,
         "start": str(start.date()), "end": str(end.date()), "seconds": round(time.time() - t0, 1),
         "metrics": {k: (None if isinstance(v, float) and not np.isfinite(v) else round(float(v), 4))
                     for k, v in m.items()},
@@ -111,6 +137,10 @@ def cli() -> None:
     p.add_argument("--seed-offset", type=int, default=0)
     p.add_argument("--strategies", default=",".join(STRATEGIES))
     p.add_argument("--cost-mult", type=float, default=1.0, help="multiplica comisiones y slippage")
+    p.add_argument("--leverage", type=float, default=None,
+                   help="simula otro apalancamiento (escala riesgo y exposición en la misma proporción)")
+    p.add_argument("--max-margin", type=float, default=None,
+                   help="margen máximo por subcuenta (p. ej. 0.2); con --leverage, el riesgo no se escala")
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--out", default="data/stress")
     p.add_argument("--report", nargs="+", metavar="ETIQUETA=CARPETA",
@@ -125,19 +155,20 @@ def cli() -> None:
         return
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    jobs = [(sc, a.seed_offset + s, acc, a.cost_mult) for sc in a.scenarios.split(",") for s in range(a.seeds)
+    jobs = [(sc, a.seed_offset + s, acc, a.cost_mult, a.leverage, a.max_margin) for sc in a.scenarios.split(",") for s in range(a.seeds)
             for acc in a.strategies.split(",")]
     jobs.sort(key=lambda j: j[2] not in ("SUB2", "SUB6", "SUB11", "SUB10"))  # las lentas primero
     with ProcessPoolExecutor(a.workers) as pool:
         futures = {pool.submit(run_one, *j): j for j in jobs}
         for f in as_completed(futures):
-            sc, seed, acc, cm = futures[f]
+            sc, seed, acc, cm, lev, mm = futures[f]
             try:
                 r = f.result()
             except Exception as e:  # noqa: BLE001
                 print(f"✗ {sc} seed={seed} {acc}: {e!r}", flush=True)
                 continue
-            name = f"{sc}_s{seed}_{acc}_c{cm:g}.json"
+            name = (f"{sc}_s{seed}_{acc}_c{cm:g}" + (f"_x{lev:g}" if lev else "")
+                    + (f"_m{mm:g}" if mm else "") + ".json")
             (out / name).write_text(json.dumps(r))
             m = r["metrics"]
             print(f"✓ {sc:8s} seed={seed} {acc:6s} ret {m['total_return_pct']:+8.1f}%  dd {m['max_drawdown_pct']:6.1f}%  "

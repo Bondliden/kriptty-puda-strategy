@@ -158,3 +158,24 @@ async def test_backtest_rejects_orders_without_margin():
     with pytest.raises(ccxt.InsufficientFunds):  # +333 margen > equity, como en el exchange
         await c.place(OrderRequest(PERP, "buy", 10.0, stop_loss=95))
     assert c.rejected_margin == 1
+
+
+async def test_margin_cap_rejects_orders_over_limit(ctx):
+    ctx.settings.max_margin_pct = 0.20
+    client = ctx.router.client("SUB11")
+    client.usdt = {"swap": 10_000.0, "spot": 0.0}
+    client.prices[PERP] = 100.0
+    # 7x: 1.4× el equity de nocional = 20% de margen → permitido
+    await ctx.router.execute("SUB11", OrderRequest(PERP, "buy", 140.0, stop_loss=95), leverage=7)
+    with pytest.raises(OrderRejected, match="margen"):
+        await ctx.router.execute("SUB11", OrderRequest(PERP, "buy", 10.0, stop_loss=95), leverage=7)
+    # reducir la posición nunca se bloquea
+    await ctx.router.execute("SUB11", OrderRequest(PERP, "sell", 50.0, reduce_only=True), leverage=7)
+
+
+def test_leverage_overrides_scale_exposure():
+    from kriptty.backtest.stress_run import leverage_overrides
+    assert leverage_overrides("SUB11", 7) == {"leverage": 7, "RISK_PCT": pytest.approx(0.01 * 7 / 3)}
+    assert leverage_overrides("SUB11", 7, scale=False) == {"leverage": 7}
+    assert leverage_overrides("SUB6", 7) == {"leverage": 7}
+    assert leverage_overrides("SUB8", 7) == {}
