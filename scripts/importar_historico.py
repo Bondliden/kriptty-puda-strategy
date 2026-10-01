@@ -38,7 +38,7 @@ def _ts(v: pd.Series) -> pd.DatetimeIndex:
 def _klines(raw: bytes) -> pd.DataFrame:
     df = _csv(raw).iloc[:, :6]
     df.columns = COLS
-    df["timestamp"] = _ts(df["timestamp"])
+    df["timestamp"] = _ts(df["timestamp"]).floor("h")  # Binance tiene horas desplazadas (p. ej. feb 2018)
     return df.set_index("timestamp").astype(float)
 
 
