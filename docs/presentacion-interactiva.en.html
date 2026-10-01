@@ -510,7 +510,7 @@ const S = [
   }
 },
 {
-  id: "SUB4", name: "Scalping 1m (WebSocket)", on: true, freq: "every 1m candle", lev: "5x",
+  id: "SUB4", name: "Scalping 1m (WebSocket)", on: false, freq: "every 1m candle", lev: "5x",
   idea: "Looks for 1-minute candle patterns in the direction of the 5-minute trend, with a volume spike. Before entering, it checks that the target profit comfortably covers the fees.",
   facts: { "Assets": "BTC, ETH, SOL", "Filters": "pattern + EMA9/21 on 5m + volume > 1.5× + RSI not extreme + spread < 0.05%", "Cost filter": "TP (2·ATR) ≥ 3 × round-trip fee (0.12%)", "Stop Loss": "1.2 × ATR, breakeven at +1 ATR, trailing from +2 ATR", "Limits": "2 positions, 10 trades/day per symbol, pause if daily DD > 3%, no trading from 23:00 to 00:00 UTC" },
   inputs: [
@@ -595,7 +595,7 @@ const S = [
   }
 },
 {
-  id: "SUB7", name: "Adaptive grid", on: true, freq: "every 5 min (rebuilt every 24H)", lev: "3x",
+  id: "SUB7", name: "Adaptive grid", on: false, freq: "every 5 min (rebuilt every 24H)", lev: "3x",
   idea: "Places a grid of buy orders inside the 4H Bollinger Bands. Each filled buy places a sell one level higher; each sell replaces the buy.",
   facts: { "Asset": "BTC, long only", "Range": "Bollinger(20, 2σ) on 4H", "Cell": "0.5 × daily ATR(14); between 4 and 20 levels", "Stop Loss": "on each buy: lower band − ½ cell", "Limits": "max. grid loss 4% of equity; 3 resets in 24H → pause", "New (Oct 2026)": "the grid is not set up if the daily EMA20 falls > 3% in 5 days" },
   inputs: [

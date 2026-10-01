@@ -19,10 +19,10 @@ cliente MCP.
 | SUB1 | News Sentiment (RSS + VADER/FinBERT) | cada 2H | 1.5·ATR(4H), trailing |
 | SUB2 | Stat Arb "vasos comunicantes" | cada 4H | mínimo 48H − 0.5% |
 | SUB3 | Copy trading nativo + guardián SL *(desactivada por defecto)* | 60 s | max(SL trader, 1.5·ATR) |
-| SUB4 | Scalping 1m por WebSocket | cada vela 1m | 1.2·ATR(1m), breakeven/trailing |
+| SUB4 | Scalping 1m por WebSocket *(desactivada desde el test de estrés)* | cada vela 1m | 1.2·ATR(1m), breakeven/trailing |
 | SUB5 | Macro-shorting (solo cortos) | cada 6H | máximo 7D + 0.3% |
 | SUB6 | Funding rate arbitrage delta-neutral | 5 min / escaneo 30 min | basis > 1.5%, emergencia +10% |
-| SUB7 | Grid adaptativo BB + ATR | 5 min | ruptura de rango |
+| SUB7 | Grid adaptativo BB + ATR *(desactivada desde el test de estrés)* | 5 min | ruptura de rango |
 | SUB8 | DCA inteligente spot (BTC/ETH) | diario (compra cada 48H) | max(medio − 20%, precio − 24%) |
 | SUB9 | Collar dinámico por régimen macro | 15 min / rebalanceo 6H | EMA200 − 1% (máx. 15%) |
 | SUB10 | Pairs trading por cointegración *(nueva, desactivada)* | cada 1H | z-score ±4, −3% del par, ±10% por pata |

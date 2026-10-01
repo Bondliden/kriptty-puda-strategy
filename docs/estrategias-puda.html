@@ -179,7 +179,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
     <p class="lead">Una cuenta principal en Bitget reparte el capital entre 11 subcuentas. Cada subcuenta ejecuta una estrategia independiente, y ninguna orden llega al exchange sin pasar por el guardián de Stop Loss. Mueve los controles para ver qué decide cada estrategia.</p>
     <div class="hero-stats">
       <span><b>11</b>estrategias</span>
-      <span><b>8</b>activas por defecto</span>
+      <span><b>6</b>activas por defecto</span>
       <span><b>100%</b>de las órdenes con SL</span>
       <span><b>≤ 25%</b>distancia máxima del SL</span>
     </div>
@@ -335,7 +335,7 @@ const S = [
   }
 },
 {
-  id: "SUB4", name: "Scalping 1m (WebSocket)", on: true, freq: "cada vela de 1m", lev: "5x",
+  id: "SUB4", name: "Scalping 1m (WebSocket)", on: false, freq: "cada vela de 1m", lev: "5x",
   idea: "Busca patrones de vela en 1 minuto a favor de la tendencia de 5 minutos, con pico de volumen. Antes de entrar comprueba que el beneficio objetivo cubre de sobra las comisiones.",
   facts: { "Activos": "BTC, ETH, SOL", "Filtros": "patrón + EMA9/21 en 5m + volumen > 1.5× + RSI no extremo + spread < 0.05%", "Filtro de costes": "TP (2·ATR) ≥ 3 × comisión ida y vuelta (0.12%)", "Stop Loss": "1.2 × ATR, breakeven en +1 ATR, trailing desde +2 ATR", "Límites": "2 posiciones, 10 trades/día por símbolo, pausa si DD diario > 3%, nada de 23:00 a 00:00 UTC" },
   inputs: [
@@ -420,7 +420,7 @@ const S = [
   }
 },
 {
-  id: "SUB7", name: "Grid adaptativo", on: true, freq: "cada 5 min (se reconstruye cada 24H)", lev: "3x",
+  id: "SUB7", name: "Grid adaptativo", on: false, freq: "cada 5 min (se reconstruye cada 24H)", lev: "3x",
   idea: "Coloca una rejilla de compras dentro de las Bandas de Bollinger de 4H. Cada compra ejecutada pone una venta un nivel más arriba; cada venta repone la compra.",
   facts: { "Activo": "BTC, solo largo", "Rango": "Bollinger(20, 2σ) en 4H", "Celda": "0.5 × ATR(14) diario; entre 4 y 20 niveles", "Stop Loss": "en cada compra: banda inferior − ½ celda", "Límites": "pérdida máx. del grid 4% del equity; 3 reinicios en 24H → pausa" },
   inputs: [

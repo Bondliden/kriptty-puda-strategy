@@ -37,6 +37,24 @@ async def test_drawdown_breaker_pauses_and_resumes(ctx):
     assert ctx.state.get("drawdown", "SUB11")["peak"] == pytest.approx(7_000)
 
 
+async def test_hard_stop_does_not_reset(ctx):
+    clock.set_time(1_800_000_000)
+    client = ctx.router.client("SUB2")
+    client.prices[PERP] = 100.0
+    client.usdt = {"swap": 10_000.0, "spot": 0.0}
+    assert await ctx.router.check_drawdown("SUB2")
+    client.usdt["swap"] = 7_000  # −30%: pausa de 14 días
+    assert not await ctx.router.check_drawdown("SUB2")
+    clock.set_time(1_800_000_000 + 15 * 86_400)
+    assert await ctx.router.check_drawdown("SUB2")  # reanuda (nuevo máximo de referencia 7.000)
+    client.usdt["swap"] = 5_900  # −15.7% desde 7.000, pero −41% desde el máximo histórico
+    assert not await ctx.router.check_drawdown("SUB2")
+    clock.set_time(1_800_000_000 + 60 * 86_400)
+    client.usdt["swap"] = 9_000
+    assert not await ctx.router.check_drawdown("SUB2")  # sigue parada hasta revisión manual
+    assert ctx.state.get("drawdown", "SUB2")["hard_stop"]
+
+
 async def test_drawdown_breaker_exempts_dca(ctx):
     client = ctx.router.client("SUB8")
     client.prices["BTC/USDT"] = 100.0

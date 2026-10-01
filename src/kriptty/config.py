@@ -41,7 +41,10 @@ class Settings(BaseSettings):
 
     # SUB3 queda fuera por defecto: depende de copy trading nativo y de traderIds manuales.
     # SUB10 y SUB11 (nuevas) también: activarlas tras validarlas con kriptty-backtest.
-    enabled_strategies: str = "SUB1,SUB2,SUB4,SUB5,SUB6,SUB7,SUB8,SUB9"
+    # SUB4 (scalping 1m) y SUB7 (grid) quedan desactivadas por defecto desde el test de estrés
+    # de 3 años (oct. 2026): perdían en todos los escenarios. Reactivarlas solo tras validarlas
+    # con histórico real de Bitget y semanas en demo.
+    enabled_strategies: str = "SUB1,SUB2,SUB5,SUB6,SUB8,SUB9"
 
     state_path: str = "data/state.db"
     log_level: str = "INFO"
@@ -55,6 +58,10 @@ class Settings(BaseSettings):
     # Añadido tras el test de estrés de 3 años (SUB7/SUB11 encadenaban pérdidas).
     max_drawdown_pct: float = 0.25
     drawdown_cooldown_days: int = 14
+    # Parada dura: si el equity cae más de este % desde su máximo histórico (que no se reinicia
+    # tras las pausas), la subcuenta deja de abrir hasta revisión manual (borrar el estado
+    # "drawdown" de esa cuenta). Evita que pausas sucesivas del 25% se encadenen.
+    max_total_drawdown_pct: float = 0.40
     # Cuentas que acumulan en caídas por diseño (DCA) y quedan fuera del corte.
     drawdown_exempt: str = "SUB8"
     default_leverage: int = 3
