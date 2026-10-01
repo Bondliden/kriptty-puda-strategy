@@ -50,6 +50,7 @@ class BacktestClient(PaperExchangeClient):
         self.funding_paid = 0.0
         self.leverage: dict[str, int] = {}
         self.rejected_margin = 0
+        self.spot_cost: dict[str, tuple[float, float]] = {}  # coste y cantidad en spot, para el PnL de las ventas
 
     # ── Datos de mercado ────────────────────────────────────────────────
     def _resolve(self, symbol: str) -> str:
@@ -116,7 +117,18 @@ class BacktestClient(PaperExchangeClient):
 
     def _fill(self, symbol, side, amount, price, sl=None, tp=None):
         pos = self.book.get(symbol)
-        if pos is not None and ":" in symbol and pos.side != ("long" if side == "buy" else "short"):
+        if ":" not in symbol:  # spot (SUB8): las ventas cuentan como operaciones cerradas al precio medio
+            base = symbol.split("/")[0]
+            cost, qty = self.spot_cost.get(base, (0.0, 0.0))
+            if side == "buy":
+                self.spot_cost[base] = (cost + amount * price, qty + amount)
+            elif qty > 0:
+                sold = min(amount, self.coins.get(base, 0.0))
+                avg = cost / qty
+                if sold > 0:
+                    self.trades.append(ClosedTrade(symbol, "long", sold, avg, price, (price - avg) * sold, clock.now()))
+                self.spot_cost[base] = (cost * (1 - sold / qty), qty - sold) if qty - sold > 1e-12 else (0.0, 0.0)
+        elif pos is not None and pos.side != ("long" if side == "buy" else "short"):
             closed = min(pos.amount, amount)
             sign = 1 if pos.side == "long" else -1
             self.trades.append(ClosedTrade(symbol, pos.side, closed, pos.entry_price, price,

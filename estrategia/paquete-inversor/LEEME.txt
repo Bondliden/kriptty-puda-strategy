@@ -1,0 +1,11 @@
+PUDA - Paquete para inversores (español), octubre 2026
+=======================================================
+
+1 - PUDA Presentacion para inversores.pdf           La presentación completa (23 diapositivas), con el backtest real de 6 años.
+2 - PUDA Carta de actualizacion (octubre 2026).pdf  Carta de actualización: decisiones, trabajo hecho, resultados y próximos pasos.
+3 - PUDA Resumen en una pagina.pdf                  El proyecto en una página.
+
+La versión navegable de la presentación es «Presentacion para inversores.html» (carpeta del Plan PUDA).
+
+Antes de enviar: sustituir los [marcadores] (nombre del inversor, su nombre, importes)
+y pasar los documentos por el abogado salvadoreño.

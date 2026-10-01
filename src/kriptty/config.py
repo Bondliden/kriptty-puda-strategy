@@ -62,6 +62,10 @@ class Settings(BaseSettings):
     # tras las pausas), la subcuenta deja de abrir hasta revisión manual (borrar el estado
     # "drawdown" de esa cuenta). Evita que pausas sucesivas del 25% se encadenen.
     max_total_drawdown_pct: float = 0.40
+    # Revisión tras la parada dura (días). 0 = hasta revisión manual (en vivo). En el backtest de
+    # varios años modela esa revisión: pasado el plazo, la subcuenta vuelve al primer escalón de la
+    # rampa con un nuevo máximo de referencia, en vez de quedarse parada para siempre.
+    hard_stop_review_days: int = 0
     # Margen máximo comprometido en futuros por subcuenta, como fracción de su equity
     # (spot + futuros). 0.20 = no usar más del 20% de cada cuenta aunque el apalancamiento sea
     # 7x (exposición máxima = 0.20 × 7 = 1.4× el equity). 1.0 = sin límite adicional.

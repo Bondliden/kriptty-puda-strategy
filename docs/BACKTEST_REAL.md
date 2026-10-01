@@ -1,7 +1,7 @@
 # Backtest real de 6 años · cómo continuar en el PC
 
-Estado (1/10/2026): el pipeline está hecho y probado con BTC y ETH. Falta ejecutarlo con todas las
-monedas y el macro, y llevar los resultados al Plan PUDA, a las presentaciones y a PUDA.zip.
+Estado (1/10/2026): ejecutado con las 104 monedas y el macro; resultados en el Plan PUDA, en las
+presentaciones (ES/EN), en la carta, en el resumen y en PUDA.zip.
 
 ## Datos (en el Escritorio del PC)
 
@@ -35,20 +35,42 @@ python scripts/analizar_real.py data/real --out estrategia/datos/backtest_real.j
   - Crisis: China 2021, bear 2022, LUNA, FTX, yen ago 2024, 10/10/2025 y las 5 peores caídas de BTC de 30 días.
   - Correlación entre agentes.
 
+## Resultado (1/10/2026)
+
+Ejecutado en el PC con las 104 monedas y el macro (`historico/puda_104`, `historico/BTC.zip`,
+`historico/ETH.zip`, `historico/macro`). Cifras completas en `estrategia/datos/backtest_real_resumen.json`.
+
+| Agente | 6 años | Caída máxima | Mejor año | Decisión |
+|---|---|---|---|---|
+| SUB5 macro-cortos | +15,3% | −7,5% | 2022 · +19,9% | se mantiene |
+| SUB11 SuperTrend | +10,0% | −20,2% | 2021 · +23,6% | se revisa (parada del −20% en oct 2022) |
+| SUB7 grid | +8,1% | −11,3% | 2021 · +6,3% | se mantiene |
+| SUB6 funding | +3,6% | −2,7% | 2021 · +3,1% | se mantiene |
+| SUB8 DCA | −2,1% | −6,7% | 2024 · +4,5% | se revisa: con el 20% en juego compra muy poco |
+| SUB9 collar | −3,1% | −22,8% | 2020 · +7,4% | se revisa (parada en jun 2023) |
+| SUB2 stat arb | −3,8% | −20,3% | 2021 · +2,6% | se revisa (parada en ene 2022) |
+| SUB10 pares | −17,5% | −19,6% | — | candidato a retirar |
+| **Cartera (8 × 1 M$)** | **+1,3%** | **−7,8%** | peor año −2,5% | — |
+
+- Protege el capital: peor caída −7,8% frente a −76,7% de BTC; LUNA +1,9% (BTC −48,1%), FTX −0,1%
+  (BTC −24,5%), bear 2022 −6,3% (BTC −75,7%). Ningún año supera el tope de pérdidas del ≈ 4%.
+- No respalda todavía el 3–5% mensual: se retira de la presentación hasta tener datos.
+- SUB5 no opera desde oct 2023 porque el macro no ha vuelto a ser bajista (es su diseño, no un fallo).
+- **La parada dura del −20% es la que protege.** Reactivar a los 90 días (`--review-days 90`,
+  resultados en `data/real_reactivacion_90d`) lo empeora: SUB2 −49,7%, SUB9 −12,1%, SUB11 +6,5%.
+  En vivo sigue «hasta revisión manual» (`HARD_STOP_REVIEW_DAYS=0`).
+- Arreglo de medida: las ventas en spot de SUB8 cuentan ahora como operaciones (51; antes salían 0).
+
+## Paquete para inversores
+
+```bash
+python scripts/embed_backtest_real.py data/real --restart data/real_reactivacion_90d   # diapositivas ES/EN y Plan PUDA
+python scripts/build_investor_docs.py                                                  # carta y resumen ES/EN (HTML)
+# PDF con Edge: --headless --print-to-pdf --no-pdf-header-footer (ver estrategia/LEEME.md)
+python scripts/build_puda_zip.py                                                       # PUDA.zip
+```
+
 ## Qué falta después
 
-1. Revisar agente por agente. Si alguno pierde más de lo que permite la regla de la reserva, se ajusta o se
-   quita, con el resultado a la vista: «se puede tener una caída de precio, pero no perder las cuentas».
-   La regla es el presupuesto anual de pérdidas de ≈ 4%.
-2. Añadir una pestaña «Backtest real 6 años» a `estrategia/estrategia.html` y `estrategia.en.html`
-   (`scripts/embed_plan.py`).
-3. Añadir diapositivas a las presentaciones para inversores en español e inglés (`estrategia/` y
-   `estrategia/investor-pack/`) y regenerar los PDF.
-4. Regenerar `PUDA.zip` con nombres sin acentos (Python zipfile).
-
-Primeros resultados (solo BTC/ETH, sin macro):
-
-| Agente | Rentabilidad | Caída máxima | Crisis (LUNA, FTX, bear 2022) |
-|---|---|---|---|
-| SUB7 grid | +8,1% | −11,9% | entre −1% y +0,5% |
-| SUB8 DCA | −2,2% | −6,8% | 0 operaciones cerradas: revisar |
+1. Ajustar o retirar SUB10, SUB2, SUB9 y SUB8 (y revisar la caída de SUB11) y repetir el backtest.
+2. 3–6 meses en Bitget Demo con la configuración final; el objetivo de rentabilidad se fija con esos datos.

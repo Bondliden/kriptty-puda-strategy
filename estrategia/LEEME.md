@@ -8,6 +8,13 @@
 | `datos/cobertura_short.json` | Cálculo del apalancamiento de la cuenta short (SUB5) frente a las demás. |
 | `datos/rentabilidad_mensual.json` | Rentabilidad mes a mes de cada cartera y configuración. |
 | `datos/mi_estrategia.json` | La propuesta: cinco agentes con 1 M$ por subcuenta, 20% en juego por tramos y operaciones de 48H como mucho. |
+| `datos/backtest_real_resumen.json` | Backtest real de 6 años (oct 2020 – ago 2026): año a año, crisis y agente por agente. De aquí salen las cifras de las presentaciones, la carta y el resumen (`docs/BACKTEST_REAL.md`). |
+| `Presentacion para inversores.html` / `.pdf` | Presentación para inversores en español (23 diapositivas). La versión en inglés está en `investor-pack/`. |
+| `paquete-inversor/` | Paquete para inversores en español: presentación, carta de actualización y resumen de una página (PDF). |
+| `investor-pack/` | El mismo paquete en inglés. Las fuentes HTML de la carta y del resumen (ES y EN) están en `investor-pack/src/`. |
+
+PDF: se imprimen con Edge, p. ej.
+`msedge --headless=new --no-pdf-header-footer --virtual-time-budget=10000 --print-to-pdf="salida.pdf" "file:///…/archivo.html"`.
 
 Navegación: pestañas arriba (también con las flechas ← → del teclado sobre ellas) y botones de
 pestaña anterior/siguiente al final de cada una. Se recuerda la última pestaña abierta.

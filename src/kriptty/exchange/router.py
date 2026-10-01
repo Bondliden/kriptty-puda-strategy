@@ -64,7 +64,15 @@ class AccountRouter:
         record = self.state.get("drawdown", account_id) or {"peak": equity, "hwm": equity, "halted_until": 0.0}
         record.setdefault("hwm", record["peak"])
         if record.get("hard_stop"):
-            return False
+            review = self.settings.hard_stop_review_days
+            if review <= 0 or now < record.get("hard_stop_at", now) + review * 86_400:
+                return False
+            # Revisión (en vivo la hace una persona; aquí se modela tras HARD_STOP_REVIEW_DAYS):
+            # nuevo máximo de referencia y vuelta al primer escalón de la rampa.
+            log.warning("🔁 [%s] Revisión tras la parada dura: vuelve a operar desde el primer escalón.", account_id)
+            record = {"peak": equity, "hwm": equity, "halted_until": 0.0, "restarts": record.get("restarts", 0) + 1}
+            if self._ramp_steps():
+                self.state.set("ramp", account_id, {"stage": 0, "since": now, "start": equity})
         if record.get("halted_until", 0.0) > now:
             return False
         if record.get("halted_until", 0.0):
@@ -74,6 +82,7 @@ class AccountRouter:
         hard = self.settings.max_total_drawdown_pct
         if hard > 0 and record["hwm"] > 0 and (record["hwm"] - equity) / record["hwm"] > hard:
             record["hard_stop"] = True
+            record["hard_stop_at"] = now
             log.critical("⛔ [%s] Drawdown %.1f%% desde el máximo histórico > %.0f%%: parada dura. "
                          "Revisa la estrategia y borra el estado 'drawdown' para reanudar.",
                          account_id, (record["hwm"] - equity) / record["hwm"] * 100, hard * 100)

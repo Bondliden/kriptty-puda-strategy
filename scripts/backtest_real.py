@@ -6,7 +6,8 @@
 Cada agente en su subcuenta, con el mismo código que opera en vivo y la configuración del plan:
   * núcleo (SUB5, SUB6, SUB8, SUB9, SUB10): 3x, margen ≤ 20% con el riesgo escalado al apalancamiento;
   * satélites (SUB2, SUB7, SUB11): apalancamiento propio, margen ≤ 10%;
-  * todos: rampa 25/50/75/100% por meses, pausa al −10%, parada dura al −20% y 48H como mucho por
+  * todos: rampa 25/50/75/100% por meses, pausa al −10%, parada dura al −20% (hasta revisión manual; con
+    ``--review-days N`` se reactiva a los N días desde el primer escalón) y 48H como mucho por
     operación (SUB6, SUB8 y SUB9 exentas por diseño).
 SUB2 y SUB6 eligen entre todas las monedas descargadas (como en vivo, donde miran todo el mercado).
 El macro de SUB5/SUB9 se reconstruye día a día con lo que se sabía ese día (``macro_hist``).
@@ -87,7 +88,7 @@ def load(symbols: list[str], data: Path, start: pd.Timestamp, end: pd.Timestamp)
     return HistoricalMarket(candles, "1h", funding, intervals)
 
 
-def run_one(account: str, data: str, macro_path: str | None, start: str, end: str) -> dict:
+def run_one(account: str, data: str, macro_path: str | None, start: str, end: str, review_days: int = 0) -> dict:
     logging.disable(logging.CRITICAL)
     t0 = time.time()
     data_p = Path(data)
@@ -99,7 +100,7 @@ def run_one(account: str, data: str, macro_path: str | None, start: str, end: st
         from kriptty.backtest.macro_hist import score_series
         macro = HistMacro(score_series(macro_path, start="2017-01-01", end=end))
     core = account in CORE
-    settings = dict(COMMON)
+    settings = dict(COMMON, hard_stop_review_days=review_days)
     if not core:
         settings["max_margin_by_account"] = f"{account}=0.1"
     res = asyncio.run(run_backtest(account, market, s.to_pydatetime(), e.to_pydatetime(), equity=EQUITY,
@@ -124,6 +125,8 @@ def main() -> None:
     p.add_argument("--end", default="2026-09-01")
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--out", default="data/real")
+    p.add_argument("--review-days", type=int, default=0,
+                   help="reactivar tras la parada dura a los N días (0 = como en vivo: hasta revisión manual)")
     a = p.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -134,7 +137,7 @@ def main() -> None:
         if skipped:
             print(f"Sin datos macro: {', '.join(skipped)} no se ejecutan")
     with ProcessPoolExecutor(a.workers) as pool:
-        futs = {pool.submit(run_one, x, a.data, a.macro, a.start, a.end): x for x in accounts}
+        futs = {pool.submit(run_one, x, a.data, a.macro, a.start, a.end, a.review_days): x for x in accounts}
         for f in as_completed(futs):
             acc = futs[f]
             try:
