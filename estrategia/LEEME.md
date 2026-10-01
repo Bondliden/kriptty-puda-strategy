@@ -1,0 +1,58 @@
+# Estrategia PUDA · presentación y test de estrés
+
+| Archivo | Qué es |
+|---|---|
+| `estrategia.html` | Presentación completa en español: sociedad en El Salvador, ICO, bot, backtest, test de estrés, cuenta short y rentabilidad mensual. Se abre con doble clic. |
+| `estrategia.en.html` | La misma presentación en inglés (botón ES/EN arriba a la derecha). |
+| `datos/ejecuciones.csv` | Todas las ejecuciones del test de estrés, una fila por cuenta, escenario, trayectoria y configuración. Se abre en Excel (separador `;`). |
+| `datos/cobertura_short.json` | Cálculo del apalancamiento de la cuenta short (SUB5) frente a las demás. |
+| `datos/rentabilidad_mensual.json` | Rentabilidad mes a mes de cada cartera y configuración. |
+
+Navegación: flechas ← →, espacio, `F` para pantalla completa. En el móvil se ve como una página
+con scroll.
+
+## Cómo comprobar el test de estrés
+
+1. **En la presentación**: la diapositiva 16 («Compruébalo tú») muestra cada ejecución. Elige la
+   configuración (antes / después / 7x con margen del 20% / SUB5 de 2x a 10x), el escenario y la
+   trayectoria.
+2. **En Excel**: abre `datos/ejecuciones.csv`. Columnas principales:
+   - `conjunto`: `antes` (código original), `despues` (con los arreglos), `x7m20` (7x, margen ≤ 20%,
+     mismo tamaño de posición), `x7m20r` (7x, margen ≤ 20%, posiciones escaladas al apalancamiento),
+     `sub5` (la cuenta short de 2x a 10x).
+   - `escenario` / `semilla`: mercado sintético. Misma semilla = mismo mercado para todas las cuentas.
+   - `rentabilidad_pct`, `max_drawdown_pct`, `sharpe`, `operaciones`, `comisiones_usdt`: resultado de
+     una cuenta de 10.000 USDT durante 3 años (oct 2023 – oct 2026).
+   - `archivo`: el JSON con la curva diaria completa que genera `kriptty-stress`.
+3. **Reproduciéndolo** (Python 3.11+, desde la carpeta del repositorio). Es determinista: la misma
+   semilla da exactamente las mismas cifras.
+
+```bash
+pip install -e .
+kriptty-stress --out data/stress_despues                                             # 9 estrategias × 3 escenarios × 3 semillas
+kriptty-stress --scenarios ciclo --seeds 1 --cost-mult 2 --out data/stress_despues    # costes ×2
+kriptty-stress --strategies SUB2,SUB5,SUB6,SUB9,SUB10,SUB11 --leverage 7 --max-margin 0.2 --out data/stress_x7m20
+kriptty-stress --strategies SUB2,SUB9,SUB10,SUB11 --leverage 7 --max-margin 0.2 --scale-risk --out data/stress_x7m20r
+for L in 2 3 5 7 10; do kriptty-stress --strategies SUB5 --leverage $L --max-margin 0.2 --scale-risk --out data/stress_sub5; done
+python scripts/hedge_short.py --others data/stress_x7m20 --sub8 data/stress_despues --sweep data/stress_sub5
+python scripts/export_runs.py despues=data/stress_despues x7m20=data/stress_x7m20 sub5=data/stress_sub5
+```
+
+Para comparar con el código original («antes»), ejecuta lo mismo desde el commit anterior a los
+arreglos (`git log -- src/kriptty/backtest/stress.py`).
+
+## Qué mide y qué no
+
+- Mide el **riesgo**: cuánto se pierde en los peores meses, en los crashes y cuántas veces salta la
+  parada dura. Los escenarios incluyen crashes de un día tipo LUNA/FTX, un bear de 3 años y un
+  lateral con flash crashes.
+- **No mide la rentabilidad real**: el mercado sintético no tiene ventaja explotable (salvo la
+  reversión a la media que aprovecha SUB2, que es un efecto del generador). La rentabilidad se valida
+  con el backtest sobre histórico real de Bitget y con la demo.
+
+## Cuenta short (SUB5)
+
+Es la cuenta que opera en corto cuando hay caída y las demás se paran. Apalancamiento recomendado:
+**3x** con margen ≤ 20% (hasta 0,6× la cuenta en corto). Cálculo: la beta a la baja de las demás
+cuentas suma ≈ 0,47 (pierden 0,47% de una cuenta por cada 1% que cae BTC) → 0,47 / 0,20 ≈ 2,4 → 3x.
+Más de 5x no cubre más y solo aumenta el riesgo de la propia SUB5. Detalle en la diapositiva 15.

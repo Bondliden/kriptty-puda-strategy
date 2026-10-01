@@ -1,0 +1,1016 @@
+<title>PUDA Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Plan PUDA — Layout: presentación 16:9 (lienzo de 1280×720 escalado a la ventana) con la misma secuencia que
+   «🤖 Sistema de Trading Algorítmico — Presentación y Confirmación de Directrices»: Paso 1 → Paso 5.
+   En pantallas estrechas las diapositivas se apilan en scroll. Look único oscuro de marca PUDA. */
+:root {
+  --bg: hsl(225, 44%, 4%);
+  --slide: hsl(225, 38%, 7%);
+  --panel: hsl(224, 30%, 11%);
+  --line: hsl(224, 26%, 19%);
+  --fg: hsl(220, 30%, 96%);
+  --muted: hsl(220, 14%, 66%);
+  --gold: hsl(45, 93%, 54%);
+  --gold-soft: hsla(45, 93%, 54%, .12);
+  --ink: hsl(225, 44%, 6%);
+  --long: hsl(158, 62%, 52%);
+  --short: hsl(2, 80%, 66%);
+  --blue: hsl(212, 90%, 66%);
+  --violet: hsl(268, 75%, 72%);
+  --amber: hsl(32, 95%, 62%);
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 18px/1.5 var(--body); overflow: hidden; }
+
+/* Escenario */
+.stage { position: fixed; inset: 0; display: grid; place-items: center; }
+.deck { position: relative; width: 1280px; height: 720px; transform-origin: center center; }
+.slide {
+  position: absolute; inset: 0; padding: 56px 72px 64px; display: flex; flex-direction: column; gap: 22px;
+  background: var(--slide); border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+  background-image: radial-gradient(48rem 26rem at 0% 0%, var(--gold-soft), transparent 60%);
+  visibility: hidden; opacity: 0; transition: opacity .25s ease;
+}
+.slide.on { visibility: visible; opacity: 1; }
+.slide > footer {
+  position: absolute; left: 72px; right: 72px; bottom: 22px; display: flex; justify-content: space-between;
+  font: 12px var(--mono); color: var(--muted); letter-spacing: .06em;
+}
+.kicker { font: 500 13px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+h1, h2, h3 { margin: 0; font-family: var(--display); text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: 54px; line-height: 1.06; font-weight: 700; }
+h2 { font-size: 34px; line-height: 1.12; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 500; }
+p { margin: 0; }
+.lead { font-size: 20px; color: var(--muted); max-width: 60ch; }
+.gold { color: var(--gold); }
+.mono { font-family: var(--mono); }
+.row { display: flex; gap: 22px; min-height: 0; }
+.col { display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0; }
+.grow { flex: 1; min-height: 0; }
+
+/* Listas de directrices */
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font-size: 19px; }
+.checks li { display: grid; grid-template-columns: 30px 1fr; align-items: baseline; }
+.checks li::before { content: "✅"; font-size: 17px; }
+.checks.x li::before { content: "✕"; color: var(--short); font-weight: 700; }
+.bul { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 17px; }
+.bul li::marker { color: var(--gold); }
+.bul b { color: var(--fg); }
+
+/* Tablas «Resumen» */
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+td:first-child { color: var(--gold); white-space: nowrap; font-weight: 500; }
+.tbl { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px 8px; }
+.col.tbl { align-self: flex-start; flex: 1.05; }
+.tbl.grow { flex: none; }
+.tbl-title { font: 500 13px var(--mono); color: var(--fg); padding: 8px 12px 2px; }
+
+/* Caja de lógica central (el recuadro ASCII del documento) */
+.logic { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.logic .tag { font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 500 12px/1 var(--mono); padding: 6px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill.on { color: var(--long); border-color: color-mix(in hsl, var(--long) 40%, transparent); }
+.pill.off { color: var(--amber); border-color: color-mix(in hsl, var(--amber) 40%, transparent); }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.prop { font: 700 13px var(--mono); letter-spacing: .08em; }
+.p-a { color: var(--blue); } .p-b { color: var(--violet); } .p-c { color: var(--gold); } .p-d { color: var(--amber); }
+.why { border-left: 3px solid var(--gold); padding: 4px 0 4px 14px; font-size: 16px; color: var(--muted); }
+.why b { color: var(--fg); }
+
+/* Diagrama de arquitectura */
+.arch { align-content: center; display: grid; grid-template-columns: 1fr 60px 1.25fr 60px 0.8fr; align-items: center; gap: 0; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.box.hl { border-color: var(--gold); background: var(--gold-soft); }
+.box h3 { font-size: 15px; }
+.box small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.inner { display: grid; gap: 8px; }
+.inner .box { padding: 9px 12px; }
+.arrow { text-align: center; color: var(--muted); font: 12px var(--mono); }
+.arrow::before { content: "⟷"; display: block; font-size: 24px; color: var(--gold); }
+.arrow.one::before { content: "⟶"; }
+
+/* Mapa de subcuentas */
+.map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.card .id { font: 500 12px var(--mono); color: var(--gold); display: flex; justify-content: space-between; }
+.card b { font-size: 15px; }
+.card span:last-child { font-size: 12.5px; color: var(--muted); }
+.card.off { border-style: dashed; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--long); display: inline-block; }
+.card.off .dot { background: transparent; border: 1.5px solid var(--amber); }
+
+/* Sinergia */
+.syn { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.syn .box h3 { font-size: 16px; }
+.chips { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; }
+.chip { font: 500 12px/1 var(--mono); padding: 6px 8px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
+.stars { color: var(--gold); letter-spacing: 2px; font-family: var(--mono); }
+
+/* Orden de prioridad */
+.order { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; align-items: stretch; }
+.order .box { border-radius: 0; border-right: 0; }
+.order .box:first-child { border-radius: 12px 0 0 12px; }
+.order .box:last-child { border-radius: 0 12px 12px 0; border-right: 1px solid var(--line); }
+.order .n { font: 700 28px var(--display); color: var(--gold); }
+
+/* Portada */
+.cover { justify-content: center; gap: 28px; }
+.cover h1 { font-size: 64px; max-width: 16ch; }
+.cover .emoji { font-size: 64px; line-height: 1; }
+
+/* Controles */
+.nav { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; z-index: 5;
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+.nav button { all: unset; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--panel); border: 1px solid var(--line); color: var(--fg); font-size: 18px; }
+.nav button:hover { border-color: var(--gold); }
+.nav button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.nav .count { font: 500 13px var(--mono); color: var(--muted); min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+.bar { position: fixed; left: 0; top: 0; height: 3px; background: var(--gold); transition: width .25s; z-index: 5; }
+.hint { position: fixed; right: 16px; bottom: 22px; font: 12px var(--mono); color: var(--muted); }
+
+/* Modo lista en pantallas estrechas */
+@media (max-width: 820px), (max-height: 520px) {
+  body { overflow: auto; }
+  .stage { position: static; display: block; padding-inline: 16px; padding-block: 16px 40px; }
+  .deck { width: auto; height: auto; transform: none !important; display: grid; gap: 16px; }
+  .slide { position: relative; inset: auto; visibility: visible; opacity: 1; padding: 28px 20px 48px; gap: 16px; }
+  .slide > footer { left: 20px; right: 20px; bottom: 16px; }
+  .nav, .bar, .hint { display: none; }
+  h1, .cover h1 { font-size: 34px; } h2 { font-size: 24px; }
+  .lead { font-size: 17px; }
+  .row { flex-direction: column; }
+  .arch { grid-template-columns: 1fr; gap: 8px; }
+  .arrow::before { content: "⇅"; }
+  .map, .syn, .order { grid-template-columns: 1fr 1fr; }
+  .order .box { border-radius: 12px !important; border-right: 1px solid var(--line); }
+  .order { gap: 8px; }
+  .tbl { overflow-x: auto; }
+  table { font-size: 14px; }
+  td:first-child { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) { .slide, .bar { transition: none; } }
+
+/* ── Plan: piezas propias ───────────────────────────────────────────── */
+:root { --s1: #d95926; --s2: #3987e5; --s3: #199e70; --c-a: hsl(212, 90%, 66%); --c-b: hsl(268, 75%, 72%); --c-c: hsl(158, 62%, 52%); --c-d: hsl(45, 93%, 54%); }
+.langs { display: flex; gap: 4px; font: 500 12px var(--mono); position: absolute; top: 28px; right: 72px; }
+.langs a, .langs span { padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
+.langs span { color: var(--ink); background: var(--gold); border-color: var(--gold); }
+.langs a:hover { color: var(--fg); border-color: var(--gold); }
+.tag-a, .tag-b, .tag-c, .tag-d { font: 700 12px var(--mono); letter-spacing: .08em; margin-right: 8px; }
+.tag-a { color: var(--c-a); } .tag-b { color: var(--c-b); } .tag-c { color: var(--c-c); } .tag-d { color: var(--c-d); }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.box p { font-size: 14.5px; color: var(--muted); }
+.box h3 { font-size: 16px; }
+.callout { border: 1px solid var(--amber); background: color-mix(in hsl, var(--amber) 12%, transparent); border-radius: 12px; padding: 14px 16px; font-size: 15px; }
+.callout b { color: var(--amber); }
+.note { font-size: 13.5px; color: var(--muted); }
+.col.wide { flex: 1.6; }
+td.ok { color: var(--long); } td.warn { color: var(--amber); } td.bad { color: var(--short); } td.muted { color: var(--muted); }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.code { margin: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font: 13px/1.6 var(--mono); color: var(--fg); overflow-x: auto; }
+/* Gantt */
+.gantt { display: grid; gap: 7px; }
+.gantt .g-row { display: grid; grid-template-columns: 260px 1fr; gap: 12px; align-items: center; font-size: 14px; }
+.gantt .g-track { position: relative; height: 24px; background: var(--panel); border-radius: 6px; }
+.gantt .g-bar { position: absolute; top: 3px; bottom: 3px; border-radius: 5px; }
+.gantt .g-axis { display: grid; grid-template-columns: 260px 1fr; gap: 12px; font: 11.5px var(--mono); color: var(--muted); }
+.gantt .g-ticks { position: relative; height: 16px; }
+.gantt .g-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.gantt .g-name small { display: block; color: var(--muted); font-size: 12px; }
+/* Pasos */
+.steps7 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: s; }
+.steps7 li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.steps7 li::before { content: counter(s); font: 700 20px var(--display); color: var(--c-a); }
+.steps7 b { font-size: 15px; } .steps7 span { font-size: 13.5px; color: var(--muted); }
+.flow { display: grid; grid-template-columns: 1fr 30px 1fr 30px 1fr 30px 1fr; align-items: stretch; }
+.flow .arrow { display: grid; place-items: center; color: var(--gold); font-size: 22px; }
+.flow .n { font: 700 20px var(--display); color: var(--c-a); }
+.ico { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: s; }
+.ico li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.ico li::before { content: counter(s); font: 700 20px var(--display); color: var(--c-b); }
+.ico b { font-size: 15px; } .ico span { font-size: 13.5px; color: var(--muted); } .ico em { font-style: normal; font: 12px var(--mono); color: var(--gold); }
+/* Reparto */
+.alloc { display: flex; height: 34px; gap: 2px; border-radius: 8px; overflow: hidden; }
+.alloc div { display: grid; place-items: center; font: 600 12px var(--mono); color: #fff; }
+.alloc-list { display: grid; gap: 8px; margin-top: 10px; }
+.alloc-list div { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: baseline; font-size: 14.5px; }
+.alloc-list i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.alloc-list small { display: block; color: var(--muted); font-size: 12.5px; }
+.alloc-list b { font-family: var(--mono); color: var(--gold); }
+.funds-bar { display: flex; height: 38px; gap: 2px; border-radius: 8px; overflow: hidden; }
+.funds-bar div { display: grid; place-items: center; font: 600 12px var(--mono); color: #fff; }
+.fund h3 { display: flex; align-items: center; gap: 8px; } .fund i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+/* KPIs */
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+.kpi span { font: 500 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.kpi b { font: 700 24px var(--display); font-variant-numeric: tabular-nums; }
+.kpi small { color: var(--muted); font-size: 12.5px; }
+.kpi.good b { color: var(--long); } .kpi.bad b { color: var(--short); } .kpi.warn b { color: var(--amber); }
+/* Gráficos */
+.chart svg { display: block; width: 100%; height: auto; }
+.chart text { font: 11px var(--mono); fill: var(--muted); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.legend i { display: inline-block; width: 16px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); font: 500 12.5px var(--body); color: var(--muted); background: var(--panel); }
+.seg button[aria-pressed="true"] { color: var(--ink); background: var(--gold); border-color: var(--gold); }
+.seg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* Calculadora */
+.ctl { display: grid; gap: 6px; }
+.ctl label { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--muted); }
+.ctl output { color: var(--fg); font: 500 14px var(--mono); }
+input[type=range] { width: 100%; accent-color: var(--gold); }
+/* Recomendación y pasos */
+.rec { margin: 0; padding-left: 22px; display: grid; gap: 9px; font-size: 15.5px; }
+.rec li::marker { color: var(--gold); font-family: var(--mono); }
+.checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.checks label { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14.5px; cursor: pointer; }
+.checks label small { display: block; color: var(--muted); font-size: 12.5px; }
+.checks input { width: 17px; height: 17px; accent-color: var(--gold); margin: 2px 0 0; }
+.checks label.done { color: var(--muted); }
+.tbl table td, .tbl table th { padding: 7px 10px; }
+@media (max-width: 820px), (max-height: 520px) {
+  .grid4, .grid3, .steps7, .ico, .checks, .kpis { grid-template-columns: 1fr; }
+  .flow { grid-template-columns: 1fr; gap: 8px; } .flow .arrow { transform: rotate(90deg); }
+  .gantt .g-row, .gantt .g-axis { grid-template-columns: 1fr; gap: 4px; }
+  .gantt .g-axis > span:first-child { display: none; }
+  .langs { position: static; }
+}
+
+/* Cobertura y explorador de ejecuciones */
+.tbl.scroll { max-height: 410px; overflow: auto; }
+#tbl-runs td, #tbl-runs th { padding: 5px 10px; }
+.tbl.scroll thead th { position: sticky; top: 0; background: var(--panel); }
+tr.hl td { background: color-mix(in hsl, var(--gold) 14%, transparent); }
+.method { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 13.5px; color: var(--muted); }
+.method b { color: var(--fg); font-weight: 500; }
+.seg + .seg { margin-top: 6px; }
+
+/* ── Pestañas (sustituye al modo presentación) ───────────────────── */
+html, body { height: auto; }
+body { overflow: auto; }
+.stage { position: static; display: block; padding: 20px 24px 8px; }
+.deck { width: auto; max-width: 1240px; height: auto; margin: 0 auto; transform: none !important; display: grid; gap: 18px; }
+.slide { position: relative; inset: auto; visibility: visible; opacity: 1; overflow: visible; padding: 36px 40px 40px; transition: none; }
+.slide[hidden] { display: none; }
+.deck { grid-template-columns: minmax(0, 1fr); } .slide > * { min-width: 0; }
+.slide > footer, .nav, .bar, .hint { display: none !important; }
+.cover { gap: 22px; } .cover h1 { font-size: 46px; max-width: 24ch; }
+.topbar { position: sticky; top: 0; z-index: 10; background: color-mix(in hsl, var(--bg) 90%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.topbar-in { max-width: 1240px; margin: 0 auto; padding: 14px 24px 0; display: flex; align-items: center; gap: 14px; }
+.brand { font: 700 16px var(--display); white-space: nowrap; } .brand span { color: var(--gold); }
+.topbar .langs { position: static; margin-left: auto; }
+.tabs { max-width: 1240px; margin: 0 auto; padding: 6px 24px 0; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { all: unset; cursor: pointer; padding: 10px 14px 12px; font: 500 14.5px var(--body); color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+.tabs button:hover { color: var(--fg); }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--gold); }
+.tabs button:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 6px; }
+.tabs .n { font: 500 11px var(--mono); color: var(--gold); margin-right: 7px; }
+.tabnav { max-width: 1240px; margin: 0 auto; padding: 8px 24px 48px; display: flex; justify-content: space-between; gap: 12px; }
+.tabnav button { all: unset; cursor: pointer; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font: 500 14px var(--body); color: var(--fg); }
+.tabnav button:hover { border-color: var(--gold); }
+.tabnav button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+@media (max-width: 820px), (max-height: 520px) {
+  .stage { padding: 14px 16px 4px; }
+  .slide { padding: 24px 18px 28px; }
+  .topbar-in, .tabs, .tabnav { padding-inline: 16px; }
+  .topbar-in .note { display: none; }
+  .cover h1 { font-size: 32px; }
+}
+
+/* Mi estrategia */
+.agents td small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 400; white-space: normal; }
+.agents td.role { white-space: nowrap; }
+.role-n { color: var(--blue); } .role-l { color: var(--long); } .role-h { color: var(--short); }
+.heat td, .heat th { text-align: center; padding: 6px 4px; font: 500 12.5px var(--mono); }
+.heat td:first-child { text-align: left; }
+.env { font-size: 12.5px; }
+</style>
+
+<header class="topbar">
+  <div class="topbar-in"><span class="brand">Plan <span>PUDA</span></span><span class="note">1 October 2026</span><nav class="langs" aria-label="Language"><a href="estrategia.html" hreflang="es" lang="es" data-alt="">ES</a><span aria-current="true">EN</span></nav></div>
+  <div class="tabs" role="tablist" aria-label="Sections" id="tabs"></div>
+</header>
+<main class="stage" id="stage">
+<div class="deck" id="deck">
+
+<!-- 1 · Portada -->
+<section class="slide cover" aria-label="Cover" data-tab="resumen">
+  <span class="kicker">PeludaCoin (PUDA) · full plan · 1 October 2026</span>
+  <h1>From company to ICO, with the bot <span class="gold">put to the test</span></h1>
+  <p class="lead">The steps to incorporate the company in El Salvador, launch the offering as peludacoin.com describes it, and what the 3-year backtest and stress test say about the monthly return you are aiming for: 3–5% a month with very manageable risk: $1M per subaccount, at most $200,000 at play in each, deployed in tranches.</p>
+  <div class="pills"><span class="pill">A · Company</span><span class="pill">B · ICO</span><span class="pill">C · Bot and tests</span><span class="pill">D · Returns</span></div>
+  <footer><span>Not legal, tax or financial advice</span><span>← → to advance</span></footer>
+</section>
+
+<!-- 2 · Resumen -->
+<section class="slide" aria-label="Summary" data-tab="resumen">
+  <span class="kicker">Summary</span>
+  <h2>The plan at a glance</h2>
+  <div class="grid4">
+    <div class="box"><span class="tag-a">A · Company</span><h3>S.A. de C.V. in El Salvador</h3><p>Issuer domiciled there, registered with the UIF and on the CNAD Issuer Registry.</p></div>
+    <div class="box"><span class="tag-b">B · ICO</span><h3>Registered offering, not a presale</h3><p>15% of supply (9.26 M PUDA) sold through PSAD with KYC, only after audit and registration.</p></div>
+    <div class="box"><span class="tag-c">C · Bot</span><h3>Only what passed the stress test</h3><p>Of 11 strategies, 4 form the low-risk core. Maximum margin: 20% of each account.</p></div>
+    <div class="box hl"><span class="tag-d">D · Returns</span><h3 id="sum-ret">3–5% a month: no evidence yet</h3><p id="sum-ret-p">The stress test measures risk, not profit. The target is validated with real historical data and demo trading before promising anything.</p></div>
+  </div>
+  <footer><span>Summary</span><span>02</span></footer>
+</section>
+
+<!-- 3 · Calendario -->
+<section class="slide" aria-label="Full timeline" data-tab="resumen">
+  <span class="kicker">Full timeline · indicative dates</span>
+  <h2>From October 2026 to the registered offering</h2>
+  <div class="gantt" id="gantt"></div>
+  <p class="note">Each phase starts only once the previous phase's condition is met. Matches the roadmap published on peludacoin.com.</p>
+  <footer><span>Timeline</span><span>03</span></footer>
+</section>
+
+<!-- 4 · A1 Decisiones previas -->
+<section class="slide" aria-label="Prior decisions" data-tab="sociedad">
+  <span class="kicker"><span class="tag-a">A · Company</span> Step 1 — Prior decisions</span>
+  <h2>What must be decided before going to the notary</h2>
+  <div class="row grow">
+    <div class="col">
+      <ul class="bul">
+        <li><b>Who issues:</b> a company domiciled in El Salvador (S.A. de C.V., a Salvadoran corporation). The LEAD (Digital Asset Issuance Law) requires a Salvadoran issuer or a platform domiciled there.</li>
+        <li><b>Partners and capital:</b> who the shareholders are, how much each contributes, and how the team's 3.09 M PUDA are split (5%, with a 1-year cliff and 4-year vesting).</li>
+        <li><b>Where it is run from:</b> if the company is managed from Spain it may become Spanish tax resident through its "place of effective management" and lose the LEAD benefits.</li>
+        <li><b>One or two companies:</b> separating the token issuer from the bot operations reduces risk and keeps the accounts clear.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="callout"><b>First of all:</b> a Salvadoran lawyer (structure and LEAD) and a Spanish tax adviser (residence and partners' taxation). They are the first hires, together with the auditor.</div>
+      <div class="tbl"><table><thead><tr><th>Decision</th><th>Validated by</th></tr></thead><tbody>
+        <tr><td>Company type and domicile</td><td>SV lawyer</td></tr>
+        <tr><td>Tax residence of management</td><td>ES tax adviser</td></tr>
+        <tr><td>Token: utility or profit share</td><td>SV + ES lawyers</td></tr>
+        <tr><td>Shareholders' agreement and vesting</td><td>SV lawyer</td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+  <footer><span>A · Company</span><span>04</span></footer>
+</section>
+
+<!-- 5 · A2 Constitución -->
+<section class="slide" aria-label="Incorporation" data-tab="sociedad">
+  <span class="kicker"><span class="tag-a">A · Company</span> Step 2 — Incorporating the S.A. de C.V.</span>
+  <h2>Seven filings to an operating company</h2>
+  <ol class="steps7" id="steps7"></ol>
+  <p class="note">Usual procedures in El Salvador; timelines, minimum capital and requirements must be confirmed with the Salvadoran lawyer. Indicative total: 3–6 weeks.</p>
+  <footer><span>A · Company</span><span>05</span></footer>
+</section>
+
+<!-- 6 · A3 Formación -->
+<section class="slide" aria-label="Company set-up" data-tab="sociedad">
+  <span class="kicker"><span class="tag-a">A · Company</span> Step 3 — Set-up: team and governance</span>
+  <h2>Who does what from day one</h2>
+  <div class="grid3">
+    <div class="box"><h3>Management</h3><p>Sole director or board of directors, and a legal representative in El Salvador.</p></div>
+    <div class="box"><h3>Compliance officer</h3><p>Mandatory for the UIF (financial intelligence unit): KYC, limits, suspicious activity reports and the Travel Rule with the PSAD.</p></div>
+    <div class="box"><h3>Bot lead</h3><p>Runs the system, publishes the monthly results and enforces the risk limits (20% margin, hard stop).</p></div>
+    <div class="box"><h3>Finance and accounting</h3><p>Auditable financial statements from the start: the DIR (offering document) requires them audited.</p></div>
+    <div class="box"><h3>Multisig treasury</h3><p>Sale proceeds in a public 2-of-3 wallet. No partner moves funds alone.</p></div>
+    <div class="box"><h3>Shareholders' agreement</h3><p>Team vesting, conflicts of interest, partner exit and a ban on selling own tokens outside the schedule.</p></div>
+  </div>
+  <footer><span>A · Company</span><span>06</span></footer>
+</section>
+
+<!-- 7 · A4 Registros -->
+<section class="slide" aria-label="Regulatory registrations" data-tab="sociedad">
+  <span class="kicker"><span class="tag-a">A · Company</span> Step 4 — Regulatory registrations</span>
+  <h2>From company to authorized issuer</h2>
+  <div class="flow">
+    <div class="box"><span class="n">1</span><h3>UIF</h3><p>Registration as an obliged entity within 15 business days, beneficial owners and anti-money-laundering manual.</p></div>
+    <div class="arrow">→</div>
+    <div class="box"><span class="n">2</span><h3>Issuer Registry (CNAD)</h3><p>Company details, website, jurisdictions and offerings from the previous 3 years.</p></div>
+    <div class="arrow">→</div>
+    <div class="box"><span class="n">3</span><h3>Structurer</h3><p>Drafts the DIR: token, use of funds, risks, governance, audit and financial statements.</p></div>
+    <div class="arrow">→</div>
+    <div class="box"><span class="n">4</span><h3>Certifier</h3><p>Registered with the CNAD and independent of the structurer. Reports to the CNAD.</p></div>
+  </div>
+  <p class="note">Total cost of an issuance according to the Salvadoran press: 2–4% of the amount raised. CNAD (digital assets regulator) fees cited by secondary sources (unverified): ~USD 6,270 to apply and ~USD 4,050 per year.</p>
+  <footer><span>A · Company</span><span>07</span></footer>
+</section>
+
+<!-- 8 · B1 Estructura ICO -->
+<section class="slide" aria-label="ICO structure" data-tab="ico">
+  <span class="kicker"><span class="tag-b">B · ICO</span> Structure, as shown on peludacoin.com</span>
+  <h2>61.74 M PUDA and an allocation that adds up to 100%</h2>
+  <div class="row grow">
+    <div class="col">
+      <div class="alloc" id="alloc" role="img" aria-label="Token allocation"></div>
+      <div class="alloc-list" id="alloc-list"></div>
+    </div>
+    <div class="col">
+      <div class="tbl"><table><thead><tr><th>Offering condition</th></tr></thead><tbody>
+        <tr><td>Smart contract audit report published</td></tr>
+        <tr><td>Offering registered by the CNAD</td></tr>
+        <tr><td>Sales only through licensed PSAD, with KYC</td></tr>
+        <tr><td>No discounts or bonuses: same price for everyone</td></tr>
+        <tr><td>Purchase limits per wallet</td></tr>
+        <tr><td>Not available in the EU or the US until compliant</td></tr>
+      </tbody></table></div>
+      <p class="note">PSAD: licensed digital asset service providers. Issue price: pending, set in the DIR. The website no longer shows price, volume or market cap.</p>
+    </div>
+  </div>
+  <footer><span>B · ICO</span><span>08</span></footer>
+</section>
+
+<!-- 9 · B2 Proceso ICO -->
+<section class="slide" aria-label="ICO process" data-tab="ico">
+  <span class="kicker"><span class="tag-b">B · ICO</span> From auditor to listing</span>
+  <h2>Eight steps, in this order</h2>
+  <ol class="ico" id="ico"></ol>
+  <footer><span>B · ICO</span><span>09</span></footer>
+</section>
+
+<!-- 10 · B3 Fondos -->
+<section class="slide" aria-label="Use of funds" data-tab="ico">
+  <span class="kicker"><span class="tag-b">B · ICO</span> Use of proceeds (example for the DIR)</span>
+  <h2>No line item without an owner and a cap</h2>
+  <div class="funds-bar" id="funds-bar" role="img" aria-label="Allocation of funds"></div>
+  <div class="grid3" id="funds-list"></div>
+  <footer><span>B · ICO</span><span>10</span></footer>
+</section>
+
+<!-- 11 · C1 Sistema -->
+<section class="slide" aria-label="The trading system" data-tab="bot">
+  <span class="kicker"><span class="tag-c">C · Bot</span> The system</span>
+  <h2>12 accounts, a guardian and limits that cannot be bypassed</h2>
+  <div class="row grow">
+    <div class="col">
+      <ul class="bul">
+        <li><b>1 main account + 11 subaccounts</b> on Bitget, one strategy per subaccount.</li>
+        <li><b>Mandatory stop loss</b> on every order; the guardian rejects orders without one or with one set beyond 25%.</li>
+        <li><b>Maximum margin of 20%</b> of each account (new, <span class="mono">MAX_MARGIN_PCT</span>): at 7x, exposure never exceeds 1.4× capital.</li>
+        <li><b>Pause at 25%</b> drawdown and <b>hard stop at 40%</b> from the all-time high.</li>
+        <li>The same code in backtest, demo and live; queryable from Antigravity via MCP.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="tbl"><table><thead><tr><th>Strategy</th><th>Status</th></tr></thead><tbody>
+        <tr><td>SUB5 Macro-shorting · SUB6 Funding arb · SUB9 Collar · SUB10 Pairs</td><td class="ok">Core</td></tr>
+        <tr><td>SUB2 Stat Arb · SUB11 SuperTrend</td><td class="warn">Satellite, small capital</td></tr>
+        <tr><td>SUB8 DCA spot</td><td class="warn">Separate, no leverage</td></tr>
+        <tr><td>SUB1 News · SUB3 Copy</td><td class="muted">No backtest possible</td></tr>
+        <tr><td>SUB4 Scalping · SUB7 Grid</td><td class="bad">Disabled</td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+  <footer><span>C · Bot</span><span>11</span></footer>
+</section>
+
+<!-- 12 · C2 Backtest -->
+<section class="slide" aria-label="Backtest" data-tab="bot">
+  <span class="kicker"><span class="tag-c">C · Bot</span> Backtest with real historical data</span>
+  <h2>The tool is ready; data access is missing</h2>
+  <div class="row grow">
+    <div class="col">
+      <ul class="bul">
+        <li><span class="mono">kriptty-backtest</span> downloads Bitget history (candles and funding) and runs the same strategy code on its real schedule.</li>
+        <li>Conservative execution: if a candle touches both SL and TP, the SL is assumed; opening gaps, 0.06%/0.02% fees, slippage, funding and margin as on the exchange.</li>
+        <li><b>Blocked:</b> the working environment cannot reach <span class="mono">api.bitget.com</span>. It is enabled in the environment's network settings.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="callout"><b>This is the step that decides returns.</b> Only real history (12–24 months) and 6 months on demo can tell whether 3–5% a month is achievable. The stress test cannot.</div>
+      <pre class="code">kriptty-backtest --strategy SUB6 --start 2024-10-01
+kriptty-backtest --strategy SUB10 --start 2024-10-01
+MAX_MARGIN_PCT=0.2 kriptty-backtest --strategy SUB9 …</pre>
+    </div>
+  </div>
+  <footer><span>C · Bot</span><span>12</span></footer>
+</section>
+
+<!-- 13 · C3 Estrés -->
+<section class="slide" aria-label="Stress test" data-tab="estres">
+  <span class="kicker"><span class="tag-c">C · Bot</span> 3-year stress test · synthetic markets</span>
+  <h2>Before and after the fixes</h2>
+  <div class="row grow">
+    <div class="col wide">
+      <div class="seg" id="seg-sc13" role="group" aria-label="Scenario"></div>
+      <div class="chart" id="chart13"></div>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Before</span><span><i style="background:var(--s2)"></i>After</span><span>8-subaccount portfolio, base 100</span></div>
+    </div>
+    <div class="col">
+      <div class="kpis" id="kpis13"></div>
+      <p class="note">162 runs: 3 scenarios (cycle with LUNA/FTX-style crashes, prolonged bear market, sideways) × 3 paths, plus 2× costs. Measures survival and risk control.</p>
+    </div>
+  </div>
+  <footer><span>C · Bot</span><span>13</span></footer>
+</section>
+
+<!-- 14 · C4 Qué falló -->
+<section class="slide" aria-label="What the test found" data-tab="estres">
+  <span class="kicker"><span class="tag-c">C · Bot</span> What the test found</span>
+  <h2>Six flaws that would have cost real money</h2>
+  <div class="grid3">
+    <div class="box"><h3>Hidden leverage</h3><p>SUB2 and SUB11 reached 9× capital. The cap now counts open positions.</p></div>
+    <div class="box"><h3>Backtester without margin</h3><p>It allowed positions the exchange would reject. It now requires margin.</p></div>
+    <div class="box"><h3>SUB6 in a loop</h3><p>It opened and unwound pairs, paying fees each time. Fixed.</p></div>
+    <div class="box"><h3>SUB7 and SUB4</h3><p>They lost in every scenario (−95% and −52% in a month). Disabled.</p></div>
+    <div class="box"><h3>Chained pauses</h3><p>25% drawdowns one after another. New hard stop at 40%.</p></div>
+    <div class="box"><h3>Unlimited margin</h3><p>New limit of 20% of capital per account, applied to every order.</p></div>
+  </div>
+  <footer><span>C · Bot</span><span>14</span></footer>
+</section>
+
+<!-- E1 · My strategy -->
+<section class="slide" aria-label="My strategy" data-tab="estrategia">
+  <span class="kicker"><span class="tag-d">E · My strategy</span> $1M per subaccount · one agent per strategy</span>
+  <h2>Five agents, at most $200,000 at play in each, and one waiting for the drop</h2>
+  <div class="row grow">
+    <div class="col wide">
+      <div class="tbl agents" id="tbl-mi"></div>
+      <p class="note">SUB2 (stat-arb) and SUB11 (supertrend) only as satellites after the backtest on real history. SUB4 (scalping) and SUB7 (grid) are out: they lost in every scenario. Each agent is independent: its own subaccount, capital, schedule and limits. Buys and sells within 48H at most for SUB5 and SUB10; SUB6, SUB8 and SUB9 are exempt because the way they make money needs more time.</p>
+    </div>
+    <div class="col">
+      <div class="kpis" id="kpis-mi"></div>
+      <pre class="code env">MAX_MARGIN_PCT=0.2
+CAPITAL_RAMP=0.25,0.5,0.75,1
+MAX_DRAWDOWN_PCT=0.10
+MAX_TOTAL_DRAWDOWN_PCT=0.20
+LEVERAGE=SUB6=3,SUB9=3,SUB10=3
+MAX_HOLD_HOURS=48
+ENABLED_STRATEGIES=SUB5,SUB6,SUB8,SUB9,SUB10</pre>
+    </div>
+  </div>
+  <p class="note" id="note-mi"></p>
+</section>
+
+<!-- E2 · If one loses, does another win -->
+<section class="slide" aria-label="If one loses, another wins" data-tab="estrategia">
+  <span class="kicker"><span class="tag-d">E · My strategy</span> If one loses, does another win?</span>
+  <h2>What each agent does in BTC's worst months</h2>
+  <div class="row grow">
+    <div class="col wide">
+      <div class="tbl" id="tbl-crash"></div>
+      <p class="note" id="note-crash"></p>
+    </div>
+    <div class="col">
+      <div class="tbl heat" id="tbl-corr"></div>
+      <p class="note">Correlation of monthly returns between agents (−1 = they move opposite, 0 = independent, +1 = the same). The closer to 0 or negative, the more they offset each other.</p>
+    </div>
+  </div>
+</section>
+
+<!-- C5 · Short account -->
+<section class="slide" aria-label="Short account" data-tab="estrategia">
+  <span class="kicker"><span class="tag-c">C · Bot</span> The short account (SUB5) against all the others</span>
+  <h2 id="h-hg">Leverage of the short account</h2>
+  <div class="row grow">
+    <div class="col wide">
+      <div class="seg" id="seg-hg" role="group" aria-label="Portfolio"></div>
+      <div class="tbl" id="tbl-hg"></div>
+      <p class="note" id="note-hg"></p>
+    </div>
+    <div class="col">
+      <div class="kpis" id="kpis-hg"></div>
+      <div class="callout"><b>Bug fixed:</b> after its first −5%, SUB5 stopped for good (in the test it quit trading after 1–13 months, before the crashes). It now pauses for 7 days and resumes.</div>
+    </div>
+  </div>
+  <footer><span>C · Bot</span><span>15</span></footer>
+</section>
+
+<!-- C6 · Check it -->
+<section class="slide" aria-label="Check it yourself" data-tab="estres">
+  <span class="kicker"><span class="tag-c">C · Bot</span> Check it yourself · every stress-test run</span>
+  <h2>The stress test, run by run</h2>
+  <div class="row grow">
+    <div class="col wide">
+      <div class="seg" id="seg-rs" role="group" aria-label="Configuration"></div>
+      <div class="seg" id="seg-rsc" role="group" aria-label="Scenario and path"></div>
+      <div class="tbl scroll" id="tbl-runs"></div>
+      <p class="note" id="note-runs"></p>
+    </div>
+    <div class="col">
+      <ul class="method">
+        <li><b>Hourly synthetic market:</b> 3 years (Oct 2023–Oct 2026) after 4 years of warm-up. 3 scenarios × 3 seeds (0, 1, 2); same seed = same market for every strategy.</li>
+        <li><b>Realism:</b> fat tails, correlated one-day crashes, persistent funding, macro signal lagged by 30 days.</li>
+        <li><b>Costs:</b> 0.06% taker, 0.02% maker, 2 bp slippage (×2 in the cost test). Margin enforced as on Bitget.</li>
+        <li><b>Capital:</b> 10,000 USDT per account. It measures risk, not profit: the synthetic market has no exploitable edge.</li>
+      </ul>
+      <pre class="code" style="font-size:12px">pip install -e .
+kriptty-stress --out data/despues
+kriptty-stress --leverage 7 --max-margin 0.2 \
+  --scale-risk --out data/x7m20r
+python scripts/hedge_short.py …
+python scripts/export_runs.py …</pre>
+      <p class="note">Every figure is in <span class="mono">estrategia/datos/ejecuciones.csv</span> (opens in Excel). Instructions in <span class="mono">estrategia/LEEME.md</span>.</p>
+    </div>
+  </div>
+  <footer><span>C · Bot</span><span>16</span></footer>
+</section>
+
+<!-- 15 · D1 Objetivo -->
+<section class="slide" aria-label="The target" data-tab="rentabilidad">
+  <span class="kicker"><span class="tag-d">D · Returns</span> What you are aiming for</span>
+  <h2>3–5% a month: of the million, or of the $200,000 at play?</h2>
+  <div class="grid4">
+    <div class="kpi bad"><span>3–5% of the million</span><b>$30–50k</b><small>a month: the $200,000 at play would have to make 15–25% a month</small></div>
+    <div class="kpi good"><span>3–5% of what is at play</span><b>$6–10k</b><small>a month per subaccount (0.6–1% of the million)</small></div>
+    <div class="kpi"><span>Maximum exposure at 7x</span><b>$1.4M</b><small>$200,000 margin × 7</small></div>
+    <div class="kpi"><span>Move that liquidates</span><b>≈ −14%</b><small>against a position at 7x</small></div>
+  </div>
+  <p class="lead">The difference is huge. 3–5% a month of the million means making 15–25% a month on what is at play: no strategy sustains that with low risk. 3–5% of the $200,000 (0.6–1% of the million) is demanding but workable, and it still has to be measured with real history and demo before committing.</p>
+  <footer><span>D · Returns</span><span>17</span></footer>
+</section>
+
+<!-- 16 · D2 Datos -->
+<section class="slide" aria-label="What the data says" data-tab="rentabilidad">
+  <span class="kicker"><span class="tag-d">D · Returns</span> What the stress test says</span>
+  <h2>Monthly return by configuration</h2>
+  <div class="row grow">
+    <div class="col wide">
+      <div class="seg" id="seg-pf" role="group" aria-label="Portfolio"></div>
+      <div class="chart" id="chart16"></div>
+      <div class="legend" id="legend16"></div>
+    </div>
+    <div class="col">
+      <div class="tbl" id="tbl16"></div>
+    </div>
+  </div>
+  <p class="note" id="note16"></p>
+  <footer><span>D · Returns</span><span>18</span></footer>
+</section>
+
+<!-- 17 · D3 Calculadora -->
+<section class="slide" aria-label="Calculator" data-tab="rentabilidad">
+  <span class="kicker"><span class="tag-d">D · Returns</span> Calculator</span>
+  <h2>What each combination means for one account</h2>
+  <div class="row grow">
+    <div class="col">
+      <div class="ctl"><label for="k-cap">Subaccount capital (USDT)<output id="o-cap"></output></label><input type="range" id="k-cap" min="100000" max="5000000" step="100000" value="1000000"></div>
+      <div class="ctl"><label for="k-mar">Maximum margin used<output id="o-mar"></output></label><input type="range" id="k-mar" min="5" max="100" step="5" value="20"></div>
+      <div class="ctl"><label for="k-lev">Leverage<output id="o-lev"></output></label><input type="range" id="k-lev" min="1" max="10" step="1" value="7"></div>
+      <div class="ctl"><label for="k-ret">Monthly return on capital deployed<output id="o-ret"></output></label><input type="range" id="k-ret" min="0" max="5" step="0.1" value="1"></div>
+      <div class="ctl"><label for="k-crash">Market drop to simulate<output id="o-crash"></output></label><input type="range" id="k-crash" min="5" max="40" step="1" value="25"></div>
+    </div>
+    <div class="col">
+      <div class="kpis" id="kpis17"></div>
+      <p class="note" id="note17"></p>
+    </div>
+  </div>
+  <footer><span>D · Returns</span><span>19</span></footer>
+</section>
+
+<!-- 18 · D4 Recomendación -->
+<section class="slide" aria-label="Recommendation" data-tab="estrategia">
+  <span class="kicker"><span class="tag-d">D · Returns</span> My recommendation</span>
+  <h2 id="rec-title">Small risk first, proven returns later</h2>
+  <div class="row grow">
+    <div class="col">
+      <ol class="rec" id="rec-list"></ol>
+    </div>
+    <div class="col">
+      <div class="callout"><b>Never on the website or in the DIR:</b> a return target (3–5% a month) cannot be published or used to sell the token. It is an internal management target, and only once verified with real data.</div>
+      <div class="tbl" id="rec-tbl"></div>
+    </div>
+  </div>
+  <footer><span>D · Returns</span><span>20</span></footer>
+</section>
+
+<!-- 19 · Riesgos -->
+<section class="slide" aria-label="Risks" data-tab="pasos">
+  <span class="kicker">Risks and conditions</span>
+  <h2>What could stop the plan</h2>
+  <div class="grid3">
+    <div class="box"><h3>MiCA and Bitget</h3><p>Bitget had no MiCA license as of September 2026, and the CNMV (Spanish securities regulator) treats perpetuals as CFDs for retail clients: confirm where trading is done from and through which entity.</p></div>
+    <div class="box"><h3>Token classification</h3><p>If holders profit from the bot, it may be a security: outside MiCA in the EU and subject to prospectus requirements.</p></div>
+    <div class="box"><h3>Unproven returns</h3><p>Without real history or demo, any figure is a hypothesis. At 7x, a mistake costs three times as much as at 2x.</p></div>
+    <div class="box"><h3>Tax residence</h3><p>Managing the company from Spain may void the Salvadoran tax regime.</p></div>
+    <div class="box"><h3>Platform risk</h3><p>Reliance on a single exchange: a plan B and balance limits per platform.</p></div>
+    <div class="box"><h3>Execution</h3><p>The timeline depends on third parties: auditor, certifier, CNAD and PSAD.</p></div>
+  </div>
+  <footer><span>Risks</span><span>21</span></footer>
+</section>
+
+<!-- 20 · Próximos pasos -->
+<section class="slide" aria-label="Next steps" data-tab="pasos">
+  <span class="kicker">Next steps</span>
+  <h2>What can be done this week</h2>
+  <div class="checks" id="next-steps"></div>
+  <p class="note" id="next-status"></p>
+  <footer><span>Next steps</span><span>22</span></footer>
+</section>
+
+<!-- 21 · Cierre -->
+<section class="slide cover" aria-label="Closing" data-tab="pasos">
+  <span class="kicker">Final summary</span>
+  <h1>First <span class="gold">register</span>, then sell; first <span class="gold">measure</span>, then promise</h1>
+  <p class="lead">The company and the ICO have a clear path in El Salvador. The bot already has limits that let it survive the worst scenarios. The monthly return is the only thing not yet proven, and it can be measured within weeks once there is access to Bitget's historical data.</p>
+  <footer><span>Experimental software · not an offer or advice</span><span>23</span></footer>
+</section>
+
+</div>
+</main>
+<nav class="tabnav" id="tabnav" aria-label="Sections"></nav>
+
+<nav class="nav" aria-label="Slide navigation">
+  <button type="button" id="prev" aria-label="Previous slide">←</button>
+  <span class="count" id="count" aria-live="polite">1 / 23</span>
+  <button type="button" id="next" aria-label="Next slide">→</button>
+</nav>
+<span class="hint">← → · space · F full screen</span>
+<script id="plan-data">window.PLAN = {"stress":{"scenarios":{"ciclo":{"title":"Ciclo completo","description":"Acumulación, euforia con flash crash, bear market del −70% con dos crashes de un día (tipo LUNA y FTX), suelo lateral y recuperación.","phases":[["acumulación",120],["euforia",240],["distribución",60],["bear market",300],["suelo lateral",200],["recuperación",176]]},"bear":{"title":"Bear market prolongado","description":"Tres años de caída con rebotes falsos y crashes: el peor caso para estrategias largas.","phases":[["techo",90],["primera caída",250],["rebote falso",120],["capitulación",260],["lateral bajista",376]]},"lateral":{"title":"Lateral con flash crashes","description":"Tres años sin tendencia, volatilidad media y flash crashes que se recuperan.","phases":[["rango",365],["rango volátil",365],["rango estrecho",366]]}},"portfolio":[{"set":"antes","scenario":"bear","seed":0,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":33.16,"max_dd_pct":-51.52,"curve":[99.9,102.68,102.5,102.83,102.51,101.82,101.02,99.59,103.24,98.25,101.73,92.4,89.94,92.85,88.81,87.92,91.43,90.22,87.08,85.34,85.51,86.36,84.2,80.8,84.1,82.26,87.86,88.29,87.25,84.24,82.59,81.02,80.35,84.73,84.12,82.77,80.2,86.44,89.71,82.14,92.13,94.27,98.39,91.78,90.86,97.26,92.39,86.28,90.24,96.38,100.41,106.47,110.8,111.66,107.24,105.18,110.02,113.07,103.3,118.87,123.88,111.19,112.95,132.33,148.66,148.61,142.16,129.38,125.52,108.1,104.53,98.25,103.11,104.77,96.73,90.66,98.79,90.82,91.26,94.3,90.62,95.99,101.62,104.11,98.92,97.17,91.88,91.34,100.52,125.04,141.77,125.8,114.59,136.47,151.08,123.24,125.67,117.39,115.57,100.43,91.72,87.02,83.49,82.02,92.31,82.84,93.16,100.01,96.54,96.16,103.81,101.72,97.6,102.39,108.59,102.74,104.37,100.6,93.75,92.67,94.92,98.51,89.66,88.27,95.27,92.92,95.47,90.89,91.31,91.56,92.44,93.78,106.65,102.81,114.12,119.85,134.81,158.92,138.14,156.39,160.56,152.97,147.63,148.99,151.17,149.11,167.06,155.47,158.03,147.44,146.88,145.41,150.54,143.02,136.43,136.28,132.37,133.16]},{"set":"antes","scenario":"bear","seed":1,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":192.08,"max_dd_pct":-79.78,"curve":[100.43,99.0,98.39,96.15,93.97,93.89,94.03,99.77,98.68,100.8,100.32,103.0,101.87,103.18,103.8,102.85,105.53,104.79,102.76,101.76,101.91,103.94,110.03,107.57,112.08,114.86,108.68,111.94,117.91,114.19,110.92,131.35,136.94,122.27,145.29,212.61,245.33,266.31,253.11,289.3,295.39,236.52,194.75,234.21,224.42,214.22,189.9,181.11,192.89,170.48,149.98,161.61,194.99,161.95,170.98,176.59,193.58,181.89,182.34,184.78,160.1,150.28,165.62,239.97,292.52,328.46,456.72,626.75,570.67,415.76,524.84,600.72,594.62,844.9,909.74,829.07,678.39,831.06,641.56,512.37,555.72,464.08,483.09,460.55,463.91,514.94,470.16,608.55,588.07,499.94,708.38,877.79,757.79,786.25,683.04,850.12,1095.56,1104.04,1068.35,848.1,938.18,722.23,539.18,796.0,684.66,688.34,1162.05,1266.14,1109.44,1163.95,988.07,1196.27,1057.17,1047.51,774.06,830.98,837.72,1144.41,868.16,961.39,1106.42,1092.31,1106.33,1150.69,1040.82,742.37,778.91,727.6,791.85,744.36,779.04,977.55,1350.53,966.63,768.73,694.69,655.56,675.57,626.5,615.01,518.2,610.82,607.8,770.06,663.82,550.73,570.04,599.28,536.24,551.93,607.33,493.65,401.43,326.72,345.79,320.5,307.69,292.08]},{"set":"antes","scenario":"ciclo","seed":0,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":32.95,"max_dd_pct":-85.17,"curve":[99.66,100.05,100.54,102.29,101.09,100.86,97.74,96.36,102.01,97.91,95.09,94.59,92.43,94.2,94.67,92.21,94.29,94.82,91.76,94.42,99.05,107.98,110.41,101.63,112.32,107.52,122.84,124.99,128.63,125.54,145.77,134.0,153.11,156.67,151.6,142.46,127.93,139.39,166.42,136.72,172.33,201.14,217.96,180.89,183.36,245.79,328.4,296.1,330.84,416.51,428.82,481.81,582.7,543.11,485.34,487.46,470.89,428.91,384.52,428.05,388.75,311.58,311.54,350.76,422.12,366.89,380.13,291.08,290.34,247.4,252.15,203.26,204.86,211.44,184.52,205.22,193.27,172.04,185.67,183.98,164.09,186.03,212.42,187.68,161.25,176.9,155.56,156.51,171.39,197.77,204.2,188.61,182.88,176.06,183.68,155.84,174.52,152.67,162.98,131.45,116.24,106.9,100.46,98.02,102.58,96.96,105.81,111.9,108.67,108.46,106.19,108.17,107.39,106.82,104.19,100.47,100.11,99.3,97.33,94.14,95.85,98.06,97.13,95.84,96.15,93.7,91.5,89.58,89.82,90.54,91.07,91.69,92.36,91.96,91.99,98.68,103.43,111.7,104.55,116.09,129.36,125.49,119.28,126.76,127.55,124.23,126.97,125.28,125.34,120.01,128.15,126.5,134.79,132.15,124.88,124.2,132.9,132.95]},{"set":"antes","scenario":"ciclo","seed":1,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":1842.53,"max_dd_pct":-73.4,"curve":[99.78,103.45,100.27,98.73,99.94,99.16,102.56,103.71,106.76,106.24,105.24,104.97,102.16,101.76,103.72,104.76,107.09,106.64,104.9,107.17,111.26,108.71,117.13,116.86,122.56,127.16,130.68,128.82,134.64,136.18,146.84,149.16,152.29,132.55,139.09,159.11,168.23,184.2,186.99,215.1,226.51,220.37,201.28,257.5,256.74,257.53,271.68,258.97,352.85,347.63,308.47,339.62,517.89,457.31,450.79,505.92,485.16,510.12,564.79,466.67,533.69,466.28,490.3,678.39,586.43,596.66,689.64,729.71,763.9,613.55,675.48,909.65,907.7,899.32,1120.96,1720.49,1514.96,1977.32,1447.23,1066.38,1151.23,1288.34,1268.78,1361.88,1346.61,1254.03,1094.62,1125.45,1129.02,912.91,1430.13,1494.17,1341.02,994.84,929.86,968.32,1022.67,908.45,680.14,674.65,932.57,798.63,691.96,856.36,680.43,791.92,1223.27,1271.48,1467.49,1633.52,1479.17,2031.38,1778.41,2061.71,1870.03,1869.89,1801.22,1800.83,1431.1,1428.94,1573.89,1649.34,1610.32,1706.4,1633.25,1676.65,1775.17,1704.19,1765.55,1745.32,1724.8,1884.07,2001.68,1482.19,1779.47,1658.03,1880.3,1962.43,1765.92,1631.63,1571.6,1833.75,1905.49,2072.88,1721.75,1430.9,1474.91,2410.96,2316.75,1870.48,2799.37,2269.68,2298.89,2158.47,2239.08,2282.83,2052.25,1942.53]},{"set":"antes","scenario":"lateral","seed":0,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":2.43,"max_dd_pct":-85.09,"curve":[100.19,102.81,102.29,102.92,100.61,99.48,97.19,95.39,98.34,93.37,92.09,88.29,87.9,94.02,92.21,94.33,98.88,98.67,96.22,95.52,101.88,117.87,114.3,110.28,121.87,119.38,130.87,127.37,130.9,131.11,143.27,127.53,180.74,305.79,305.94,306.04,239.29,291.68,346.78,286.98,291.45,323.05,350.12,301.74,313.77,280.73,262.96,221.1,220.67,222.86,209.38,211.71,219.62,222.31,214.58,201.84,207.17,209.07,181.75,200.62,212.93,186.38,218.43,303.02,572.27,425.96,417.32,339.69,307.23,244.86,216.11,180.7,209.58,238.95,182.75,161.96,165.88,165.18,154.41,207.1,228.25,304.42,340.63,315.72,256.25,265.32,245.9,227.86,190.15,231.25,209.06,160.03,158.31,155.71,151.61,165.76,143.17,145.15,131.47,108.38,94.14,89.95,86.5,87.42,91.09,94.82,104.26,107.57,105.48,106.63,106.56,105.33,103.58,103.26,101.15,97.29,97.16,96.32,93.61,94.63,100.89,108.36,108.42,106.55,109.68,105.17,110.62,105.78,104.1,103.15,103.63,103.16,106.31,107.54,106.58,105.28,107.2,110.99,109.22,109.21,110.87,110.09,108.65,109.58,109.96,108.0,107.97,101.5,116.74,107.82,103.4,105.5,105.43,104.78,103.04,103.0,102.44,102.43]},{"set":"antes","scenario":"lateral","seed":1,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":1542.21,"max_dd_pct":-82.27,"curve":[99.9,106.07,101.81,100.64,100.64,101.87,100.48,100.5,101.11,104.15,101.9,101.14,100.59,101.06,101.5,100.62,100.55,100.5,100.33,102.23,99.27,98.62,101.79,98.66,100.12,97.29,96.94,95.77,95.7,101.52,101.71,112.43,116.33,106.97,113.48,122.33,123.0,132.84,134.22,145.59,147.11,147.66,130.39,138.7,137.65,130.74,116.77,116.92,116.35,120.29,118.8,121.14,130.4,124.44,125.58,146.27,141.75,137.43,129.63,128.27,137.55,140.11,179.99,231.1,219.85,232.92,264.84,289.01,400.71,341.63,334.31,430.49,580.05,1100.12,1257.16,1224.39,1066.98,1223.97,794.86,567.35,600.2,805.57,777.77,855.64,1108.99,1043.76,941.73,1215.84,1602.83,1516.68,2272.35,3159.39,2481.16,2001.46,2425.6,1935.41,1849.73,1575.3,1398.24,977.17,1087.1,776.64,612.71,958.85,807.59,756.18,836.34,902.16,871.61,1033.06,949.0,1051.3,1016.93,1086.48,1412.92,1417.37,1402.35,1444.79,1306.63,1281.83,1297.36,1252.46,1342.47,1362.46,1343.79,1322.47,1490.25,1367.69,1680.76,1599.22,1861.45,1923.6,1920.58,1535.84,1486.89,1453.01,1454.62,1453.73,1405.03,1423.45,1360.81,1468.89,1546.37,1555.44,1514.02,1498.26,1590.72,1663.61,1807.71,1889.9,2187.29,1970.2,1989.97,1935.69,1895.93,1588.36,1652.74,1642.21]},{"set":"despues","scenario":"bear","seed":0,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":-12.32,"max_dd_pct":-18.22,"curve":[99.9,101.33,101.31,101.63,101.0,101.28,101.37,100.54,103.73,99.6,100.37,95.75,95.32,97.3,92.92,90.74,93.15,92.4,92.0,92.34,92.72,91.91,90.44,89.82,90.87,90.5,91.34,92.19,92.04,91.95,90.94,89.35,89.51,90.72,90.24,89.37,89.17,89.73,91.35,89.88,91.36,90.95,91.44,90.08,89.94,90.1,89.11,87.64,87.69,88.14,88.12,88.64,88.25,88.64,88.41,87.49,86.94,86.96,85.59,86.64,87.25,85.73,85.71,86.01,88.55,87.34,86.53,86.84,87.02,86.82,86.8,86.6,87.5,87.56,88.44,88.51,89.14,88.23,87.41,87.11,87.0,86.55,86.37,86.19,87.01,86.81,86.35,86.15,85.87,86.49,86.41,86.93,88.81,87.51,87.46,87.61,87.75,87.37,87.8,88.16,88.27,88.85,89.06,89.06,88.86,89.26,89.77,90.6,89.98,88.95,89.13,90.31,88.87,88.8,88.6,88.98,89.67,88.66,89.41,89.08,88.76,88.67,89.02,88.5,88.16,88.15,87.87,87.53,87.58,87.05,87.53,88.22,88.11,88.51,89.09,89.19,89.75,90.04,89.16,89.61,90.14,89.76,89.79,87.85,87.32,87.78,88.23,88.38,88.14,88.17,88.48,88.67,89.0,89.42,89.13,88.9,87.96,87.68]},{"set":"despues","scenario":"bear","seed":1,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":44.59,"max_dd_pct":-23.03,"curve":[100.24,98.95,98.39,96.82,97.19,97.96,98.06,101.67,100.85,102.6,101.98,105.97,105.13,106.43,107.83,107.68,111.02,110.22,106.98,108.39,106.56,108.86,117.28,115.22,123.14,128.3,127.96,133.99,142.09,136.42,129.41,128.44,144.8,129.74,127.36,129.62,134.41,147.74,146.09,164.77,161.52,150.16,149.39,144.78,141.66,134.13,133.49,133.57,134.42,133.84,133.42,133.16,134.28,133.47,134.25,134.8,133.84,134.45,134.36,134.54,134.65,135.61,139.78,153.96,149.34,151.53,150.95,150.18,149.78,148.27,150.41,153.4,151.99,150.98,149.5,148.02,147.17,149.22,148.9,149.08,148.22,146.37,147.19,145.26,144.74,144.84,143.44,144.79,147.09,145.89,146.0,145.95,146.96,147.61,147.36,146.96,146.58,146.34,146.19,147.47,147.69,147.68,149.12,148.88,148.68,147.96,148.92,149.0,150.17,150.45,151.95,151.85,151.41,150.69,150.46,150.74,149.55,150.59,150.94,151.0,150.21,150.67,150.45,149.94,149.4,149.24,148.77,148.94,149.35,148.73,148.91,149.98,150.03,150.17,151.28,153.59,151.14,149.01,147.94,147.41,147.1,147.74,149.29,148.87,148.25,148.87,147.29,146.76,147.3,147.54,146.42,145.64,145.91,145.37,145.01,144.88,144.64,144.59]},{"set":"despues","scenario":"bear","seed":2,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":-12.34,"max_dd_pct":-17.23,"curve":[99.7,99.85,96.53,93.54,92.38,92.64,94.08,94.32,95.62,94.65,95.4,94.98,92.72,92.45,95.13,95.2,96.08,98.62,98.17,95.46,93.77,92.23,91.18,92.94,90.89,89.91,91.34,92.21,94.11,94.17,92.56,96.7,95.4,91.28,91.84,92.2,92.84,88.94,87.9,87.52,87.61,87.6,87.73,88.04,88.69,88.5,88.54,89.41,89.05,88.75,90.12,89.69,89.51,90.02,89.06,89.08,87.88,87.94,87.23,86.74,86.76,86.53,87.11,86.59,86.7,85.34,85.04,84.51,84.24,84.13,83.56,83.09,83.52,83.6,83.57,83.25,83.45,83.78,83.76,83.84,83.58,83.3,83.41,83.47,84.55,86.45,85.8,85.35,84.84,84.33,83.98,85.47,88.5,88.31,88.72,89.35,88.96,88.28,88.67,94.96,93.39,91.85,92.19,90.96,90.41,90.35,90.27,91.18,90.78,91.47,91.44,91.97,90.59,90.68,90.54,90.93,89.85,89.65,89.49,89.4,88.81,89.03,88.13,88.41,88.05,88.2,88.21,87.73,87.69,88.17,88.27,88.11,88.41,87.91,87.45,87.4,86.94,87.44,86.96,87.78,86.74,86.29,86.07,86.25,85.22,85.37,84.9,84.93,84.77,84.67,85.07,85.27,86.2,86.34,87.61,87.03,87.42,87.66]},{"set":"despues","scenario":"ciclo","seed":0,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":78.92,"max_dd_pct":-31.13,"curve":[99.66,100.21,100.72,102.18,101.15,100.91,97.93,97.66,101.71,98.88,96.32,96.73,94.18,95.57,96.57,94.8,97.03,97.94,95.18,97.72,102.74,111.49,111.35,104.48,114.79,111.17,123.04,125.0,129.84,128.27,141.2,133.29,142.74,151.76,149.85,140.77,139.88,144.11,169.4,153.28,188.26,219.19,237.0,203.23,203.15,201.43,225.13,212.28,200.69,203.57,191.94,185.31,184.88,185.32,184.92,184.1,183.87,183.22,181.86,183.57,183.89,181.79,181.86,181.83,184.93,183.01,182.4,182.67,182.82,182.33,181.79,181.58,180.87,179.62,180.71,180.81,180.13,180.14,179.51,179.34,178.95,178.23,177.73,177.39,177.68,177.62,176.98,176.76,176.35,176.31,175.49,175.89,175.81,176.22,176.08,176.18,176.29,175.94,176.35,176.59,176.51,176.86,176.99,176.97,177.65,177.83,177.99,179.53,178.75,177.97,178.4,177.96,177.62,177.64,177.39,177.25,177.81,177.4,178.0,177.61,178.27,177.76,177.99,177.42,177.02,177.26,177.25,177.05,177.18,177.11,177.54,178.2,177.65,177.69,178.04,178.57,179.36,180.17,179.53,180.26,181.19,181.47,179.55,178.81,179.83,180.41,181.03,181.0,180.52,180.17,181.11,180.7,179.98,179.94,178.95,177.99,178.04,178.92]},{"set":"despues","scenario":"ciclo","seed":1,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":169.56,"max_dd_pct":-33.61,"curve":[99.49,100.71,98.99,96.43,96.45,96.98,97.99,99.26,100.62,100.5,99.69,99.53,98.14,97.89,99.73,100.92,101.78,101.7,100.64,102.85,104.27,102.67,107.51,105.56,109.57,111.82,113.85,115.57,119.07,120.98,123.46,124.17,127.67,115.84,117.23,124.36,126.54,135.94,139.12,155.54,161.15,149.23,147.53,157.87,174.82,178.07,176.32,178.09,202.92,206.38,189.26,200.39,234.66,224.98,223.86,238.3,235.45,240.85,240.75,216.21,227.59,206.6,207.04,232.1,215.28,221.38,247.83,263.0,266.04,239.62,226.64,227.63,238.72,255.27,281.6,340.61,318.61,396.16,321.58,321.45,321.74,301.41,278.6,277.11,277.1,277.6,277.09,277.61,278.33,277.52,277.04,277.97,277.16,276.69,276.4,276.62,275.89,274.94,274.77,274.62,274.62,274.62,274.52,274.6,274.48,274.48,274.48,274.53,274.58,274.64,274.55,274.55,274.55,274.51,274.51,274.51,274.51,274.58,274.58,274.46,274.46,274.46,274.5,274.45,274.3,274.25,274.25,274.07,274.05,274.06,274.0,274.48,274.35,273.47,273.47,273.13,272.73,273.05,272.81,271.97,271.91,273.02,274.66,275.17,273.92,272.29,272.46,271.9,271.37,270.92,271.31,271.27,270.81,269.87,269.64,269.6,269.56,269.56]},{"set":"despues","scenario":"ciclo","seed":2,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":-13.07,"max_dd_pct":-15.56,"curve":[99.79,101.27,98.13,97.92,95.44,94.57,93.73,93.55,92.95,93.17,94.48,91.28,91.12,89.33,89.09,88.92,89.04,91.23,90.78,89.1,88.88,87.44,86.2,87.84,89.47,88.9,90.62,90.27,90.13,90.17,91.58,93.79,95.28,93.29,95.5,94.26,95.39,95.41,95.82,93.72,91.82,91.0,92.56,94.57,95.5,94.34,94.94,95.96,95.74,95.89,97.4,97.17,95.41,95.03,94.28,93.82,93.06,92.93,92.97,92.48,92.71,91.99,91.83,90.06,88.85,88.04,87.76,87.14,87.63,87.94,87.23,86.27,86.09,86.07,86.03,85.7,85.84,85.89,85.89,85.65,85.96,86.54,86.87,86.47,86.71,86.93,86.84,86.67,86.07,85.99,85.95,85.78,85.73,85.73,85.69,85.72,85.72,85.73,85.73,85.73,85.73,85.86,85.86,85.86,85.86,85.76,85.76,85.76,85.76,85.8,85.8,85.93,85.93,85.93,86.07,86.1,86.1,86.1,86.1,86.2,86.2,86.2,86.2,86.2,86.1,86.1,86.1,86.1,86.1,86.1,86.1,86.1,86.18,86.2,86.2,86.23,86.23,86.23,86.23,86.23,86.23,86.23,86.23,86.23,86.13,86.13,86.1,86.1,86.1,86.1,86.1,86.1,86.73,87.17,88.27,87.62,86.98,86.93]},{"set":"despues","scenario":"lateral","seed":0,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":43.12,"max_dd_pct":-27.34,"curve":[99.96,101.76,101.82,102.07,100.28,99.3,97.19,95.42,98.87,94.69,93.96,90.4,89.82,91.09,92.36,92.78,96.6,96.28,93.76,93.69,97.8,107.91,110.98,107.56,118.24,116.13,121.32,118.92,122.21,123.34,129.69,120.57,139.51,178.4,181.77,187.13,164.61,165.17,160.78,168.76,171.53,172.7,183.52,168.53,171.54,162.9,156.36,155.04,167.34,170.46,174.48,178.74,184.08,185.94,180.44,171.12,174.08,175.5,161.14,157.13,157.32,147.28,147.17,147.65,150.61,149.37,149.36,149.79,149.91,149.04,148.53,148.48,148.27,148.26,148.35,148.65,147.55,147.96,147.46,146.53,146.35,145.77,146.26,146.08,146.76,146.33,146.36,146.78,146.75,146.61,146.48,146.5,145.92,145.97,145.74,145.83,146.03,145.75,146.06,146.32,146.28,146.78,147.05,146.82,146.99,147.13,147.31,147.55,146.78,146.35,146.51,146.02,145.59,145.74,145.37,145.39,145.18,145.17,145.59,145.05,144.95,144.73,144.66,143.96,143.8,143.75,143.83,143.66,143.78,143.6,143.95,144.08,144.24,144.23,144.44,144.54,145.13,145.11,145.16,144.46,144.94,144.58,144.35,143.9,144.51,143.77,143.79,143.81,143.73,143.57,143.22,143.21,143.29,143.4,143.44,143.35,143.35,143.12]},{"set":"despues","scenario":"lateral","seed":1,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":-1.05,"max_dd_pct":-15.72,"curve":[100.06,101.94,98.6,98.64,96.8,97.3,96.52,96.93,97.28,99.2,97.49,97.27,97.18,97.47,97.76,96.96,97.0,97.06,96.84,97.23,95.26,94.54,98.31,98.13,99.98,98.2,98.51,97.67,97.66,105.14,102.72,104.94,109.84,101.12,100.68,101.96,102.95,104.69,105.93,112.9,113.48,112.43,106.58,107.7,107.77,104.7,99.64,100.22,100.1,99.1,98.67,98.58,101.5,99.95,100.52,101.16,99.64,100.27,99.74,99.83,99.25,99.2,100.69,106.27,103.99,105.67,104.65,105.11,105.5,104.23,104.26,105.88,107.87,108.63,107.98,107.07,106.17,107.91,107.91,105.91,105.59,106.15,105.56,104.62,104.94,106.34,104.73,107.55,110.03,108.35,106.65,107.29,105.86,105.2,105.44,106.54,106.1,106.82,106.4,106.24,106.87,105.19,104.78,105.25,104.66,104.32,105.63,105.05,104.74,104.44,103.66,104.56,103.57,103.25,103.3,103.27,102.58,104.33,103.97,103.57,103.63,102.92,102.85,103.29,102.75,102.05,102.48,101.58,101.69,101.86,101.64,102.54,102.08,101.62,102.29,103.7,102.52,101.81,100.85,100.55,100.52,101.12,102.42,102.67,101.39,100.8,100.91,100.36,100.35,100.14,100.77,100.09,100.02,99.64,99.5,99.2,98.94,98.95]},{"set":"despues","scenario":"lateral","seed":2,"cost_mult":1.0,"accounts":["SUB10","SUB11","SUB2","SUB5","SUB6","SUB7","SUB8","SUB9"],"return_pct":-14.93,"max_dd_pct":-19.29,"curve":[99.59,104.4,102.82,99.67,97.35,97.36,96.46,96.08,95.8,98.41,98.27,95.68,93.87,93.31,93.83,90.86,90.47,91.81,92.67,91.62,92.0,90.5,90.0,90.62,91.05,90.66,91.37,91.19,90.93,89.9,88.97,89.4,89.72,88.44,89.65,89.01,89.01,88.65,88.67,88.67,88.23,88.0,89.67,91.01,92.24,92.87,92.28,94.69,94.73,93.64,94.41,93.99,93.4,92.91,92.34,91.6,90.65,90.61,90.09,91.15,90.12,89.85,90.13,89.45,89.67,88.26,88.55,87.95,87.98,87.95,88.37,88.6,88.05,87.49,88.05,87.67,87.84,88.63,89.16,88.55,88.41,89.47,90.5,89.67,89.33,90.9,90.43,91.18,90.86,90.19,90.45,90.66,90.85,90.99,91.28,92.59,91.54,91.29,91.07,92.03,91.87,91.75,91.46,90.89,90.63,90.53,90.14,89.69,89.39,89.29,89.05,89.02,89.08,88.2,88.18,88.2,88.22,88.05,87.97,87.88,87.99,88.02,87.38,86.96,86.87,86.54,86.65,86.95,87.05,87.25,87.32,87.2,87.08,87.4,86.82,86.69,86.43,86.42,85.97,85.86,85.53,85.4,85.11,85.15,85.1,85.1,85.06,85.06,85.06,85.06,85.06,85.06,85.1,85.27,85.12,85.07,85.07,85.07]}]},"monthly":{"summary":[{"set":"nativo","portfolio":"nucleo","paths":9,"median_month":-0.07,"mean_month":0.01,"share_ge_3":3.3,"share_ge_5":0.6,"share_le_m10":0.0,"worst_month":-3.29,"median_cagr":0.64,"worst_dd":-11.01,"median_dd":-8.26,"paths_with_hard_stop":0,"paths_losing":4},{"set":"nativo","portfolio":"completa","paths":9,"median_month":-0.01,"mean_month":1.02,"share_ge_3":12.6,"share_ge_5":9.9,"share_le_m10":1.5,"worst_month":-17.95,"median_cagr":2.04,"worst_dd":-34.97,"median_dd":-18.36,"paths_with_hard_stop":9,"paths_losing":4},{"set":"x7m20","portfolio":"nucleo","paths":9,"median_month":-0.07,"mean_month":0.02,"share_ge_3":3.3,"share_ge_5":0.6,"share_le_m10":0.0,"worst_month":-3.29,"median_cagr":0.78,"worst_dd":-11.02,"median_dd":-8.17,"paths_with_hard_stop":0,"paths_losing":4},{"set":"x7m20","portfolio":"completa","paths":9,"median_month":0.01,"mean_month":1.78,"share_ge_3":17.1,"share_ge_5":13.5,"share_le_m10":2.4,"worst_month":-18.16,"median_cagr":14.08,"worst_dd":-34.89,"median_dd":-24.52,"paths_with_hard_stop":9,"paths_losing":3}],"paths":[{"set":"nativo","portfolio":"nucleo","scenario":"bear","seed":0,"monthly":[0.02,-1.02,-0.67,0.34,-0.65,-0.37,0.53,-0.7,-0.72,-0.14,-0.4,-0.03,-1.07,-0.61,0.91,-0.5,1.0,0.12,-0.87,-0.01,-0.28,0.92,-0.35,-0.03,-0.26,-0.68,-0.37,0.3,-0.48,0.36,-0.34,0.09,-0.63,-0.2,-0.77,0.23,0.0]},{"set":"nativo","portfolio":"completa","scenario":"bear","seed":0,"monthly":[1.86,2.98,-2.36,-3.08,-0.79,-0.22,-1.16,0.0,0.1,0.52,-1.86,0.12,-2.3,-0.25,1.72,0.89,1.65,-1.01,-1.22,-0.78,1.33,1.24,0.67,0.9,0.43,-0.6,-0.13,-0.01,-1.21,0.72,0.88,0.85,-2.08,0.17,1.24,-1.76,-0.14]},{"set":"nativo","portfolio":"nucleo","scenario":"bear","seed":1,"monthly":[0.06,0.44,0.35,-0.61,0.04,-1.02,-1.13,1.35,2.19,-1.85,-1.6,0.88,1.63,-1.74,3.37,0.48,1.33,0.01,0.18,-0.01,0.1,0.28,-0.64,-0.21,-0.27,-0.37,0.08,0.05,-0.45,-0.11,-0.4,-0.46,1.8,-1.29,0.03,0.05,0.0]},{"set":"nativo","portfolio":"completa","scenario":"bear","seed":1,"monthly":[-1.87,8.66,5.52,1.03,2.37,21.52,1.62,1.21,32.29,-11.1,-10.54,0.08,-0.28,1.29,11.7,-1.44,0.46,0.34,-1.48,-1.32,1.22,1.04,0.81,0.22,3.7,-1.54,-0.56,0.3,-1.84,1.06,2.46,-3.8,1.29,-1.46,-0.98,-1.06,0.02]},{"set":"nativo","portfolio":"nucleo","scenario":"bear","seed":2,"monthly":[0.08,0.54,-0.58,1.97,-1.04,-0.21,-0.68,-0.46,-0.53,1.17,0.17,-0.7,-1.88,0.3,-0.65,-1.48,-0.02,-0.36,-0.11,0.17,-0.4,-0.46,-0.2,-0.03,-0.21,0.06,-0.01,-0.01,0.0,-0.08,-0.45,0.4,-0.05,0.02,0.24,-0.68,0.0]},{"set":"nativo","portfolio":"completa","scenario":"bear","seed":2,"monthly":[-4.94,2.75,-1.14,7.41,-3.15,-2.55,9.6,-5.83,-5.25,1.68,0.7,0.31,-1.69,-1.73,-1.43,-1.9,0.86,0.1,-0.07,3.24,1.23,4.83,5.86,-3.81,0.88,-0.42,-1.1,-1.98,-0.18,0.32,-1.51,0.67,-2.57,-1.42,1.72,2.19,0.0]},{"set":"nativo","portfolio":"nucleo","scenario":"ciclo","seed":0,"monthly":[-0.35,-2.02,-1.4,-0.46,0.74,2.57,3.85,-0.83,-1.05,3.78,-0.01,4.58,-1.77,-2.2,0.44,1.98,-0.54,0.31,-1.05,0.02,-0.86,0.11,-0.32,-0.12,-0.19,-0.36,0.13,0.08,-0.11,0.38,-1.27,3.76,1.21,1.48,-2.94,-1.58,0.02]},{"set":"nativo","portfolio":"completa","scenario":"ciclo","seed":0,"monthly":[1.9,0.43,-2.67,2.01,18.51,12.42,23.8,-3.05,7.68,37.79,-1.32,-9.76,-1.06,-0.41,0.11,1.16,-0.06,-0.56,-1.0,-0.84,-0.49,0.29,0.12,1.11,0.05,-0.42,-0.12,0.2,-0.38,0.99,-0.5,1.47,-0.69,1.05,-0.47,-0.78,0.06]},{"set":"nativo","portfolio":"nucleo","scenario":"ciclo","seed":1,"monthly":[-0.4,-0.05,-0.45,-0.07,2.72,2.7,2.24,6.21,6.19,1.96,-0.01,-1.71,0.52,-2.48,1.68,-0.69,2.22,-1.37,0.73,0.06,-0.03,-1.5,-0.01,-0.24,0.28,-0.22,0.12,-0.14,-0.43,-0.21,-1.38,-1.8,3.36,-3.29,-1.34,-2.27,0.0]},{"set":"nativo","portfolio":"completa","scenario":"ciclo","seed":1,"monthly":[-2.87,7.08,-4.84,3.57,2.58,14.28,6.63,0.22,31.89,23.29,8.42,15.52,9.74,-16.53,2.21,8.77,10.95,33.78,-14.8,0.01,-0.01,-0.36,-0.0,-0.06,0.07,-0.05,0.03,-0.03,-0.1,-0.05,-0.33,-0.42,0.78,-0.78,-0.31,-0.52,0.0]},{"set":"nativo","portfolio":"nucleo","scenario":"ciclo","seed":2,"monthly":[-0.22,-0.36,-0.14,1.69,-1.62,3.63,3.27,0.99,-1.14,0.0,1.5,-2.34,-2.88,-0.83,-1.7,-0.37,0.0,-0.17,0.49,0.14,-0.15,-0.02,0.02,0.27,-0.22,0.34,0.34,0.21,-0.2,-0.0,0.19,0.07,-0.0,-0.27,1.36,0.32,-0.02]},{"set":"nativo","portfolio":"completa","scenario":"ciclo","seed":2,"monthly":[-2.68,-2.33,-2.33,2.93,-5.46,2.02,1.52,0.26,-1.71,0.08,1.09,-1.8,-2.21,-0.63,-1.29,-0.28,0.0,-0.13,0.37,0.1,-0.11,-0.02,0.01,0.2,-0.16,0.26,0.26,0.16,-0.15,-0.0,0.14,0.05,-0.0,-0.21,1.03,0.25,-0.02]},{"set":"nativo","portfolio":"nucleo","scenario":"lateral","seed":0,"monthly":[-0.3,-1.48,-1.58,0.66,0.43,0.87,-1.09,0.13,0.07,-0.11,-0.5,1.53,-1.63,0.3,-0.19,0.09,0.46,0.45,-1.19,0.34,0.06,-0.2,-0.13,0.04,-0.24,-0.22,-0.01,-0.39,-0.13,0.26,0.17,1.07,-0.39,0.01,-0.79,0.1,0.0]},{"set":"nativo","portfolio":"completa","scenario":"lateral","seed":0,"monthly":[0.78,-1.86,-4.37,5.89,16.63,14.05,10.37,49.45,-9.31,-4.81,3.36,13.93,-5.75,-17.95,0.55,1.92,-0.05,-1.05,-0.51,0.07,-0.02,-0.33,0.22,0.49,-0.34,-0.56,-0.39,-0.59,-0.6,0.6,-0.19,0.19,-0.43,-0.13,-0.33,-0.16,0.01]},{"set":"nativo","portfolio":"nucleo","scenario":"lateral","seed":1,"monthly":[-0.66,-0.2,-0.14,0.08,0.76,-0.27,0.13,-0.81,2.95,1.83,-1.55,1.41,0.57,-1.99,2.23,0.33,4.86,0.44,-0.43,2.98,-1.17,-0.35,-1.22,-1.84,-0.33,-1.11,0.5,-0.59,-0.52,0.0,-0.58,-0.23,1.06,-1.4,0.06,-0.69,0.0]},{"set":"nativo","portfolio":"completa","scenario":"lateral","seed":1,"monthly":[-0.65,5.63,-3.47,0.18,-0.62,3.71,3.47,0.05,14.19,-4.54,-9.89,1.75,-1.53,-0.08,6.17,-0.73,4.64,-0.82,-3.06,1.5,-1.02,-0.69,1.72,-0.76,-1.2,-0.99,0.32,-1.1,-1.5,0.23,1.24,-2.32,1.09,-0.95,-0.76,-0.77,-0.01]},{"set":"nativo","portfolio":"nucleo","scenario":"lateral","seed":2,"monthly":[-0.61,-0.16,-0.09,0.28,-1.06,1.28,-1.47,-0.04,-0.16,2.33,0.15,-0.7,-1.36,-0.2,-0.05,-0.35,-0.38,-1.5,0.46,1.3,-2.03,-0.41,-0.25,-0.41,-0.01,-0.15,0.8,-0.85,-0.08,-0.0,-0.09,0.07,0.15,-0.08,0.23,-0.22,0.0]},{"set":"nativo","portfolio":"completa","scenario":"lateral","seed":2,"monthly":[-0.03,1.9,-3.51,-1.67,-1.15,0.38,-2.33,-0.66,-1.09,2.63,4.39,-2.52,-1.65,-1.68,-0.37,0.42,-0.44,0.77,1.23,1.12,0.43,2.4,0.17,-1.74,-1.84,-1.51,0.83,-1.85,-1.06,1.05,-0.91,-1.25,-1.06,-0.13,0.16,-0.15,0.0]},{"set":"x7m20","portfolio":"nucleo","scenario":"bear","seed":0,"monthly":[0.05,-1.0,-0.68,0.34,-0.55,-0.38,0.51,-0.69,-0.73,-0.14,-0.4,-0.05,-1.08,-0.6,0.89,-0.5,1.0,0.12,-0.85,-0.01,-0.28,0.91,-0.35,-0.03,-0.26,-0.68,-0.37,0.3,-0.5,0.35,-0.36,0.09,-0.63,-0.2,-0.77,0.23,0.0]},{"set":"x7m20","portfolio":"completa","scenario":"bear","seed":0,"monthly":[0.68,1.1,-4.07,0.73,-3.08,-0.1,-0.85,0.35,0.2,0.6,-1.83,0.14,-2.11,0.03,1.89,0.99,1.79,-0.87,-1.13,-0.73,1.49,1.41,0.86,1.1,0.7,-1.01,-0.76,-0.01,-1.18,1.23,0.99,1.18,-2.22,0.95,1.51,-1.58,-0.08]},{"set":"x7m20","portfolio":"nucleo","scenario":"bear","seed":1,"monthly":[0.1,0.44,0.35,-0.61,0.04,-1.02,-1.13,1.35,2.19,-1.85,-1.6,0.88,1.63,-1.74,3.36,0.48,1.33,0.01,0.18,-0.01,0.1,0.28,-0.65,-0.21,-0.28,-0.37,0.08,0.05,-0.45,-0.11,-0.4,-0.48,1.79,-1.29,0.03,0.05,0.0]},{"set":"x7m20","portfolio":"completa","scenario":"bear","seed":1,"monthly":[-0.78,3.81,3.29,1.53,-3.05,10.43,1.53,13.17,33.73,-11.85,-9.64,-1.0,-0.06,-0.64,6.9,-1.09,0.75,0.59,-1.06,-0.62,1.19,1.01,0.27,0.78,2.11,-0.85,-0.09,0.5,-1.36,1.08,1.93,-3.23,1.35,-1.33,-0.71,-1.21,-0.0]},{"set":"x7m20","portfolio":"nucleo","scenario":"bear","seed":2,"monthly":[0.08,0.54,-0.58,1.97,-1.04,-0.11,-0.54,-1.11,-0.55,1.18,0.15,-0.54,-1.88,0.03,-0.78,-1.43,0.08,-0.32,-0.07,0.2,-0.39,-0.44,-0.16,0.0,-0.21,0.08,0.08,0.02,0.03,0.0,-0.33,0.4,0.0,0.08,0.25,-0.57,0.0]},{"set":"x7m20","portfolio":"completa","scenario":"bear","seed":2,"monthly":[-4.37,-1.06,-1.01,3.37,-2.77,-1.3,-2.06,-0.45,-1.31,1.89,0.73,0.68,-1.79,-1.88,-1.94,-1.75,1.17,0.27,0.23,1.97,0.89,3.47,2.62,-2.19,-0.2,0.01,-0.64,-1.45,-0.1,1.42,-1.72,0.87,-2.33,-1.21,1.73,2.26,0.0]},{"set":"x7m20","portfolio":"nucleo","scenario":"ciclo","seed":0,"monthly":[-0.35,-2.02,-1.4,-0.46,0.74,2.63,4.13,-0.82,-1.08,3.68,-0.19,4.45,-1.75,-2.27,0.45,1.99,-0.53,0.33,-1.05,0.02,-0.85,0.12,-0.31,-0.11,-0.18,-0.35,0.13,0.1,-0.1,0.38,-1.26,3.76,1.21,1.48,-2.95,-1.58,0.02]},{"set":"x7m20","portfolio":"completa","scenario":"ciclo","seed":0,"monthly":[0.69,-0.57,-2.97,2.19,9.96,9.93,14.69,-2.04,5.11,29.34,18.6,42.6,-11.41,-17.86,0.18,1.15,0.04,-0.49,-0.87,-0.41,-0.4,0.39,0.2,0.91,-0.02,-0.4,-0.07,0.05,-0.31,0.95,-0.33,1.53,-0.63,1.14,-0.31,-0.82,0.05]},{"set":"x7m20","portfolio":"nucleo","scenario":"ciclo","seed":1,"monthly":[-0.4,-0.06,-0.47,-0.03,2.95,2.73,2.17,6.07,6.15,1.94,-0.03,-1.73,0.52,-2.48,1.69,-0.69,2.22,-1.37,0.73,0.06,-0.03,-1.5,0.0,-0.24,0.28,-0.22,0.12,-0.14,-0.43,-0.21,-1.38,-1.8,3.36,-3.29,-1.34,-2.27,0.0]},{"set":"x7m20","portfolio":"completa","scenario":"ciclo","seed":1,"monthly":[-3.43,3.18,-3.02,2.18,2.18,12.54,2.42,15.11,26.35,-1.19,10.08,6.47,-0.87,-12.57,8.5,23.95,25.34,25.34,-8.97,2.69,-9.3,-0.3,0.26,0.15,0.03,-0.13,0.11,-0.01,-0.32,-0.05,-0.35,-0.7,0.78,-1.05,-0.35,-0.58,0.0]},{"set":"x7m20","portfolio":"nucleo","scenario":"ciclo","seed":2,"monthly":[-0.23,-0.36,-0.15,1.68,-1.47,3.68,3.09,0.99,-1.15,-0.01,1.49,-2.34,-2.88,-0.83,-1.7,0.29,1.05,-0.6,0.83,-0.63,-0.15,-0.02,0.02,0.27,-0.21,0.34,0.34,0.21,-0.19,0.0,0.19,0.07,0.0,-0.27,1.35,0.32,-0.02]},{"set":"x7m20","portfolio":"completa","scenario":"ciclo","seed":2,"monthly":[-0.26,-1.93,-2.03,3.3,-4.91,5.62,6.97,6.75,14.79,17.02,-7.75,1.97,-2.31,0.98,-5.83,6.64,18.81,31.17,19.77,21.06,-18.16,-4.37,45.46,-14.19,-2.07,-1.67,8.55,-3.29,-2.59,2.24,0.7,3.34,2.03,23.35,20.24,11.36,0.46]},{"set":"x7m20","portfolio":"nucleo","scenario":"lateral","seed":0,"monthly":[-0.3,-1.48,-1.58,0.66,0.43,0.83,-1.01,0.03,0.15,-0.07,-0.4,1.55,-1.59,0.35,-0.09,0.18,0.51,0.32,-1.19,0.42,-0.12,-0.15,-0.08,0.09,-0.18,-0.17,0.02,-0.37,-0.12,0.25,0.17,1.07,-0.38,0.01,-0.79,0.1,0.0]},{"set":"x7m20","portfolio":"completa","scenario":"lateral","seed":0,"monthly":[0.45,-1.15,-4.16,1.72,8.0,8.36,1.48,11.97,-0.91,-1.48,-5.74,3.1,-3.19,-3.71,1.01,3.19,-0.14,-1.24,-0.49,0.36,0.09,-0.13,0.37,0.92,-0.23,-0.72,-0.5,-0.88,-0.52,1.14,-0.05,0.62,-0.7,-0.06,-0.32,-0.35,0.01]},{"set":"x7m20","portfolio":"nucleo","scenario":"lateral","seed":1,"monthly":[-0.67,-0.2,-0.15,0.03,0.7,-0.28,0.02,-0.83,2.95,1.84,-1.56,1.42,0.57,-1.99,2.24,0.33,4.87,0.44,-0.43,2.99,-1.17,-0.35,-1.22,-1.84,-0.33,-1.11,0.5,-0.59,-0.52,0.0,-0.58,-0.23,1.07,-1.41,0.06,-0.7,0.0]},{"set":"x7m20","portfolio":"completa","scenario":"lateral","seed":1,"monthly":[-1.16,3.3,-1.9,0.56,-0.33,2.57,1.21,8.82,12.14,-0.5,-8.32,4.22,0.98,-2.04,21.89,4.66,45.54,-0.55,-0.28,34.16,25.31,6.2,-16.05,-14.01,-0.42,-0.29,0.18,-0.43,-0.55,0.18,0.22,-0.76,0.49,-0.37,-0.24,-0.57,-0.0]},{"set":"x7m20","portfolio":"nucleo","scenario":"lateral","seed":2,"monthly":[-0.61,-0.16,-0.08,0.28,-1.08,1.2,-1.47,-0.09,-0.11,2.42,0.28,-0.63,-1.24,-0.1,0.0,-0.37,-0.32,-1.47,0.46,1.3,-2.02,-0.39,-0.25,-0.39,0.0,-0.16,0.81,-0.84,-0.08,0.0,-0.08,0.08,0.15,-0.08,0.23,-0.22,0.0]},{"set":"x7m20","portfolio":"completa","scenario":"lateral","seed":2,"monthly":[-1.67,0.46,-3.09,0.06,-2.33,0.34,-2.25,-0.4,-0.83,2.96,2.99,-1.32,-1.29,-2.08,-0.12,0.51,-0.25,0.96,1.41,1.11,0.84,2.78,0.21,-1.66,-1.66,-1.41,0.19,-1.73,-0.32,1.25,-0.9,-1.27,-1.65,-0.86,0.16,-0.15,0.0]}]},"hedge":{"summary":[{"group":"completa","hedge":"antes","max_dd_med":-23.07,"max_dd_worst":-34.2,"ret_med":39.95,"month_med":0.0,"worst_month":-17.57,"crash_others":0.44,"crash_short":0.0,"short_dd_worst":-7.1,"short_ret_med":-2.5},{"group":"completa","hedge":"sin","max_dd_med":-22.95,"max_dd_worst":-34.16,"ret_med":40.82,"month_med":0.0,"worst_month":-17.59,"crash_others":0.44,"crash_short":0.0,"short_dd_worst":0.0,"short_ret_med":0.0},{"group":"completa","hedge":"x10","max_dd_med":-23.12,"max_dd_worst":-34.28,"ret_med":41.87,"month_med":0.05,"worst_month":-17.12,"crash_others":0.44,"crash_short":0.42,"short_dd_worst":-39.54,"short_ret_med":-4.99},{"group":"completa","hedge":"x2","max_dd_med":-23.1,"max_dd_worst":-34.2,"ret_med":40.22,"month_med":-0.07,"worst_month":-17.37,"crash_others":0.44,"crash_short":0.31,"short_dd_worst":-18.14,"short_ret_med":-3.44},{"group":"completa","hedge":"x3","max_dd_med":-23.08,"max_dd_worst":-34.21,"ret_med":40.95,"month_med":-0.07,"worst_month":-17.31,"crash_others":0.44,"crash_short":0.41,"short_dd_worst":-25.73,"short_ret_med":-0.89},{"group":"completa","hedge":"x5","max_dd_med":-23.12,"max_dd_worst":-34.23,"ret_med":40.56,"month_med":-0.03,"worst_month":-17.07,"crash_others":0.44,"crash_short":0.46,"short_dd_worst":-31.63,"short_ret_med":-2.72},{"group":"completa","hedge":"x7","max_dd_med":-23.11,"max_dd_worst":-34.25,"ret_med":41.09,"month_med":-0.01,"worst_month":-17.13,"crash_others":0.44,"crash_short":0.43,"short_dd_worst":-36.28,"short_ret_med":-4.99},{"group":"nucleo","hedge":"antes","max_dd_med":-12.1,"max_dd_worst":-15.83,"ret_med":-0.44,"month_med":-0.12,"worst_month":-5.22,"crash_others":-0.64,"crash_short":0.0,"short_dd_worst":-7.1,"short_ret_med":-2.5},{"group":"nucleo","hedge":"sin","max_dd_med":-12.03,"max_dd_worst":-15.22,"ret_med":0.77,"month_med":-0.1,"worst_month":-5.22,"crash_others":-0.64,"crash_short":0.0,"short_dd_worst":0.0,"short_ret_med":0.0},{"group":"nucleo","hedge":"x10","max_dd_med":-12.4,"max_dd_worst":-21.58,"ret_med":0.37,"month_med":-0.12,"worst_month":-6.03,"crash_others":-0.64,"crash_short":0.58,"short_dd_worst":-39.54,"short_ret_med":-4.99},{"group":"nucleo","hedge":"x2","max_dd_med":-12.1,"max_dd_worst":-16.5,"ret_med":-0.06,"month_med":-0.12,"worst_month":-5.22,"crash_others":-0.64,"crash_short":0.43,"short_dd_worst":-18.14,"short_ret_med":-3.44},{"group":"nucleo","hedge":"x3","max_dd_med":-12.46,"max_dd_worst":-17.89,"ret_med":0.96,"month_med":-0.12,"worst_month":-5.22,"crash_others":-0.64,"crash_short":0.57,"short_dd_worst":-25.73,"short_ret_med":-0.89},{"group":"nucleo","hedge":"x5","max_dd_med":-12.66,"max_dd_worst":-17.66,"ret_med":0.4,"month_med":-0.12,"worst_month":-5.22,"crash_others":-0.64,"crash_short":0.64,"short_dd_worst":-31.63,"short_ret_med":-2.72},{"group":"nucleo","hedge":"x7","max_dd_med":-14.62,"max_dd_worst":-20.25,"ret_med":-0.12,"month_med":-0.12,"worst_month":-5.22,"crash_others":-0.64,"crash_short":0.6,"short_dd_worst":-36.28,"short_ret_med":-4.99}],"beta":{"SUB10":{"median":0.0,"p90":0.004},"SUB11":{"median":-0.043,"p90":0.03},"SUB2":{"median":0.207,"p90":0.46},"SUB6":{"median":0.0,"p90":0.001},"SUB8":{"median":0.194,"p90":0.259},"SUB9":{"median":0.112,"p90":0.197}},"groups":{"completa":["SUB2","SUB6","SUB8","SUB9","SUB10","SUB11"],"nucleo":["SUB6","SUB8","SUB9","SUB10"]},"levs":[2,3,5,7,10],"crash":{"completa":{"btc":"−38% … −62%"},"nucleo":{"btc":"−38% … −62%"}}},"runs":{"cols":["set","scenario","seed","account","leverage","btc","ret","dd","sharpe","trades"],"rows":[["antes","bear",0,"SUB10",null,-95.1,-3.32,-10.04,-0.31,192.0],["antes","bear",0,"SUB11",null,-95.1,-3.95,-39.8,0.15,565.0],["antes","bear",0,"SUB2",null,-95.1,440.32,-88.92,1.18,2008.0],["antes","bear",0,"SUB4",null,-47.8,-42.26,-46.38,-7.67,292.0],["antes","bear",0,"SUB5",null,-95.1,-1.82,-5.96,-0.24,21.0],["antes","bear",0,"SUB6",null,-95.1,1.09,-4.57,0.16,314.0],["antes","bear",0,"SUB7",null,-95.1,-99.59,-99.62,-4.19,1035.0],["antes","bear",0,"SUB8",null,-95.1,-41.9,-42.82,-0.6,0.0],["antes","bear",0,"SUB9",null,-95.1,-25.57,-30.32,-0.82,222.0],["antes","bear",1,"SUB10",null,-55.4,8.17,-6.09,0.88,150.0],["antes","bear",1,"SUB11",null,-55.4,168.87,-43.3,0.85,638.0],["antes","bear",1,"SUB2",null,-55.4,1477.7,-86.66,1.38,2164.0],["antes","bear",1,"SUB4",null,-39.9,-57.16,-57.16,-14.68,215.0],["antes","bear",1,"SUB5",null,-55.4,-6.06,-6.87,-0.9,21.0],["antes","bear",1,"SUB6",null,-55.4,-7.41,-10.9,-1.57,322.0],["antes","bear",1,"SUB7",null,-55.4,-96.92,-96.99,-2.7,986.0],["antes","bear",1,"SUB8",null,-55.4,-11.63,-23.15,-0.21,0.0],["antes","bear",1,"SUB9",null,-55.4,3.89,-14.27,0.16,273.0],["antes","ciclo",0,"SUB10",null,-86.8,-2.76,-9.48,-0.27,160.0],["antes","ciclo",0,"SUB11",null,-86.8,-19.03,-45.83,-0.0,594.0],["antes","ciclo",0,"SUB2",null,-86.8,359.44,-97.31,1.07,1670.0],["antes","ciclo",0,"SUB4",null,-28.8,-60.97,-60.97,-21.19,137.0],["antes","ciclo",0,"SUB5",null,-86.8,3.1,-5.93,0.26,49.0],["antes","ciclo",0,"SUB6",null,-86.8,3.96,-3.58,1.75,141.0],["antes","ciclo",0,"SUB7",null,-86.8,-98.23,-98.38,-3.31,1029.0],["antes","ciclo",0,"SUB8",null,-86.8,1.03,-31.61,0.11,0.0],["antes","ciclo",0,"SUB9",null,-86.8,16.09,-24.14,0.36,201.0],["antes","ciclo",1,"SUB10",null,88.9,-0.28,-2.74,-0.02,136.0],["antes","ciclo",1,"SUB11",null,88.9,-67.88,-79.58,-0.68,686.0],["antes","ciclo",1,"SUB2",null,88.9,14827.19,-76.91,1.87,1774.0],["antes","ciclo",1,"SUB4",null,-32.4,-52.44,-54.33,-13.04,220.0],["antes","ciclo",1,"SUB5",null,88.9,-2.5,-6.52,-0.23,60.0],["antes","ciclo",1,"SUB6",null,88.9,-0.81,-4.34,-0.41,117.0],["antes","ciclo",1,"SUB7",null,88.9,-91.17,-91.95,-2.1,978.0],["antes","ciclo",1,"SUB8",null,88.9,31.29,-22.39,0.63,0.0],["antes","ciclo",1,"SUB9",null,88.9,44.42,-26.0,0.7,291.0],["antes","lateral",0,"SUB10",null,-77.2,0.37,-5.09,0.05,172.0],["antes","lateral",0,"SUB11",null,-77.2,-34.03,-44.71,-0.26,570.0],["antes","lateral",0,"SUB2",null,-77.2,199.99,-96.99,0.93,1505.0],["antes","lateral",0,"SUB4",null,-25.4,-49.87,-50.95,-12.52,194.0],["antes","lateral",0,"SUB5",null,-77.2,0.11,-5.73,0.03,26.0],["antes","lateral",0,"SUB6",null,-77.2,-3.75,-5.75,-0.47,506.0],["antes","lateral",0,"SUB7",null,-77.2,-93.59,-94.32,-2.59,1094.0],["antes","lateral",0,"SUB8",null,-77.2,-35.4,-35.96,-0.64,0.0],["antes","lateral",0,"SUB9",null,-77.2,-14.26,-20.53,-0.36,130.0],["antes","lateral",1,"SUB10",null,110.7,2.51,-5.48,0.31,134.0],["antes","lateral",1,"SUB11",null,110.7,-19.27,-56.24,0.1,671.0],["antes","lateral",1,"SUB2",null,110.7,12446.53,-84.81,1.83,1611.0],["antes","lateral",1,"SUB4",null,20.2,-47.04,-47.75,-11.41,200.0],["antes","lateral",1,"SUB5",null,110.7,-3.44,-3.51,-1.31,2.0],["antes","lateral",1,"SUB6",null,110.7,-8.37,-8.38,-3.33,206.0],["antes","lateral",1,"SUB7",null,110.7,-92.48,-92.48,-2.78,972.0],["antes","lateral",1,"SUB8",null,110.7,-6.49,-23.09,-0.01,0.0],["antes","lateral",1,"SUB9",null,110.7,18.71,-29.22,0.39,242.0],["despues","bear",0,"SUB10",null,-95.1,-3.32,-10.04,-0.31,192.0],["despues2","bear",0,"SUB10",null,-95.1,-6.61,-11.61,-0.65,192.0],["despues","bear",0,"SUB11",null,-95.1,24.98,-30.43,0.4,565.0],["despues2","bear",0,"SUB11",null,-95.1,-2.41,-34.31,0.12,562.0],["despues","bear",0,"SUB2",null,-95.1,-15.95,-42.98,-0.07,121.0],["despues2","bear",0,"SUB2",null,-95.1,-22.03,-42.05,-0.08,165.0],["despues","bear",0,"SUB4",null,-47.8,-23.76,-26.1,-7.14,184.0],["despues2","bear",0,"SUB4",null,-47.8,0.0,0.0,0.0,0.0],["despues","bear",0,"SUB5",null,-95.1,-1.8,-5.93,-0.24,21.0],["despues2","bear",0,"SUB5",null,-95.1,-2.23,-6.28,-0.29,21.0],["despues","bear",0,"SUB6",null,-95.1,4.29,-3.24,0.54,303.0],["despues2","bear",0,"SUB6",null,-95.1,-10.74,-12.67,-1.32,303.0],["despues","bear",0,"SUB7",null,-95.1,-36.67,-40.18,-1.0,141.0],["despues2","bear",0,"SUB7",null,-95.1,-37.85,-40.63,-1.4,94.0],["despues","bear",0,"SUB8",null,-95.1,-41.9,-42.82,-0.6,0.0],["despues2","bear",0,"SUB8",null,-95.1,-42.46,-43.35,-0.61,0.0],["despues","bear",0,"SUB9",null,-95.1,-28.19,-31.82,-0.93,206.0],["despues2","bear",0,"SUB9",null,-95.1,-32.15,-35.56,-1.13,210.0],["despues","bear",1,"SUB10",null,-55.4,8.17,-6.09,0.88,150.0],["despues","bear",1,"SUB11",null,-55.4,106.23,-31.76,0.82,610.0],["despues","bear",1,"SUB2",null,-55.4,292.42,-41.39,1.03,519.0],["despues","bear",1,"SUB4",null,-39.9,-27.04,-27.09,-8.33,177.0],["despues","bear",1,"SUB5",null,-55.4,-6.06,-6.87,-0.9,21.0],["despues","bear",1,"SUB6",null,-55.4,3.49,-3.09,0.75,307.0],["despues","bear",1,"SUB7",null,-55.4,-39.75,-41.07,-0.87,187.0],["despues","bear",1,"SUB8",null,-55.4,-11.63,-23.15,-0.21,0.0],["despues","bear",1,"SUB9",null,-55.4,3.89,-14.27,0.16,273.0],["despues","bear",2,"SUB10",null,-87.0,1.78,-4.72,0.22,138.0],["despues","bear",2,"SUB11",null,-87.0,24.21,-47.74,0.38,594.0],["despues","bear",2,"SUB2",null,-87.0,-2.33,-47.55,0.29,366.0],["despues","bear",2,"SUB4",null,1.7,-23.32,-25.03,-5.75,261.0],["despues","bear",2,"SUB5",null,-87.0,-2.35,-6.68,-0.18,18.0],["despues","bear",2,"SUB6",null,-87.0,1.49,-3.54,0.41,272.0],["despues","bear",2,"SUB7",null,-87.0,-40.39,-41.58,-1.43,95.0],["despues","bear",2,"SUB8",null,-87.0,-55.13,-55.63,-1.45,0.0],["despues","bear",2,"SUB9",null,-87.0,-26.01,-28.08,-0.89,246.0],["despues","ciclo",0,"SUB10",null,-86.8,-2.76,-9.48,-0.27,160.0],["despues2","ciclo",0,"SUB10",null,-86.8,-5.65,-10.83,-0.58,160.0],["despues","ciclo",0,"SUB11",null,-86.8,3.87,-38.67,0.19,594.0],["despues2","ciclo",0,"SUB11",null,-86.8,-7.55,-35.49,0.05,584.0],["despues","ciclo",0,"SUB2",null,-86.8,642.79,-44.53,1.42,497.0],["despues2","ciclo",0,"SUB2",null,-86.8,192.3,-44.15,0.95,398.0],["despues","ciclo",0,"SUB4",null,-28.8,-33.76,-33.76,-16.11,118.0],["despues2","ciclo",0,"SUB4",null,-28.8,0.0,0.0,0.0,0.0],["despues","ciclo",0,"SUB5",null,-86.8,3.1,-5.93,0.26,49.0],["despues2","ciclo",0,"SUB5",null,-86.8,2.73,-6.17,0.23,49.0],["despues","ciclo",0,"SUB6",null,-86.8,5.0,-3.56,2.21,358.0],["despues2","ciclo",0,"SUB6",null,-86.8,-3.12,-8.96,-1.16,330.0],["despues","ciclo",0,"SUB7",null,-86.8,-37.74,-40.23,-1.48,163.0],["despues2","ciclo",0,"SUB7",null,-86.8,-39.33,-40.78,-1.99,105.0],["despues","ciclo",0,"SUB8",null,-86.8,1.03,-31.61,0.11,0.0],["despues2","ciclo",0,"SUB8",null,-86.8,0.45,-31.81,0.1,0.0],["despues","ciclo",0,"SUB9",null,-86.8,16.09,-24.14,0.36,201.0],["despues2","ciclo",0,"SUB9",null,-86.8,6.58,-27.68,0.21,201.0],["despues","ciclo",1,"SUB10",null,88.9,-0.28,-2.74,-0.02,136.0],["despues","ciclo",1,"SUB11",null,88.9,-37.53,-46.82,-0.57,329.0],["despues","ciclo",1,"SUB2",null,88.9,1359.51,-42.13,1.55,874.0],["despues","ciclo",1,"SUB4",null,-32.4,-25.29,-25.29,-7.13,198.0],["despues","ciclo",1,"SUB5",null,88.9,-2.5,-6.52,-0.23,60.0],["despues","ciclo",1,"SUB6",null,88.9,0.94,-2.59,0.58,328.0],["despues","ciclo",1,"SUB7",null,88.9,-39.38,-41.13,-0.63,455.0],["despues","ciclo",1,"SUB8",null,88.9,31.29,-22.39,0.63,0.0],["despues","ciclo",1,"SUB9",null,88.9,44.42,-26.0,0.7,291.0],["despues","ciclo",2,"SUB10",null,-62.5,2.25,-4.9,0.26,132.0],["despues","ciclo",2,"SUB11",null,-62.5,-38.13,-40.45,-1.01,172.0],["despues","ciclo",2,"SUB2",null,-62.5,-33.41,-43.68,-0.32,156.0],["despues","ciclo",2,"SUB4",null,-3.9,-36.37,-36.79,-12.46,177.0],["despues","ciclo",2,"SUB5",null,-62.5,-0.91,-5.47,-0.12,9.0],["despues","ciclo",2,"SUB6",null,-62.5,0.82,-2.75,0.41,319.0],["despues","ciclo",2,"SUB7",null,-62.5,-39.81,-40.15,-0.73,384.0],["despues","ciclo",2,"SUB8",null,-62.5,0.02,-29.21,0.1,0.0],["despues","ciclo",2,"SUB9",null,-62.5,4.62,-27.48,0.17,150.0],["despues","lateral",0,"SUB10",null,-77.2,0.37,-5.09,0.05,172.0],["despues2","lateral",0,"SUB10",null,-77.2,-3.97,-7.59,-0.41,172.0],["despues","lateral",0,"SUB11",null,-77.2,-10.37,-35.24,-0.01,564.0],["despues2","lateral",0,"SUB11",null,-77.2,-21.77,-37.46,-0.19,564.0],["despues","lateral",0,"SUB2",null,-77.2,443.04,-42.73,1.33,548.0],["despues2","lateral",0,"SUB2",null,-77.2,80.01,-42.78,0.69,329.0],["despues","lateral",0,"SUB4",null,-25.4,-30.06,-30.83,-13.23,118.0],["despues2","lateral",0,"SUB4",null,-25.4,0.0,0.0,0.0,0.0],["despues","lateral",0,"SUB5",null,-77.2,0.11,-5.73,0.03,26.0],["despues2","lateral",0,"SUB5",null,-77.2,-0.05,-5.78,0.01,26.0],["despues","lateral",0,"SUB6",null,-77.2,-1.11,-2.69,-0.12,668.0],["despues2","lateral",0,"SUB6",null,-77.2,-15.09,-14.98,-2.06,649.0],["despues","lateral",0,"SUB7",null,-77.2,-37.43,-40.38,-1.09,263.0],["despues2","lateral",0,"SUB7",null,-77.2,-38.44,-40.68,-1.47,178.0],["despues","lateral",0,"SUB8",null,-77.2,-35.4,-35.96,-0.64,0.0],["despues2","lateral",0,"SUB8",null,-77.2,-35.93,-36.47,-0.65,0.0],["despues","lateral",0,"SUB9",null,-77.2,-14.26,-20.53,-0.36,130.0],["despues2","lateral",0,"SUB9",null,-77.2,-10.57,-23.92,-0.22,128.0],["despues","lateral",1,"SUB10",null,110.7,2.51,-5.48,0.31,134.0],["despues","lateral",1,"SUB11",null,110.7,-23.06,-43.41,-0.09,634.0],["despues","lateral",1,"SUB2",null,110.7,46.84,-44.65,0.51,423.0],["despues","lateral",1,"SUB4",null,20.2,-25.05,-25.64,-9.28,137.0],["despues","lateral",1,"SUB5",null,110.7,-3.44,-3.51,-1.31,2.0],["despues","lateral",1,"SUB6",null,110.7,-3.04,-3.23,-1.37,399.0],["despues","lateral",1,"SUB7",null,110.7,-40.95,-40.95,-1.73,96.0],["despues","lateral",1,"SUB8",null,110.7,-6.49,-23.09,-0.01,0.0],["despues","lateral",1,"SUB9",null,110.7,19.23,-28.91,0.4,238.0],["despues","lateral",2,"SUB10",null,-53.4,-3.0,-7.14,-0.37,118.0],["despues","lateral",2,"SUB11",null,-53.4,-24.78,-44.68,-0.19,548.0],["despues","lateral",2,"SUB2",null,-53.4,-17.63,-46.38,-0.11,135.0],["despues","lateral",2,"SUB4",null,-25.6,-26.97,-27.25,-8.89,166.0],["despues","lateral",2,"SUB5",null,-53.4,-4.99,-5.26,-0.9,4.0],["despues","lateral",2,"SUB6",null,-53.4,-7.28,-7.29,-2.32,692.0],["despues","lateral",2,"SUB7",null,-53.4,-38.98,-40.81,-1.68,119.0],["despues","lateral",2,"SUB8",null,-53.4,-14.44,-28.95,-0.22,0.0],["despues","lateral",2,"SUB9",null,-53.4,-8.36,-18.32,-0.18,147.0],["x7m20","bear",0,"SUB10",7.0,-95.1,-3.32,-10.04,-0.31,192.0],["x7m20","bear",0,"SUB11",7.0,-95.1,46.87,-20.72,0.65,565.0],["x7m20","bear",0,"SUB2",7.0,-95.1,-32.03,-42.65,-0.38,216.0],["x7m20","bear",0,"SUB5",7.0,-95.1,-1.42,-5.57,-0.21,21.0],["x7m20","bear",0,"SUB6",7.0,-95.1,4.03,-3.42,0.51,304.0],["x7m20","bear",0,"SUB9",7.0,-95.1,-28.19,-31.82,-0.93,206.0],["x7m20","bear",1,"SUB10",7.0,-55.4,8.17,-6.09,0.88,150.0],["x7m20","bear",1,"SUB11",7.0,-55.4,73.52,-30.83,0.75,626.0],["x7m20","bear",1,"SUB2",7.0,-55.4,209.36,-41.7,0.99,650.0],["x7m20","bear",1,"SUB5",7.0,-55.4,-6.06,-6.87,-0.9,21.0],["x7m20","bear",1,"SUB6",7.0,-55.4,3.33,-3.27,0.72,308.0],["x7m20","bear",1,"SUB9",7.0,-55.4,3.89,-14.27,0.16,273.0],["x7m20","bear",2,"SUB10",7.0,-87.0,1.78,-4.72,0.22,138.0],["x7m20","bear",2,"SUB11",7.0,-87.0,12.62,-39.13,0.28,594.0],["x7m20","bear",2,"SUB2",7.0,-87.0,-38.71,-43.44,-0.77,117.0],["x7m20","bear",2,"SUB5",7.0,-87.0,-4.09,-7.49,-0.28,31.0],["x7m20","bear",2,"SUB6",7.0,-87.0,4.16,-1.9,1.29,149.0],["x7m20","bear",2,"SUB9",7.0,-87.0,-26.01,-28.08,-0.89,246.0],["x7m20","ciclo",0,"SUB10",7.0,-86.8,-2.76,-9.48,-0.27,160.0],["x7m20","ciclo",0,"SUB11",7.0,-86.8,29.01,-24.76,0.49,594.0],["x7m20","ciclo",0,"SUB2",7.0,-86.8,718.45,-40.61,1.8,680.0],["x7m20","ciclo",0,"SUB5",7.0,-86.8,3.1,-5.93,0.26,49.0],["x7m20","ciclo",0,"SUB6",7.0,-86.8,4.9,-3.56,2.06,144.0],["x7m20","ciclo",0,"SUB9",7.0,-86.8,16.09,-24.14,0.36,201.0],["x7m20","ciclo",1,"SUB10",7.0,88.9,-0.28,-2.74,-0.02,136.0],["x7m20","ciclo",1,"SUB11",7.0,88.9,-40.59,-44.7,-0.65,606.0],["x7m20","ciclo",1,"SUB2",7.0,88.9,1168.11,-42.01,1.76,1064.0],["x7m20","ciclo",1,"SUB5",7.0,88.9,-2.5,-6.52,-0.23,60.0],["x7m20","ciclo",1,"SUB6",7.0,88.9,1.0,-2.69,0.57,117.0],["x7m20","ciclo",1,"SUB9",7.0,88.9,44.42,-26.0,0.7,291.0],["x7m20","ciclo",2,"SUB10",7.0,-62.5,2.25,-4.9,0.26,132.0],["x7m20","ciclo",2,"SUB11",7.0,-62.5,-13.91,-40.74,-0.07,565.0],["x7m20","ciclo",2,"SUB2",7.0,-62.5,2737.71,-40.56,1.9,1716.0],["x7m20","ciclo",2,"SUB5",7.0,-62.5,2.39,-5.48,0.24,61.0],["x7m20","ciclo",2,"SUB6",7.0,-62.5,0.63,-2.94,0.31,91.0],["x7m20","ciclo",2,"SUB9",7.0,-62.5,4.62,-27.48,0.17,150.0],["x7m20","lateral",0,"SUB10",7.0,-77.2,0.37,-5.09,0.05,172.0],["x7m20","lateral",0,"SUB11",7.0,-77.2,22.1,-20.34,0.41,570.0],["x7m20","lateral",0,"SUB2",7.0,-77.2,81.21,-40.48,0.76,566.0],["x7m20","lateral",0,"SUB5",7.0,-77.2,0.11,-5.73,0.03,26.0],["x7m20","lateral",0,"SUB6",7.0,-77.2,1.11,-2.69,0.16,243.0],["x7m20","lateral",0,"SUB9",7.0,-77.2,-14.26,-20.53,-0.36,130.0],["x7m20","lateral",1,"SUB10",7.0,110.7,2.51,-5.48,0.31,134.0],["x7m20","lateral",1,"SUB11",7.0,110.7,-22.8,-36.61,-0.21,657.0],["x7m20","lateral",1,"SUB2",7.0,110.7,1070.94,-41.76,1.69,1264.0],["x7m20","lateral",1,"SUB5",7.0,110.7,-3.44,-3.51,-1.31,2.0],["x7m20","lateral",1,"SUB6",7.0,110.7,-4.03,-4.05,-1.63,173.0],["x7m20","lateral",1,"SUB9",7.0,110.7,19.23,-28.91,0.4,238.0],["x7m20","lateral",2,"SUB10",7.0,-53.4,-3.0,-7.14,-0.37,118.0],["x7m20","lateral",2,"SUB11",7.0,-53.4,-16.73,-43.46,-0.15,560.0],["x7m20","lateral",2,"SUB2",7.0,-53.4,-28.65,-43.01,-0.55,178.0],["x7m20","lateral",2,"SUB5",7.0,-53.4,-4.99,-5.26,-0.9,4.0],["x7m20","lateral",2,"SUB6",7.0,-53.4,-5.01,-5.02,-1.56,227.0],["x7m20","lateral",2,"SUB9",7.0,-53.4,-8.36,-18.32,-0.18,147.0],["sub5","bear",0,"SUB5",10.0,-95.1,30.44,-41.79,0.46,234.0],["sub5","bear",0,"SUB5",2.0,-95.1,-5.75,-18.35,-0.22,273.0],["sub5","bear",0,"SUB5",3.0,-95.1,-12.12,-26.69,-0.41,231.0],["sub5","bear",0,"SUB5",5.0,-95.1,-2.72,-31.8,0.01,246.0],["sub5","bear",0,"SUB5",7.0,-95.1,21.7,-28.68,0.44,239.0],["sub5","bear",1,"SUB5",10.0,-55.4,7.42,-28.76,0.22,175.0],["sub5","bear",1,"SUB5",2.0,-55.4,-4.16,-16.39,-0.16,208.0],["sub5","bear",1,"SUB5",3.0,-55.4,0.94,-12.92,0.08,184.0],["sub5","bear",1,"SUB5",5.0,-55.4,-1.83,-22.75,0.02,188.0],["sub5","bear",1,"SUB5",7.0,-55.4,1.91,-28.78,0.12,176.0],["sub5","bear",2,"SUB5",10.0,-87.0,-16.68,-39.84,-0.11,226.0],["sub5","bear",2,"SUB5",2.0,-87.0,8.05,-16.05,0.37,253.0],["sub5","bear",2,"SUB5",3.0,-87.0,4.74,-21.55,0.2,262.0],["sub5","bear",2,"SUB5",5.0,-87.0,-3.23,-24.08,-0.0,245.0],["sub5","bear",2,"SUB5",7.0,-87.0,-20.03,-34.67,-0.31,229.0],["sub5","ciclo",0,"SUB5",10.0,-86.8,-7.42,-38.31,-0.07,93.0],["sub5","ciclo",0,"SUB5",2.0,-86.8,-5.69,-15.93,-0.3,111.0],["sub5","ciclo",0,"SUB5",3.0,-86.8,-8.9,-22.39,-0.41,106.0],["sub5","ciclo",0,"SUB5",5.0,-86.8,-14.68,-30.99,-0.49,86.0],["sub5","ciclo",0,"SUB5",7.0,-86.8,-20.87,-37.85,-0.57,83.0],["sub5","ciclo",1,"SUB5",10.0,88.9,-19.3,-29.5,-0.35,82.0],["sub5","ciclo",1,"SUB5",2.0,88.9,1.87,-5.08,0.16,105.0],["sub5","ciclo",1,"SUB5",3.0,88.9,-0.89,-7.51,-0.02,95.0],["sub5","ciclo",1,"SUB5",5.0,88.9,-2.4,-12.56,-0.04,87.0],["sub5","ciclo",1,"SUB5",7.0,88.9,-15.49,-20.93,-0.44,87.0],["sub5","ciclo",2,"SUB5",10.0,-62.5,20.58,-35.86,0.44,97.0],["sub5","ciclo",2,"SUB5",2.0,-62.5,11.15,-9.26,0.73,135.0],["sub5","ciclo",2,"SUB5",3.0,-62.5,11.19,-10.94,0.55,127.0],["sub5","ciclo",2,"SUB5",5.0,-62.5,15.05,-17.28,0.5,129.0],["sub5","ciclo",2,"SUB5",7.0,-62.5,19.09,-31.36,0.51,101.0],["sub5","lateral",0,"SUB5",10.0,-77.2,-1.12,-7.53,-0.05,26.0],["sub5","lateral",0,"SUB5",2.0,-77.2,0.11,-5.73,0.03,26.0],["sub5","lateral",0,"SUB5",3.0,-77.2,-0.04,-5.73,0.01,26.0],["sub5","lateral",0,"SUB5",5.0,-77.2,-0.35,-5.73,-0.01,26.0],["sub5","lateral",0,"SUB5",7.0,-77.2,-0.66,-5.73,-0.03,26.0],["sub5","lateral",1,"SUB5",10.0,110.7,-9.34,-9.49,-1.31,2.0],["sub5","lateral",1,"SUB5",2.0,110.7,-3.44,-3.51,-1.31,2.0],["sub5","lateral",1,"SUB5",3.0,110.7,-4.18,-4.23,-1.32,2.0],["sub5","lateral",1,"SUB5",5.0,110.7,-5.65,-5.73,-1.33,2.0],["sub5","lateral",1,"SUB5",7.0,110.7,-7.13,-7.24,-1.32,2.0],["sub5","lateral",2,"SUB5",10.0,-53.4,-4.99,-5.26,-0.9,4.0],["sub5","lateral",2,"SUB5",2.0,-53.4,-4.99,-5.26,-0.9,4.0],["sub5","lateral",2,"SUB5",3.0,-53.4,-4.99,-5.26,-0.9,4.0],["sub5","lateral",2,"SUB5",5.0,-53.4,-4.99,-5.26,-0.9,4.0],["sub5","lateral",2,"SUB5",7.0,-53.4,-4.99,-5.26,-0.9,4.0]]},"rec":{"title":"Low-risk core, margin ≤ 20%, and the target validated before committing to it","summary":["Working target: 1–2% a month","The 3–5% is validated with real history and 6 months of demo. The stress test guarantees bounded risk, not profit."],"items":["<b>Portfolio:</b> core SUB5, SUB6, SUB9 and SUB10 with at least 80% of the bot's capital. SUB2 and SUB11 stay out until the real backtest; afterwards, as a satellite of at most 20%.","<b>Margin:</b> at most 20% of each account, already enforced in the code (<span class=\"mono\">MAX_MARGIN_PCT=0.2</span>).","<b>Leverage:</b> start at 3x (0.6× exposure) and move to 5x and 7x only if each stage completes 3 months with drawdown below 10%.","<b>Limits for “very manageable risk”:</b> pause at 10% and hard stop at 20% (today 25% and 40%). Set in <span class=\"mono\">.env</span>.","<b>Target:</b> 1–2% a month as a working hypothesis. 3–5% only if the real backtest and the demo show it within those limits."],"table":[["Portfolio","SUB5, 6, 9, 10"],["Max margin","20% per account"],["Leverage","3x → 7x after demo"],["Max exposure","0.6× → 1.4×"],["Pause / hard stop","10% / 20%"],["Working target","1–2% a month"],["Core worst drawdown (stress)","−11%"]]}};</script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const P = window.PLAN || {};
+  const fmtP = (v, d = 1) => v == null ? "—" : `${v > 0 ? "+" : ""}${(+v).toFixed(d)}%`;
+  const nf = v => Math.round(v).toLocaleString("en-US");
+
+  /* ── Pestañas ───────────────────────────────────────────────────── */
+  const TABS = [["resumen", "Overview"], ["sociedad", "Company"], ["ico", "ICO"], ["bot", "Bot & backtest"], ["estres", "Stress test"], ["rentabilidad", "Returns"], ["estrategia", "My strategy"], ["pasos", "Risks & next steps"]];
+  const slides = [...document.querySelectorAll(".slide")];
+  const tabsEl = $("#tabs"), tabnav = $("#tabnav");
+  tabsEl.innerHTML = TABS.map(([k, t], j) => `<button type="button" role="tab" id="tab-${k}" data-k="${k}" aria-controls="deck"><span class="n">${j + 1}</span>${t}</button>`).join("");
+  function show(k, scroll) {
+    if (!TABS.some(t => t[0] === k)) k = TABS[0][0];
+    slides.forEach(s => { s.hidden = s.dataset.tab !== k; });
+    tabsEl.querySelectorAll("button").forEach(b => {
+      const on = b.dataset.k === k;
+      b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1;
+      if (on) tabsEl.scrollLeft = b.offsetLeft - tabsEl.clientWidth / 2 + b.offsetWidth / 2;
+    });
+    const j = TABS.findIndex(t => t[0] === k), prev = TABS[j - 1], next = TABS[j + 1];
+    tabnav.innerHTML = (prev ? `<button type="button" data-k="${prev[0]}">← ${prev[1]}</button>` : "<span></span>") + (next ? `<button type="button" data-k="${next[0]}">${next[1]} →</button>` : "");
+    try { history.replaceState(null, "", "#" + k); localStorage.setItem("puda-tab", k); } catch (_) {}
+    if (scroll) scrollTo({ top: 0 });
+  }
+  const pick = e => { const b = e.target.closest("button[data-k]"); if (b) { show(b.dataset.k, true); return b; } };
+  tabsEl.addEventListener("click", pick);
+  tabnav.addEventListener("click", e => { if (pick(e)) $("#tab-" + (location.hash.slice(1) || TABS[0][0]))?.focus(); });
+  tabsEl.addEventListener("keydown", e => {
+    const j = TABS.findIndex(t => t[0] === e.target.dataset.k);
+    const n = { ArrowRight: j + 1, ArrowLeft: j - 1, Home: 0, End: TABS.length - 1 }[e.key];
+    if (n == null || !TABS[n]) return;
+    e.preventDefault(); show(TABS[n][0]); $("#tab-" + TABS[n][0]).focus();
+  });
+  if (!/^file:/.test(location.href)) document.querySelectorAll(".langs a[data-alt]").forEach(a => { if (a.dataset.alt) a.href = a.dataset.alt; });
+
+  /* ── 3 · Calendario ─────────────────────────────────────────────── */
+  const M0 = new Date("2026-10-01"), M1 = new Date("2028-07-01");
+  const pos = d => (new Date(d) - M0) / (M1 - M0) * 100;
+  const GANTT = [
+    ["Website cleanup and structure", "done: no fundraising on site", "2026-10-01", "2026-11-15", "var(--c-d)"],
+    ["SV/ES lawyers and decisions", "Step A1", "2026-10-15", "2026-12-01", "var(--c-a)"],
+    ["Incorporate the S.A. de C.V.", "Steps A2–A3", "2026-12-01", "2027-01-31", "var(--c-a)"],
+    ["Smart contract audit", "sole initial provider", "2026-11-15", "2027-02-15", "var(--c-b)"],
+    ["Real backtest + bot on demo", "6 months of results", "2026-10-15", "2027-05-15", "var(--c-c)"],
+    ["UIF, CNAD issuer and DIR", "Step A4", "2027-02-01", "2027-05-15", "var(--c-a)"],
+    ["Certifier and CNAD registration", "condition for selling", "2027-04-15", "2027-06-30", "var(--c-b)"],
+    ["Offering via PSAD with KYC", "the ICO", "2027-06-15", "2027-08-31", "var(--c-b)"],
+    ["Liquidity, reports, DAO", "after the sale", "2027-08-15", "2028-06-30", "var(--c-d)"],
+  ];
+  const ticks = ["2026-10-01", "2027-01-01", "2027-04-01", "2027-07-01", "2027-10-01", "2028-01-01", "2028-04-01"];
+  const tickLabel = d => { const x = new Date(d); return `${["Jan", "Apr", "Jul", "Oct"][x.getMonth() / 3]} ${String(x.getFullYear()).slice(2)}`; };
+  $("#gantt").innerHTML = `<div class="g-axis"><span></span><div class="g-ticks">${ticks.map(t => `<span style="left:${pos(t)}%">${tickLabel(t)}</span>`).join("")}</div></div>` +
+    GANTT.map(([n, s, a, b, c]) => `<div class="g-row"><span class="g-name">${n}<small>${s}</small></span><div class="g-track"><div class="g-bar" style="left:${pos(a)}%;width:${pos(b) - pos(a)}%;background:${c}" title="${a} → ${b}"></div></div></div>`).join("");
+
+  /* ── 5 · Constitución ───────────────────────────────────────────── */
+  const STEPS7 = [
+    ["Company name", "Check and reserve the name at the CNR (commercial registry)."],
+    ["Deed of incorporation", "Before a Salvadoran notary: partners, capital, corporate purpose, management. Usually at least 2 shareholders."],
+    ["Registration with the CNR", "Commercial Registry: the company acquires legal personality."],
+    ["NIT and NRC (tax IDs)", "Tax identification number and VAT taxpayer registration with the Ministry of Finance."],
+    ["Business and city registration", "Company registration (matrícula de empresa) and municipal registration of the address."],
+    ["Bank account", "Corporate account for the capital and supplier payments (auditor, lawyers)."],
+    ["Legal representative", "Registered appointment; signs before the UIF, the CNAD and the PSAD."],
+  ];
+  $("#steps7").innerHTML = STEPS7.map(([a, b]) => `<li><b>${a}</b><span>${b}</span></li>`).join("");
+
+  /* ── 8 · Reparto ────────────────────────────────────────────────── */
+  const ALLOC = [["Registered sale", 15, "9,261,000 PUDA · via PSAD with KYC", "var(--c-b)"], ["Liquidity pool", 5, "3,087,000 · LP locked for 24 months", "var(--c-a)"],
+    ["Team and promotion", 5, "3,087,000 · 1-year cliff + 4-year vesting", "var(--c-c)"], ["Treasury", 75, "46,305,000 · tranches only with new registration, max. 5%/year", "var(--panel-2, #3a4256)"]];
+  $("#alloc").innerHTML = ALLOC.map(([n, v, , c]) => `<div style="flex:${v};background:${c}" title="${n}: ${v}%">${v}%</div>`).join("");
+  $("#alloc-list").innerHTML = ALLOC.map(([n, v, d, c]) => `<div><i style="background:${c}"></i><span>${n}<small>${d}</small></span><b>${v}%</b></div>`).join("");
+
+  /* ── 9 · Proceso ICO ────────────────────────────────────────────── */
+  const ICO = [
+    ["Smart contract auditor", "Sole pre-launch provider. Contract with per-wallet caps, vesting and LP lock.", "Q4 2026 – Q1 2027"],
+    ["Report published", "Required by the website before any sale.", "Q1 2027"],
+    ["Structurer and DIR", "Offering document with tokenomics, risks and use of funds.", "Q1–Q2 2027"],
+    ["CNAD certifier", "Reviews the DIR and reports to the CNAD.", "Q2 2027"],
+    ["CNAD registration", "No registration, no sale or promotion.", "Q2 2027"],
+    ["Sale via PSAD", "KYC, per-investor limits and blocking of the EU and the US.", "Q2–Q3 2027"],
+    ["Treasury and liquidity", "Funds to multisig; DEX pool with LP locked for 24 months.", "Q3 2027"],
+    ["Quarterly reports", "Bot NAV, treasury and gold custody.", "from Q3 2027"],
+  ];
+  $("#ico").innerHTML = ICO.map(([a, b, c]) => `<li><b>${a}</b><span>${b}</span><em>${c}</em></li>`).join("");
+
+  /* ── 10 · Fondos ────────────────────────────────────────────────── */
+  const FUNDS = [["Locked liquidity", 30, "DEX pool, LP locked by contract for 24 months.", "#3987e5"], ["Bot capital", 25, "Capped; margin ≤ 20% per account and hard stop at 40%.", "#d95926"],
+    ["Treasury and reserve (gold)", 20, "Public multisig; gold with a custody certificate.", "#199e70"], ["Legal, audits and registration", 10, "Auditor, certifier, structurer, CNAD, UIF, lawyers.", "#c98500"],
+    ["Development and operations", 10, "Website, bot infrastructure, security.", "#d55181"], ["Contingency", 5, "Its use is published in the quarterly report.", "#9085e9"]];
+  $("#funds-bar").innerHTML = FUNDS.map(([n, v, , c]) => `<div style="flex:${v};background:${c}" title="${n}: ${v}%">${v}%</div>`).join("");
+  $("#funds-list").innerHTML = FUNDS.map(([n, v, d, c]) => `<div class="box fund"><h3><i style="background:${c}"></i>${n} · ${v}%</h3><p>${d}</p></div>`).join("");
+
+  /* ── Gráficos de líneas ─────────────────────────────────────────── */
+  function lines(series, { w = 760, h = 300, bands = [] } = {}) {
+    const L = 46, R = 10, T = 18, B = 22, all = series.flatMap(s => s.pts);
+    if (!all.length) return `<p class="note">Data pending.</p>`;
+    let lo = Math.min(...all, 100), hi = Math.max(...all, 100);
+    const log = hi / Math.max(lo, 1) > 6, f = v => log ? Math.log(Math.max(v, .5)) : v;
+    const pad = (f(hi) - f(lo)) * .08 || 1, y0 = f(lo) - pad, y1 = f(hi) + pad;
+    const n = Math.max(...series.map(s => s.pts.length));
+    const X = k => L + k / Math.max(n - 1, 1) * (w - L - R), Y = v => T + (y1 - f(v)) / (y1 - y0) * (h - T - B);
+    let g = "";
+    bands.forEach((b, k) => { if (k % 2) g += `<rect x="${X(b[0] * (n - 1))}" y="${T}" width="${X(b[1] * (n - 1)) - X(b[0] * (n - 1))}" height="${h - T - B}" fill="var(--panel)"/>`; if (X(b[1] * (n - 1)) - X(b[0] * (n - 1)) > 70) g += `<text x="${X(b[0] * (n - 1)) + 4}" y="${T + 11}">${b[2]}</text>`; });
+    const tk = log ? [10, 30, 100, 300, 1000, 3000].filter(v => f(v) >= y0 && f(v) <= y1) : [lo, 100, hi].map(v => Math.round(v / 10) * 10).filter((v, k, a) => a.indexOf(v) === k);
+    tk.forEach(v => { g += `<line x1="${L}" x2="${w - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" ${v === 100 ? "" : 'stroke-dasharray="2 4"'}/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`; });
+    series.forEach(s => { if (!s.pts.length) return; g += `<path d="${s.pts.map((v, k) => `${k ? "L" : "M"}${X(k).toFixed(1)},${Y(v).toFixed(1)}`).join("")}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round"/>`; const k = s.pts.length - 1; g += `<circle cx="${X(k)}" cy="${Y(s.pts[k])}" r="4" fill="${s.c}" stroke="var(--slide)" stroke-width="2"/>`; });
+    if (log) g += `<text x="${(L + w - R) / 2}" y="${h - 5}" text-anchor="middle">log scale</text>`;
+    return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Capital over time">${g}</svg>`;
+  }
+
+  /* ── 13 · Estrés antes/después ──────────────────────────────────── */
+  const S = P.stress || { portfolio: [], scenarios: {} };
+  let sc13 = Object.keys(S.scenarios || {})[0];
+  const seg13 = $("#seg-sc13");
+  seg13.innerHTML = Object.entries(S.scenarios || {}).map(([k, v]) => `<button type="button" data-k="${k}" aria-pressed="${k === sc13}">${v.title}</button>`).join("");
+  seg13.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { sc13 = b.dataset.k; r13(); } });
+  function r13() {
+    seg13.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === sc13));
+    const pick = set => (S.portfolio || []).find(p => p.set === set && p.cost_mult === 1 && p.scenario === sc13 && p.seed === 0);
+    const a = pick("antes"), d = pick("despues"), sc = (S.scenarios || {})[sc13];
+    let acc = 0; const tot = sc ? sc.phases.reduce((x, p) => x + p[1], 0) : 1;
+    const bands = sc ? sc.phases.map(p => { const b = [acc / tot, (acc + p[1]) / tot, p[0]]; acc += p[1]; return b; }) : [];
+    $("#chart13").innerHTML = lines([{ c: "var(--s1)", pts: a ? a.curve : [] }, { c: "var(--s2)", pts: d ? d.curve : [] }], { bands });
+    const all = set => (S.portfolio || []).filter(p => p.set === set && p.cost_mult === 1);
+    const ddr = set => { const v = all(set).map(p => p.max_dd_pct); return v.length ? `${Math.min(...v).toFixed(0)}% to ${Math.max(...v).toFixed(0)}%` : "—"; };
+    $("#kpis13").innerHTML = [
+      ["Drawdown before", ddr("antes"), "all paths", "bad"], ["Drawdown after", ddr("despues"), "all paths", "good"],
+      ["This path, before", a ? fmtP(a.return_pct, 0) : "—", a ? `DD ${a.max_dd_pct.toFixed(0)}%` : "", ""], ["This path, after", d ? fmtP(d.return_pct, 0) : "—", d ? `DD ${d.max_dd_pct.toFixed(0)}%` : "", ""],
+    ].map(([t, v, s, c]) => `<div class="kpi ${c}"><span>${t}</span><b>${v}</b><small>${s}</small></div>`).join("");
+  }
+  r13();
+
+  /* ── 16 · Rentabilidad mensual por configuración ────────────────── */
+  const MR = P.monthly || { summary: [], paths: [] };
+  const CFG = [["nativo", "Current leverage (2–3x)", "var(--s3)", "current"], ["x7m20", "7x · margin ≤ 20% · same size", "var(--s1)", "7x · 20%"], ["x7m20r", "7x · margin ≤ 20% · scaled positions", "var(--s2)", "7x · 20% · scaled"]];
+  let pf = "nucleo";
+  const segpf = $("#seg-pf");
+  segpf.innerHTML = [["nucleo", "Core (SUB5, 6, 9, 10)"], ["completa", "Full (+ SUB2, SUB11)"]].map(([k, t]) => `<button type="button" data-k="${k}" aria-pressed="${k === pf}">${t}</button>`).join("");
+  segpf.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { pf = b.dataset.k; r16(); } });
+  function r16() {
+    segpf.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === pf));
+    const cfgs = CFG.filter(([k]) => MR.summary.some(s => s.set === k && s.portfolio === pf));
+    const w = 760, rowH = 62, h = 40 + rowH * Math.max(cfgs.length, 1), L = 10, R = 10, lo = -20, hi = 20;
+    const X = v => L + (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (w - L - R);
+    let g = "";
+    [-20, -10, 0, 3, 5, 10, 20].forEach(v => { const strong = v === 3 || v === 5; g += `<line x1="${X(v)}" x2="${X(v)}" y1="14" y2="${h - 20}" stroke="${strong ? "var(--gold)" : "var(--line)"}" ${v === 0 || strong ? "" : 'stroke-dasharray="2 4"'}/><text x="${X(v)}" y="${h - 6}" text-anchor="middle" ${strong ? 'style="fill:var(--gold)"' : ""}>${v > 0 ? "+" : ""}${v}%</text>`; });
+    g += `<rect x="${X(3)}" y="14" width="${X(5) - X(3)}" height="${h - 34}" fill="var(--gold)" opacity=".10"/><text x="${(X(3) + X(5)) / 2}" y="11" text-anchor="middle" style="fill:var(--gold)">target</text>`;
+    cfgs.forEach(([k, , c], r) => {
+      const months = MR.paths.filter(p => p.set === k && p.portfolio === pf).flatMap(p => p.monthly);
+      const yc = 34 + r * rowH + rowH / 2 - 10;
+      months.forEach((m, j) => { const jit = ((j * 9301 + 49297) % 233280) / 233280 - .5; g += `<circle cx="${X(m).toFixed(1)}" cy="${(yc + jit * 30).toFixed(1)}" r="2.6" fill="${c}" opacity=".55"><title>${m.toFixed(1)}%</title></circle>`; });
+      const s = MR.summary.find(s => s.set === k && s.portfolio === pf);
+      if (s) g += `<line x1="${X(s.median_month)}" x2="${X(s.median_month)}" y1="${yc - 20}" y2="${yc + 20}" stroke="var(--fg)" stroke-width="2.5"/>`;
+    });
+    $("#chart16").innerHTML = cfgs.length ? `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Monthly return by configuration">${g}</svg>` : `<p class="note">7x results pending.</p>`;
+    $("#legend16").innerHTML = cfgs.map(([, t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join("") + `<span><i style="background:var(--fg)"></i>median</span><span>Each dot is one month (3 scenarios × 3 paths)</span>`;
+    const row = k => MR.summary.find(s => s.set === k && s.portfolio === pf);
+    $("#tbl16").innerHTML = `<table><thead><tr><th></th>${cfgs.map(([, , , sh]) => `<th class="num">${sh}</th>`).join("")}</tr></thead><tbody>
+      ${[["Median month", s => fmtP(s.median_month, 2)], ["Mean month", s => fmtP(s.mean_month, 2)], ["Months ≥ 3%", s => `${s.share_ge_3}%`], ["Months ≥ 5%", s => `${s.share_ge_5}%`], ["Worst month", s => fmtP(s.worst_month)], ["Worst drawdown", s => `${s.worst_dd.toFixed(0)}%`], ["Losing paths", s => `${s.paths_losing} of ${s.paths}`], ["Hit the 40% hard stop", s => `${s.paths_with_hard_stop} of ${s.paths}`]]
+        .map(([n, fn]) => `<tr><td>${n}</td>${cfgs.map(([k]) => `<td class="num">${row(k) ? fn(row(k)) : "—"}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    $("#note16").textContent = "Synthetic markets have no exploitable edge by design: a return close to 0 is expected and does not predict real returns. What does hold is the risk: how much is lost in the worst months and how often the hard stop triggers.";
+  }
+  r16();
+
+  /* ── C5 · Cuenta short ──────────────────────────────────────────── */
+  const HG = P.hedge || { summary: [], beta: {}, groups: {}, levs: [] };
+  const TX = {"loc": "en-US", "groups": [["completa", "All accounts"], ["nucleo", "Core only"]], "hedges": {"sin": "No short account", "antes": "Original SUB5 (stopped)"}, "cols": ["SUB5", "Gain in the worst drop", "Portfolio DD (worst)", "Portfolio 3 years", "SUB5 worst DD", "SUB5 3 years"], "title": "SUB5 at {L}x: what the hedge needs, without risking the account", "k": [["Recommended leverage", "{L}x", "margin ≤ 20% → up to {E}× the account short"], ["What the others lose", "{B}", "% of one account per 1% BTC drop (worst case {B90})"], ["Calculation", "{B} ÷ 0.20 = {Lx}", "beta of the others ÷ max margin"], ["SUB5 worst DD at {L}x", "{D}", "at 10x: {D10} (near the hard stop)"]], "note": "Worst 30-day BTC drop in each path ({C}). In that window the other accounts made {O} of the portfolio (median): their pauses and stops already protect them. The short gets in late (the macro signal lags 30 days), so more leverage doesn't hedge more, it only adds risk to SUB5 itself. Above {Lmax}x it makes no sense.", "sets": [["antes", "Before the fixes"], ["despues", "After · current leverage"], ["despues2", "After · costs ×2"], ["x7m20", "7x · 20% margin"], ["x7m20r", "7x · 20% margin · scaled positions"], ["sub5", "SUB5 from 2x to 10x"]], "sc": {"ciclo": "Cycle", "bear": "Bear", "lateral": "Sideways"}, "seed": "path", "rcols": ["Account", "Lev.", "BTC", "Return", "Max DD", "Sharpe", "Trades"], "rnote": "{N} runs in total. Each row is a 10,000 USDT account over 3 years. SUB4 is only tested in the worst month. Click the buttons to change configuration, scenario and path."};
+  const num = (v, d = 2) => (+v).toLocaleString(TX.loc, { minimumFractionDigits: d, maximumFractionDigits: d });
+  const sgn = (v, d = 1) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${num(Math.abs(v), d)}%`;
+  let hg = "completa";
+  const seghg = $("#seg-hg");
+  seghg.innerHTML = TX.groups.map(([k, t]) => `<button type="button" data-k="${k}" aria-pressed="${k === hg}">${t}</button>`).join("");
+  seghg.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { hg = b.dataset.k; rHg(); } });
+  function rHg() {
+    seghg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === hg));
+    const rows = (HG.summary || []).filter(r => r.group === hg);
+    if (!rows.length) { $("#tbl-hg").innerHTML = ""; return; }
+    const accs = (HG.groups || {})[hg] || [];
+    const B = accs.reduce((s, a) => s + ((HG.beta[a] || {}).median || 0), 0), B90 = accs.reduce((s, a) => s + ((HG.beta[a] || {}).p90 || 0), 0);
+    const Lx = B / 0.2, Lmax = Math.min(...HG.levs.filter(l => l >= B90 / 0.2).concat([10]));
+    const L = Math.min(...HG.levs.filter(l => l >= Lx).concat([10]));
+    const get = k => rows.find(r => r.hedge === k);
+    const order = ["sin", "antes", ...HG.levs.map(l => "x" + l)];
+    $("#tbl-hg").innerHTML = `<table><thead><tr>${TX.cols.map((c, j) => `<th${j ? ' class="num"' : ""}>${c}</th>`).join("")}</tr></thead><tbody>${order.map(k => { const r = get(k); if (!r) return ""; const name = TX.hedges[k] || k.slice(1) + "x"; const none = k === "sin";
+      return `<tr class="${k === "x" + L ? "hl" : ""}"><td>${name}</td><td class="num ${r.crash_short > 0 ? "ok" : "muted"}">${none ? "—" : sgn(r.crash_short, 2)}</td><td class="num">${sgn(r.max_dd_worst, 0)}</td><td class="num">${sgn(r.ret_med, 0)}</td><td class="num ${r.short_dd_worst < -30 ? "bad" : r.short_dd_worst < -20 ? "warn" : ""}">${none ? "—" : sgn(r.short_dd_worst, 0)}</td><td class="num">${none ? "—" : sgn(r.short_ret_med, 1)}</td></tr>`; }).join("")}</tbody></table>`;
+    const f = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k]);
+    const o = { L, E: num(0.2 * L, 1), B: num(B, 2), B90: num(B90, 2), Lx: num(Lx, 1) + "x", D: sgn((get("x" + L) || {}).short_dd_worst || 0, 0), D10: sgn((get("x10") || {}).short_dd_worst || 0, 0), Lmax };
+    $("#h-hg").textContent = f(TX.title, o);
+    $("#kpis-hg").innerHTML = TX.k.map(([t, v, s], j) => `<div class="kpi ${j === 0 ? "good" : j === 3 ? "warn" : ""}"><span>${f(t, o)}</span><b>${f(v, o)}</b><small>${f(s, o)}</small></div>`).join("");
+    const cr = (HG.crash || {})[hg] || {};
+    $("#note-hg").textContent = f(TX.note, { C: cr.btc || "", O: sgn((get("sin") || {}).crash_others || 0, 2), Lmax });
+  }
+  rHg();
+
+  /* ── C6 · Compruébalo: todas las ejecuciones ────────────────────── */
+  const RN = P.runs || { cols: [], rows: [] };
+  const ci = Object.fromEntries((RN.cols || []).map((c, j) => [c, j]));
+  const R = (RN.rows || []).map(r => Object.fromEntries(Object.entries(ci).map(([c, j]) => [c, r[j]])));
+  let rs = "despues", rsc = "ciclo", rseed = 0;
+  const segrs = $("#seg-rs"), segrsc = $("#seg-rsc");
+  segrs.innerHTML = TX.sets.filter(([k]) => R.some(r => r.set === k)).map(([k, t]) => `<button type="button" data-k="${k}">${t}</button>`).join("");
+  segrsc.innerHTML = Object.entries(TX.sc).map(([k, t]) => `<button type="button" data-sc="${k}">${t}</button>`).join("") + `<span class="note" style="align-self:center;margin:0 4px 0 10px">${TX.seed}</span>` + [0, 1, 2].map(s => `<button type="button" data-s="${s}">${s}</button>`).join("");
+  segrs.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { rs = b.dataset.k; rRuns(); } });
+  segrsc.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { if (b.dataset.sc) rsc = b.dataset.sc; if (b.dataset.s) rseed = +b.dataset.s; rRuns(); } });
+  const accN = a => +a.replace("SUB", "");
+  function rRuns() {
+    segrs.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === rs));
+    segrsc.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.sc ? b.dataset.sc === rsc : +b.dataset.s === rseed));
+    const rows = R.filter(r => r.set === rs && r.scenario === rsc && r.seed === rseed).sort((a, b) => accN(a.account) - accN(b.account) || (a.leverage || 0) - (b.leverage || 0));
+    $("#tbl-runs").innerHTML = `<table><thead><tr>${TX.rcols.map((c, j) => `<th${j ? ' class="num"' : ""}>${c}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr><td>${r.account}</td><td class="num">${r.leverage ? r.leverage + "x" : "base"}</td><td class="num muted">${sgn(r.btc, 0)}</td><td class="num ${r.ret >= 0 ? "ok" : "bad"}">${sgn(r.ret, 1)}</td><td class="num ${r.dd <= -40 ? "bad" : r.dd <= -25 ? "warn" : ""}">${sgn(r.dd, 1)}</td><td class="num">${r.sharpe == null ? "—" : (r.sharpe < 0 ? "−" : "") + num(Math.abs(r.sharpe), 2)}</td><td class="num">${r.trades == null ? "—" : Math.round(r.trades)}</td></tr>`).join("")}</tbody></table>`;
+    $("#note-runs").textContent = TX.rnote.replace("{N}", R.length);
+  }
+  rRuns();
+
+  /* ── E · Mi estrategia ──────────────────────────────────────────── */
+  const AG = P.agents || null, TM = {"loc": "en-US", "roles": {"SUB6": ["Funding arbitrage", "n", "Neutral", "Collects funding: long spot and short futures, no directional bet", "3x"], "SUB10": ["Cointegrated pairs", "n", "Neutral", "Long one coin and short another when they drift apart; wins when they converge", "3x"], "SUB9": ["Dynamic collar", "l", "Hedged long", "Long BTC/ETH above the EMA200, more hedged the worse the macro", "3x"], "SUB8": ["Smart DCA", "l", "Core long", "Buys BTC/ETH spot in tranches, no leverage", "spot"], "SUB5": ["Macro short", "h", "Hedge", "Waits in cash; goes short when macro and price turn down", "3x"]}, "cols": ["Agent", "Role", "Lev.", "Worst drop", "In BTC's worst month", "Months +"], "k": [["At play", "{P}", "of {C} (20%), in tranches: 50k → 200k per subaccount if each month wins"], ["Worst drop of the whole", "{D}", "{DU} in the stress test"], ["Worst month of the whole", "{M}", "{MU}"], ["Max loss per subaccount", "−20%", "hard stop: at most $200,000"]], "note": "Figures from the 3-year stress test with this exact configuration ({N} paths). No system guarantees it can't lose: this one caps how much can be lost (10% pause and 20% hard stop per subaccount) and doesn't deploy the capital at once. Monthly profit is validated with real history and demo.", "crash_cols": ["Agent", "Average", "Best", "Worst"], "crash_note": "Average of the 3 worst BTC months in each path (BTC {B} on average). Green = it made money while BTC fell.", "total": "Whole"};
+  const nm = (v, d = 1) => (+v).toLocaleString(TM.loc, { minimumFractionDigits: d, maximumFractionDigits: d });
+  const sg = (v, d = 1) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${nm(Math.abs(v), d)}%`;
+  const usd = v => `${v < 0 ? "−" : ""}$${Math.round(Math.abs(v)).toLocaleString(TM.loc)}`;
+  if (AG) {
+    const order = ["SUB6", "SUB10", "SUB9", "SUB8", "SUB5"].filter(a => AG.agents[a]);
+    $("#tbl-mi").innerHTML = `<table><thead><tr>${TM.cols.map((c, j) => `<th${j > 2 ? ' class="num"' : ""}>${c}</th>`).join("")}</tr></thead><tbody>${order.map(a => { const r = TM.roles[a], m = AG.agents[a];
+      return `<tr><td>${a}<small>${r[0]}</small></td><td class="role"><span class="role-${r[1]}">${r[2]}</span><small>${r[3]}</small></td><td>${r[4]}</td><td class="num ${m.worst_dd < -15 ? "warn" : ""}">${sg(m.worst_dd, 0)}<small>${usd(-m.worst_dd_usd)}</small></td><td class="num ${m.crash_month >= 0 ? "ok" : "bad"}">${sg(m.crash_month, 1)}</td><td class="num">${nm(m.months_pos, 0)}%</td></tr>`; }).join("")}</tbody></table>`;
+    const pf = AG.portfolio, f = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k]);
+    const o = { P: usd(pf.at_play), C: usd(pf.capital), D: sg(pf.worst_dd, 1), DU: usd(pf.worst_dd_usd * -1), M: sg(pf.worst_month, 1), MU: usd(pf.worst_month_usd * -1), N: pf.paths };
+    $("#kpis-mi").innerHTML = TM.k.map(([t, v, s], j) => `<div class="kpi ${j === 0 ? "good" : "warn"}"><span>${f(t, o)}</span><b>${f(v, o)}</b><small>${f(s, o)}</small></div>`).join("");
+    $("#note-mi").textContent = f(TM.note, o);
+    // peores meses de BTC
+    const rows = [...order, "total"].map(a => { const v = AG.crash.flatMap(c => a === "total" ? c.total : c.agents[a]); return [a, v.reduce((x, y) => x + y, 0) / v.length, Math.max(...v), Math.min(...v)]; });
+    const btc = AG.crash.flatMap(c => c.btc), bavg = btc.reduce((x, y) => x + y, 0) / btc.length;
+    $("#tbl-crash").innerHTML = `<table><thead><tr>${TM.crash_cols.map((c, j) => `<th${j ? ' class="num"' : ""}>${c}</th>`).join("")}</tr></thead><tbody><tr><td>BTC</td><td class="num bad">${sg(bavg, 1)}</td><td class="num muted">${sg(Math.max(...btc), 0)}</td><td class="num muted">${sg(Math.min(...btc), 0)}</td></tr>${rows.map(([a, m, hi, lo]) => `<tr class="${a === "total" ? "hl" : ""}"><td>${a === "total" ? TM.total : a + " · " + TM.roles[a][2]}</td><td class="num ${m >= 0 ? "ok" : "bad"}">${sg(m, 1)}</td><td class="num">${sg(hi, 1)}</td><td class="num">${sg(lo, 1)}</td></tr>`).join("")}</tbody></table>`;
+    $("#note-crash").textContent = TM.crash_note.replace("{B}", sg(bavg, 0));
+    const L = AG.corr.labels, Mx = AG.corr.matrix;
+    const col = v => v >= 0 ? `hsla(2, 80%, 66%, ${Math.abs(v) * .55})` : `hsla(158, 62%, 52%, ${Math.abs(v) * .7})`;
+    $("#tbl-corr").innerHTML = `<table><thead><tr><th></th>${L.map(l => `<th>${l}</th>`).join("")}</tr></thead><tbody>${L.map((r, i) => `<tr><td>${r}</td>${Mx[i].map((v, j) => `<td style="background:${i === j ? "transparent" : col(v)}">${i === j ? "·" : (v < 0 ? "−" : "") + nm(Math.abs(v), 2)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  }
+
+  /* ── 17 · Calculadora ───────────────────────────────────────────── */
+  const K = { cap: 1000000, mar: 20, lev: 7, ret: 1, crash: 25 };
+  const fmtK = { cap: v => `${nf(v)} USDT`, mar: v => `${v}%`, lev: v => `${v}x`, ret: v => `${(+v).toFixed(1)}%`, crash: v => `−${v}%` };
+  Object.keys(K).forEach(k => { const el = $("#k-" + k); el.value = K[k]; $("#o-" + k).textContent = fmtK[k](K[k]); el.addEventListener("input", () => { K[k] = +el.value; $("#o-" + k).textContent = fmtK[k](K[k]); r17(); }); });
+  function r17() {
+    const exp = K.mar / 100 * K.lev, notional = K.cap * exp;
+    const month = exp * K.ret, year = (Math.pow(1 + month / 100, 12) - 1) * 100;
+    const liq = 100 / K.lev, crashLoss = Math.min(K.crash, liq) / 100 * notional;
+    const crashPct = crashLoss / K.cap * 100;
+    $("#kpis17").innerHTML = [
+      ["Exposure", `${exp.toFixed(2)}×`, `${nf(notional)} USDT deployed`, exp > 2 ? "bad" : exp > 1.4 ? "warn" : "good"],
+      ["Monthly account return", fmtP(month, 2), `${fmtP(year, 0)} a year, compounded`, month >= 3 ? "good" : ""],
+      ["Move that liquidates", `−${liq.toFixed(1)}%`, "against a position", liq < 15 ? "bad" : ""],
+      ["Loss in the simulated crash", `−${crashPct.toFixed(1)}%`, `of the account (${nf(crashLoss)} USDT) without a stop`, crashPct > 25 ? "bad" : crashPct > 10 ? "warn" : "good"],
+    ].map(([t, v, s, c]) => `<div class="kpi ${c}"><span>${t}</span><b>${v}</b><small>${s}</small></div>`).join("");
+    const need = 3 / exp, need5 = 5 / exp;
+    $("#note17").textContent = `For 3–5% a month at this exposure, the capital deployed must return between ${need.toFixed(1)}% and ${need5.toFixed(1)}% a month, sustained. Stops reduce the crash loss, but at 7x a price gap can jump past them.`;
+  }
+  r17();
+
+  /* ── 18 · Recomendación ─────────────────────────────────────────── */
+  const REC = P.rec || { items: [], table: [] };
+  if (REC.title) $("#rec-title").textContent = REC.title;
+  $("#rec-list").innerHTML = (REC.items || []).map(t => `<li>${t}</li>`).join("");
+  $("#rec-tbl").innerHTML = (REC.table || []).length ? `<table><thead><tr><th>Parameter</th><th class="num">Recommended</th></tr></thead><tbody>${REC.table.map(([a, b]) => `<tr><td>${a}</td><td class="num">${b}</td></tr>`).join("")}</tbody></table>` : "";
+  if (REC.summary) { $("#sum-ret").textContent = REC.summary[0]; $("#sum-ret-p").textContent = REC.summary[1]; }
+
+  /* ── 20 · Próximos pasos ────────────────────────────────────────── */
+  const NEXT = [
+    ["Allow api.bitget.com in the environment", "unblocks the backtest with real history"], ["Hire a Salvadoran lawyer", "company and token structure"],
+    ["Tax adviser in Spain", "tax residence of management"], ["Request quotes from 2–3 auditors", "smart contract (CertiK or others)"],
+    ["Run the core bot on Bitget Demo", "SUB5, SUB6, SUB9, SUB10 with margin ≤ 20%"], ["Set DATABASE_URL on Railway", "enables the website's interest list"],
+    ["Decide partners, capital and vesting", "basis of the shareholders' agreement"], ["Set a privacy contact", "to delete data from the interest list"],
+  ];
+  const KEY = "puda-plan-next";
+  let done = new Set(); try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (_) {}
+  function rNext() {
+    $("#next-steps").innerHTML = NEXT.map(([a, b], k) => `<label class="${done.has(k) ? "done" : ""}"><input type="checkbox" data-k="${k}" ${done.has(k) ? "checked" : ""}><span>${a}<small>${b}</small></span></label>`).join("");
+    $("#next-status").textContent = `${done.size} of ${NEXT.length} done. Saved only in this browser.`;
+  }
+  $("#next-steps").addEventListener("change", e => { const k = +e.target.dataset.k; e.target.checked ? done.add(k) : done.delete(k); try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (_) {} rNext(); });
+  rNext();
+
+  let first = location.hash.slice(1);
+  if (!first) { try { first = localStorage.getItem("puda-tab") || ""; } catch (_) {} }
+  show(first);
+})();
+</script>

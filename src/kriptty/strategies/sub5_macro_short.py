@@ -1,20 +1,25 @@
 """SUB5 — Macro-shorting (solo cortos, BTC/ETH).
 
 Activación: dashboard macro válido con score ≤ −3 (≤ −5 = convicción alta,
-riesgo 2% en lugar de 1.5%).
+riesgo 3% en lugar de 2,25%). Apalancamiento 3x: es la cuenta que cubre a las demás en las caídas.
 Confirmación técnica diaria (TODAS; con datos insuficientes NO se opera — el
 original permitía la entrada "por defecto"):
     precio ≤ EMA200·1.02 · 30 ≤ RSI14 ≤ 55 (RSI de Wilder sobre la serie completa;
     el original usaba solo las 14 velas más antiguas) · ≥ 2 de 3 velas bajistas.
 SL: máximo de 7 días + 0.3%. TP escalonado con órdenes límite reduce-only:
 −4% (33%), −8% (33%), −15% (34%).
-Circuit breaker: drawdown de SUB5 > 5% desde máximos → pausa.
+Circuit breaker: drawdown de SUB5 > 5% desde máximos → pausa de 7 días; después
+el máximo se reinicia al equity actual y vuelve a operar. El original no tenía
+salida: tras el primer −5% SUB5 quedaba parada para siempre (en el test de estrés
+dejó de operar en todas las trayectorias en 1-13 meses, justo antes de las caídas
+que debía cubrir). La parada dura del router (−40% desde máximos) sigue por encima.
 Nuevo: si el régimen macro pasa a STRONG_BULL con la posición abierta, se cierra.
 """
 from __future__ import annotations
 
 import pandas as pd
 
+from .. import clock
 from ..exchange.client import perp
 from ..indicators import ema, last, rsi
 from ..risk.models import OrderRequest
@@ -25,16 +30,20 @@ class MacroShortStrategy(Strategy):
     account_id = "SUB5"
     name = "Macro-shorting"
     schedule = {"trigger": "cron", "hour": "0,6,12,18", "minute": 15}
-    leverage = 2
+    # 3x con margen ≤ 20%: hasta 0,6× la cuenta en corto, lo que cubre la beta a la baja de las demás
+    # cuentas (≈ 0,47; ver scripts/hedge_short.py). El riesgo por operación escala con el
+    # apalancamiento (2x: 1,5% / 2%).
+    leverage = 3
 
     ASSETS = ["BTC", "ETH"]
     SHORT_THRESHOLD = -3.0
     STRONG_THRESHOLD = -5.0
-    RISK_PCT, RISK_PCT_STRONG = 0.015, 0.02
+    RISK_PCT, RISK_PCT_STRONG = 0.0225, 0.03
     SL_LOOKBACK_DAYS = 7
     SL_BUFFER = 0.003
     TP_LADDER = [(0.04, 0.33), (0.08, 0.33), (0.15, 0.34)]
     MAX_DRAWDOWN = 0.05
+    COOLDOWN_DAYS = 7
 
     @staticmethod
     def technical_confirmation(daily: pd.DataFrame, price: float) -> tuple[bool, str]:
@@ -53,11 +62,20 @@ class MacroShortStrategy(Strategy):
 
     async def _circuit_breaker(self) -> bool:
         equity = await self.client.equity()
+        now = clock.now()
+        paused_until = self.get_state("paused_until", 0.0)
+        if paused_until:
+            if now < paused_until:
+                return False
+            self.log.info("▶  Fin de la pausa de SUB5: máximo reiniciado a %.2f", equity)
+            self.set_state("paused_until", 0.0)
+            self.set_state("peak_equity", equity)
         peak = max(self.get_state("peak_equity", equity), equity)
         self.set_state("peak_equity", peak)
         if peak and (peak - equity) / peak > self.MAX_DRAWDOWN:
-            self.log.warning("⏸  Drawdown %.1f%% > %.0f%%: SUB5 en pausa", (peak - equity) / peak * 100,
-                             self.MAX_DRAWDOWN * 100)
+            self.log.warning("⏸  Drawdown %.1f%% > %.0f%%: SUB5 en pausa %d días",
+                             (peak - equity) / peak * 100, self.MAX_DRAWDOWN * 100, self.COOLDOWN_DAYS)
+            self.set_state("paused_until", now + self.COOLDOWN_DAYS * 86400)
             return False
         return True
 

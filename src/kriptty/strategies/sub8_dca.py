@@ -48,10 +48,11 @@ class SmartDCAStrategy(Strategy):
     TP2 = (80, 0.15, 0.50)
 
     async def run_cycle(self) -> None:
-        budget = self.get_state("budget")
-        if budget is None:
-            budget = await self.client.equity("spot")
-            self.set_state("budget", budget)
+        base = self.get_state("budget")  # equity spot inicial: las compras no cambian con el saldo
+        if base is None:
+            base = await self.client.equity("spot")
+            self.set_state("budget", base)
+        budget = base * self.capital_limit  # spot: el límite (y la rampa) se aplica al capital
         for asset, weight in self.ALLOCATION.items():
             await self._cycle_asset(asset, budget * weight)
 

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from kriptty import clock
 from kriptty.data.news import Article
 from kriptty.indicators import atr, last
 from kriptty.strategies.sub1_news_sentiment import NewsSentimentStrategy
@@ -302,3 +303,20 @@ async def test_sub11_reverses_on_trend_change(ctx):
     await strat.run_cycle()
     (pos,) = await client.positions()
     assert pos.side == "short" and pos.stop_loss > client.prices[BTC]
+
+
+async def test_sub5_circuit_breaker_pauses_then_resumes(ctx):
+    strat = MacroShortStrategy(ctx)
+    client = strat.client
+    try:
+        clock.set_time(1_800_000_000)
+        assert await strat._circuit_breaker()  # máximo = 10 000
+        client.usdt["swap"] = 9_400  # −6% > 5%
+        assert not await strat._circuit_breaker()
+        clock.set_time(1_800_000_000 + 6 * 86400)
+        assert not await strat._circuit_breaker()  # sigue en pausa
+        clock.set_time(1_800_000_000 + 8 * 86400)
+        assert await strat._circuit_breaker()  # antes quedaba parada para siempre
+        assert strat.get_state("peak_equity") == 9_400
+    finally:
+        clock.set_time(None)

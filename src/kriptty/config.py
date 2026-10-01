@@ -66,6 +66,21 @@ class Settings(BaseSettings):
     # (spot + futuros). 0.20 = no usar más del 20% de cada cuenta aunque el apalancamiento sea
     # 7x (exposición máxima = 0.20 × 7 = 1.4× el equity). 1.0 = sin límite adicional.
     max_margin_pct: float = 1.0
+    # Rampa de capital: el límite anterior no se usa de golpe. Cada subcuenta empieza en el primer
+    # escalón (fracción de MAX_MARGIN_PCT) y sube uno cada RAMP_STEP_DAYS si el equity está por
+    # encima del de inicio del escalón; baja uno si cae más de RAMP_STEP_BACK_PCT desde ese inicio.
+    # Vacío = sin rampa. Ej.: "0.25,0.5,0.75,1" con 1 M$ y 0.2 → 50k, 100k, 150k y 200k en juego.
+    capital_ramp: str = ""
+    # Duración máxima de una posición de futuros (horas): al pasarla se cierra en el siguiente
+    # ciclo. 0 = sin límite. Exentas por diseño: SUB6 (el funding tarda días en pagar las
+    # comisiones), SUB8 (DCA en spot) y SUB9 (exposición por régimen; reabriría y solo pagaría comisiones).
+    max_hold_hours: float = 0.0
+    max_hold_exempt: str = "SUB6,SUB8,SUB9"
+    # Apalancamiento por subcuenta, p. ej. "SUB6=3,SUB9=3,SUB10=3". Escala también el riesgo por
+    # operación en la misma proporción (como el test de estrés con --scale-risk).
+    leverage: str = ""
+    ramp_step_days: int = 30
+    ramp_step_back_pct: float = 0.05
     # Cuentas que acumulan en caídas por diseño (DCA) y quedan fuera del corte.
     drawdown_exempt: str = "SUB8"
     default_leverage: int = 3
@@ -95,6 +110,15 @@ class Settings(BaseSettings):
     # sesión, así que por defecto el servidor HTTP es stateless (sin sesiones que caduquen).
     mcp_stateless_http: bool = True
     mcp_session_idle_timeout: float = 1800.0
+
+    @property
+    def leverage_map(self) -> dict[str, int]:
+        out = {}
+        for item in self.leverage.split(","):
+            if "=" in item:
+                acc, lev = item.split("=", 1)
+                out[acc.strip().upper()] = int(lev)
+        return out
 
     @property
     def enabled(self) -> set[str]:

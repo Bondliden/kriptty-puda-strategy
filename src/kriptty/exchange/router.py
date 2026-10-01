@@ -89,10 +89,50 @@ class AccountRouter:
         self.state.set("drawdown", account_id, record)
         return True
 
+    # ── Rampa de capital ────────────────────────────────────────────────
+    def _ramp_steps(self) -> list[float]:
+        return [float(x) for x in self.settings.capital_ramp.split(",") if x.strip()]
+
+    def capital_limit(self, account_id: str) -> float:
+        """Fracción de la subcuenta que se puede comprometer ahora (margen en futuros, capital en
+        spot): MAX_MARGIN_PCT por el escalón actual de la rampa."""
+        base = min(1.0, self.settings.max_margin_pct)
+        steps = self._ramp_steps()
+        if not steps:
+            return base
+        record = self.state.get("ramp", account_id.upper()) or {}
+        return base * steps[min(record.get("stage", 0), len(steps) - 1)]
+
+    async def update_ramp(self, account_id: str) -> None:
+        """Sube o baja un escalón de la rampa según el resultado desde el inicio del escalón."""
+        steps = self._ramp_steps()
+        if not steps:
+            return
+        client = self.client(account_id)
+        equity = await client.equity("swap") + await client.equity("spot")
+        now = clock.now()
+        record = self.state.get("ramp", account_id)
+        if not record:
+            self.state.set("ramp", account_id, {"stage": 0, "since": now, "start": equity})
+            return
+        stage, start = record["stage"], record["start"]
+        if stage > 0 and start > 0 and equity < start * (1 - self.settings.ramp_step_back_pct):
+            stage -= 1
+            log.warning("📉 [%s] Rampa: −%.1f%% desde el inicio del escalón → baja al %.0f%% del límite",
+                        account_id, (1 - equity / start) * 100, steps[stage] * 100)
+        elif now - record["since"] >= self.settings.ramp_step_days * 86_400:
+            if equity > start and stage < len(steps) - 1:  # sin operar (equity plano) no sube
+                stage += 1
+                log.info("📈 [%s] Rampa: escalón en beneficio → sube al %.0f%% del límite", account_id,
+                         steps[stage] * 100)
+        else:
+            return
+        self.state.set("ramp", account_id, {"stage": stage, "since": now, "start": equity})
+
     async def check_margin(self, account_id: str, order: OrderRequest, price: float, leverage: int) -> None:
         """Rechaza la orden si el margen comprometido en futuros superaría MAX_MARGIN_PCT del
         equity de la subcuenta. Una orden que reduce o invierte una posición no suma margen."""
-        limit = self.settings.max_margin_pct
+        limit = self.capital_limit(account_id)
         if limit >= 1.0:
             return
         client = self.client(account_id)
@@ -144,6 +184,8 @@ class AccountRouter:
             opening = not order.reduce_only and not (order.is_spot and order.side == "sell")
             if opening and not await self.check_daily_loss(account_id, "spot" if order.is_spot else "swap"):
                 raise OrderRejected(f"[{account_id}] kill-switch diario activo")
+            if opening:
+                await self.update_ramp(account_id)
             if opening and not await self.check_drawdown(account_id):
                 raise OrderRejected(f"[{account_id}] pausa por drawdown desde máximos")
             if opening and not order.is_spot:
@@ -155,6 +197,9 @@ class AccountRouter:
 
         if not order.is_spot and not order.reduce_only:
             await client.ensure_setup(order.symbol, leverage or self.settings.default_leverage)
+            opened = self.state.get(account_id, "opened_at") or {}
+            opened.setdefault(order.symbol, clock.now())  # para MAX_HOLD_HOURS
+            self.state.set(account_id, "opened_at", opened)
 
         log.info("📤 [%s|%s] %s %s %s %.8g @ %s SL=%s TP=%s%s", account_id, order.tag,
                  order.order_type.upper(), order.side.upper(), order.symbol, order.amount,

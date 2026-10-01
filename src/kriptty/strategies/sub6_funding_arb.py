@@ -160,7 +160,8 @@ class FundingArbStrategy(Strategy):
     async def _open_pair(self, perp_sym: str, spot_sym: str, price: float, apy: float) -> bool:
         client = self.client
         total = await client.equity("swap") + await client.equity("spot")
-        notional = total * self.CAPITAL_PER_PAIR
+        # Con MAX_MARGIN_PCT < 1 las patas spot de todos los pares juntas no pasan del límite de capital
+        notional = total * min(self.CAPITAL_PER_PAIR, self.capital_limit / self.MAX_PAIRS)
         spot_free = await client.free("USDT", "spot")
         swap_free = await client.free("USDT", "swap")
         notional = min(notional, spot_free * 0.98, swap_free * self.leverage * 0.9)

@@ -21,7 +21,7 @@ from .config import ACCOUNT_DESCRIPTIONS, get_settings
 from .data.macro import MacroProvider
 from .exchange.router import AccountRouter
 from .state import StateStore
-from .strategies import REGISTRY, Context, Strategy
+from .strategies import REGISTRY, Context, Strategy, leverage_overrides
 
 log = logging.getLogger("kriptty.engine")
 
@@ -35,7 +35,15 @@ def build_context() -> Context:
 
 def build_strategies(ctx: Context, only: set[str] | None = None) -> list[Strategy]:
     wanted = only or ctx.settings.enabled
-    return [cls(ctx) for acc, cls in REGISTRY.items() if acc in wanted]
+    out = []
+    for acc, cls in REGISTRY.items():
+        if acc not in wanted:
+            continue
+        strategy = cls(ctx)
+        for key, value in leverage_overrides(acc, ctx.settings.leverage_map.get(acc)).items():
+            setattr(strategy, key, value)
+        out.append(strategy)
+    return out
 
 
 async def supervise(strategy: Strategy) -> None:

@@ -20,6 +20,8 @@ import numpy as np
 PORTFOLIOS = {
     "nucleo": ["SUB5", "SUB6", "SUB9", "SUB10"],
     "completa": ["SUB2", "SUB5", "SUB6", "SUB9", "SUB10", "SUB11"],
+    # la propuesta: un agente por estrategia, 1 M$ por subcuenta (SUB8 en spot, SUB5 de cobertura)
+    "mi": ["SUB5", "SUB6", "SUB8", "SUB9", "SUB10"],
 }
 HARD_STOP = -40.0
 
@@ -41,7 +43,7 @@ def analyse(label: str, folder: Path) -> list[dict]:
     runs = defaultdict(dict)
     for f in folder.glob("*_c1*.json"):
         r = json.loads(f.read_text())
-        if r["cost_mult"] != 1 or r["account"] in ("SUB4", "SUB7", "SUB8"):
+        if r["cost_mult"] != 1 or r["account"] in ("SUB4", "SUB7"):
             continue
         runs[(r["scenario"], r["seed"])][r["account"]] = r
     out = []
