@@ -123,7 +123,7 @@ def build_trigger(strategy: Strategy, start: datetime, base_s: int):
 async def run_backtest(account_id: str, market: HistoricalMarket, start: datetime, end: datetime, *,
                        equity: float = 10_000.0, macro_score: float = 0.0, fee_rate: float = 0.0006,
                        slippage_bps: float = 2.0, maker_fee: float = 0.0002,
-                       overrides: dict | None = None) -> BacktestResult:
+                       overrides: dict | None = None, macro=None) -> BacktestResult:
     account_id = account_id.upper()
     if account_id in UNSUPPORTED:
         raise ValueError(f"{account_id} no es backtesteable: {UNSUPPORTED[account_id]}")
@@ -134,7 +134,7 @@ async def run_backtest(account_id: str, market: HistoricalMarket, start: datetim
     swap_frac, spot_frac = CAPITAL_SPLIT.get(account_id, (1.0, 0.0))
     client.usdt = {"swap": equity * swap_frac, "spot": equity * spot_frac}
     router.client = lambda _acc: client  # type: ignore[method-assign]
-    ctx = Context(settings=settings, router=router, state=state, macro=FixedMacro(macro_score))
+    ctx = Context(settings=settings, router=router, state=state, macro=macro or FixedMacro(macro_score))
     strategy = REGISTRY[account_id](ctx)
     fit_to_symbols(strategy, market.symbols)
     for key, value in (overrides or {}).items():

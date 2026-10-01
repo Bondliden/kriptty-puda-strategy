@@ -124,11 +124,18 @@ class FundingArbStrategy(Strategy):
         pairs: dict = self.get_state("pairs", {})
         if len(pairs) >= self.MAX_PAIRS:
             return
+        # Las dos patas tienen que poder abrirse: si una cartera está bloqueada (kill-switch o
+        # drawdown) se espera. Antes se abría la pata permitida, se rechazaba la otra y se
+        # deshacía, pagando comisiones en cada escaneo (detectado en el test de estrés).
+        router = self.ctx.router
+        if not (await router.can_open(self.account_id, "swap") and await router.can_open(self.account_id, "spot")):
+            self.log.info("⏸  Kill-switch o pausa por drawdown activos: no se abren pares")
+            return
         client = self.client
         await client.load_markets()
         perps = await client.tickers("swap")
         spots = await client.tickers("spot")
-        ranked = sorted((t for s, t in perps.items() if s.endswith("/USDT:USDT")),
+        ranked = sorted((t for s, t in perps.items() if s.endswith("/USDT:USDT") and client.is_crypto(s)),
                         key=lambda t: float(t.get("quoteVolume") or 0), reverse=True)[: self.TOP_N]
         candidates = []
         for t in ranked:

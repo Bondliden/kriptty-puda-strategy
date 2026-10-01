@@ -81,7 +81,16 @@ class Strategy(ABC):
         client = self.client
         await client.load_markets()
         equity = await client.equity("swap")
-        max_notional = equity * self.leverage * max_notional_pct
+        # El tope de nocional cuenta las posiciones ya abiertas: con varias posiciones a la vez la
+        # exposición total no puede superar equity × apalancamiento (antes el tope era por
+        # posición y SUB2 llegaba a 9× el equity; detectado en el test de estrés de 3 años).
+        # Además, cada posición tiene como mucho su parte del total (estrategias con varias
+        # posiciones): con SL muy ajustados el sizing por riesgo pedía hasta 3× el equity en una
+        # sola posición y las comisiones se comían la cuenta (SUB2 en el test de estrés).
+        open_notional = sum(abs(p.amount * p.mark_price) for p in await self.positions() if ":" in p.symbol)
+        total_cap = equity * self.leverage * max_notional_pct
+        slots = getattr(self, "MAX_POSITIONS", None) or getattr(self, "MAX_OPEN", None) or 1
+        max_notional = max(0.0, min(total_cap / slots, total_cap - open_notional))
         raw = risk_based_amount(equity, risk_pct, entry, stop_loss, max_notional=max_notional)
         amount = client.amount_to_precision(symbol, raw, entry)
         if amount <= 0:

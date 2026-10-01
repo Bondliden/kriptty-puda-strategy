@@ -9,6 +9,8 @@ cliente MCP.
 > Revisión y cambios respecto al diseño original: [`docs/REVISION.md`](docs/REVISION.md).
 > Explicación interactiva de las estrategias (abrir en el navegador): [`docs/estrategias-puda.html`](docs/estrategias-puda.html).
 > Presentación en diapositivas, con la estructura del documento original: [`docs/presentacion-estrategias.html`](docs/presentacion-estrategias.html).
+> Presentación interactiva con simuladores, test de estrés de 3 años y novedades de octubre 2026: [`docs/presentacion-interactiva.html`](docs/presentacion-interactiva.html).
+> Hoja de ruta para lanzar el token PUDA en El Salvador (CNAD): [`docs/lanzamiento-el-salvador.html`](docs/lanzamiento-el-salvador.html).
 
 ## Estrategias
 
@@ -17,10 +19,10 @@ cliente MCP.
 | SUB1 | News Sentiment (RSS + VADER/FinBERT) | cada 2H | 1.5·ATR(4H), trailing |
 | SUB2 | Stat Arb "vasos comunicantes" | cada 4H | mínimo 48H − 0.5% |
 | SUB3 | Copy trading nativo + guardián SL *(desactivada por defecto)* | 60 s | max(SL trader, 1.5·ATR) |
-| SUB4 | Scalping 1m por WebSocket | cada vela 1m | 1.2·ATR(1m), breakeven/trailing |
+| SUB4 | Scalping 1m por WebSocket *(desactivada desde el test de estrés)* | cada vela 1m | 1.2·ATR(1m), breakeven/trailing |
 | SUB5 | Macro-shorting (solo cortos) | cada 6H | máximo 7D + 0.3% |
 | SUB6 | Funding rate arbitrage delta-neutral | 5 min / escaneo 30 min | basis > 1.5%, emergencia +10% |
-| SUB7 | Grid adaptativo BB + ATR | 5 min | ruptura de rango |
+| SUB7 | Grid adaptativo BB + ATR *(desactivada desde el test de estrés)* | 5 min | ruptura de rango |
 | SUB8 | DCA inteligente spot (BTC/ETH) | diario (compra cada 48H) | max(medio − 20%, precio − 24%) |
 | SUB9 | Collar dinámico por régimen macro | 15 min / rebalanceo 6H | EMA200 − 1% (máx. 15%) |
 | SUB10 | Pairs trading por cointegración *(nueva, desactivada)* | cada 1H | z-score ±4, −3% del par, ±10% por pata |
@@ -55,7 +57,7 @@ src/kriptty/
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env            # TRADING_MODE=dry_run por defecto
-pytest                          # 60 tests, sin red
+pytest                          # 75 tests, sin red
 kriptty-engine --once SUB5      # un ciclo de una estrategia
 kriptty-engine                  # todas las habilitadas
 ```
@@ -89,6 +91,24 @@ kriptty-backtest --strategy SUB5 --start 2025-01-01 --macro-score -4   # régime
   SUB5/SUB9 usan un score macro fijo (`--macro-score`): el histórico macro no se reproduce.
 - Calentamiento por defecto: 300 días para SUB5/SUB9 (EMA200 diaria) y ~4 años para SUB8
   (EMA200 semanal).
+
+### Test de estrés de 3 años
+
+```bash
+kriptty-stress --scenarios ciclo,bear,lateral --seeds 3 --out data/stress          # código actual
+kriptty-stress --scenarios ciclo --seeds 1 --cost-mult 2 --out data/stress_x2       # costes ×2
+kriptty-stress --report despues=data/stress --out data/stress_report.json          # informe agregado
+python scripts/embed_stress.py data/stress_report.json                              # → presentación
+```
+
+Ejecuta las 9 estrategias backtesteables con su calendario real y el guardián de riesgo sobre
+mercados **sintéticos** de 3 años (`backtest/stress.py`): ciclo completo con crashes tipo LUNA/FTX,
+bear market prolongado y lateral con flash crashes, varias trayectorias Monte Carlo cada uno.
+Modelo: factor de mercado con volatilidad agrupada, colas gruesas y crashes correlacionados;
+componente idiosincrático con reversión parcial; funding persistente ligado al régimen; spot con
+basis; macro observable con 30 días de retraso. SUB4 se prueba en velas de 1m en el mes del mayor
+crash de cada trayectoria. Mide supervivencia y control del riesgo, **no** predice rentabilidad.
+Resultados y hallazgos: [`docs/presentacion-interactiva.html`](docs/presentacion-interactiva.html).
 
 ### Camino recomendado hacia real
 

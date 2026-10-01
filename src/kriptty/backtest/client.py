@@ -15,6 +15,8 @@ from __future__ import annotations
 import itertools
 from dataclasses import dataclass
 
+import ccxt
+
 from .. import clock
 from ..config import Settings
 from ..exchange.paper import PaperExchangeClient
@@ -46,6 +48,8 @@ class BacktestClient(PaperExchangeClient):
         self.slippage = slippage_bps / 10_000
         self.trades: list[ClosedTrade] = []
         self.funding_paid = 0.0
+        self.leverage: dict[str, int] = {}
+        self.rejected_margin = 0
 
     # ── Datos de mercado ────────────────────────────────────────────────
     def _resolve(self, symbol: str) -> str:
@@ -119,7 +123,40 @@ class BacktestClient(PaperExchangeClient):
                                            sign * (price - pos.entry_price) * closed, clock.now()))
         super()._fill(symbol, side, amount, price, sl, tp)
 
+    async def ensure_setup(self, symbol: str, leverage: int) -> None:
+        self.leverage[symbol] = leverage
+        await super().ensure_setup(symbol, leverage)
+
+    async def _used_margin(self) -> float:
+        margin = 0.0
+        for sym, p in self.book.items():
+            if ":" in sym:
+                margin += p.amount * await self.last_price(sym) / self.leverage.get(sym, self.settings.default_leverage)
+        return margin
+
+    async def free(self, coin: str = "USDT", account: str = "swap") -> float:
+        """Disponible como en el exchange: en futuros, equity menos el margen ya usado."""
+        if coin == "USDT" and account == "swap":
+            return max(0.0, await self.equity("swap") - await self._used_margin())
+        return await super().free(coin, account)
+
+    async def _margin_ok(self, order: OrderRequest, price: float) -> bool:
+        """Margen inicial como en el exchange: Σ nocional / apalancamiento ≤ equity de futuros.
+        Sin esta comprobación una estrategia con varias posiciones podía apalancarse muy por
+        encima de lo configurado (detectado con SUB2 en el test de estrés)."""
+        if order.is_spot or order.reduce_only:
+            return True
+        pos = self.book.get(order.symbol)
+        if pos is not None and pos.side != ("long" if order.side == "buy" else "short"):
+            return True  # reduce o invierte: no añade margen neto en este modelo
+        margin = await self._used_margin()
+        new = order.amount * price / self.leverage.get(order.symbol, self.settings.default_leverage)
+        return margin + new <= await self.equity("swap") * 1.0001
+
     async def place(self, order: OrderRequest) -> dict:
+        if not await self._margin_ok(order, order.price or await self.last_price(order.symbol)):
+            self.rejected_margin += 1
+            raise ccxt.InsufficientFunds(f"[backtest] margen insuficiente para {order.symbol}")
         if order.order_type == "limit":
             return await super().place(order)
         oid = f"bt-{next(_ids)}"

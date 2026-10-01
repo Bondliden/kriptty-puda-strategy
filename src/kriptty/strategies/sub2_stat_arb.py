@@ -76,7 +76,7 @@ class StatArbStrategy(Strategy):
 
         tickers = await client.tickers("swap")
         universe = sorted(
-            (t for s, t in tickers.items() if s.endswith("/USDT:USDT") and s not in self.BLACKLIST
+            (t for s, t in tickers.items() if s.endswith("/USDT:USDT") and s not in self.BLACKLIST and client.is_crypto(s)
              and float(t.get("quoteVolume") or 0) >= self.MIN_VOLUME_USDT and t.get("percentage") is not None),
             key=lambda t: float(t["quoteVolume"]), reverse=True)[: self.UNIVERSE_SIZE]
         leaders = sorted(universe, key=lambda t: float(t["percentage"]), reverse=True)[: self.LEADERS]

@@ -41,7 +41,10 @@ class Settings(BaseSettings):
 
     # SUB3 queda fuera por defecto: depende de copy trading nativo y de traderIds manuales.
     # SUB10 y SUB11 (nuevas) también: activarlas tras validarlas con kriptty-backtest.
-    enabled_strategies: str = "SUB1,SUB2,SUB4,SUB5,SUB6,SUB7,SUB8,SUB9"
+    # SUB4 (scalping 1m) y SUB7 (grid) quedan desactivadas por defecto desde el test de estrés
+    # de 3 años (oct. 2026): perdían en todos los escenarios. Reactivarlas solo tras validarlas
+    # con histórico real de Bitget y semanas en demo.
+    enabled_strategies: str = "SUB1,SUB2,SUB5,SUB6,SUB8,SUB9"
 
     state_path: str = "data/state.db"
     log_level: str = "INFO"
@@ -50,7 +53,22 @@ class Settings(BaseSettings):
     # Límites globales de riesgo por cuenta
     max_sl_distance_pct: float = 0.25
     max_daily_loss_pct: float = 0.05
+    # Corte por drawdown: si el equity de una subcuenta (spot + futuros) cae más de
+    # este % desde su máximo, no abre posiciones durante DRAWDOWN_COOLDOWN_DAYS.
+    # Añadido tras el test de estrés de 3 años (SUB7/SUB11 encadenaban pérdidas).
+    max_drawdown_pct: float = 0.25
+    drawdown_cooldown_days: int = 14
+    # Parada dura: si el equity cae más de este % desde su máximo histórico (que no se reinicia
+    # tras las pausas), la subcuenta deja de abrir hasta revisión manual (borrar el estado
+    # "drawdown" de esa cuenta). Evita que pausas sucesivas del 25% se encadenen.
+    max_total_drawdown_pct: float = 0.40
+    # Cuentas que acumulan en caídas por diseño (DCA) y quedan fuera del corte.
+    drawdown_exempt: str = "SUB8"
     default_leverage: int = 3
+    # Activos base excluidos de los universos (además de acciones/metales/índices conocidos).
+    excluded_bases: str = ""
+    # Aviso si el reloj local se desvía del de Bitget más de esto (ms).
+    max_clock_offset_ms: float = 1000.0
 
     # Datos externos
     cryptopanic_api_key: str = ""
@@ -68,6 +86,11 @@ class Settings(BaseSettings):
     mcp_port: int = 8765
     mcp_read_only: bool = True
     mcp_allowed_hosts: str = "localhost:8765,127.0.0.1:8765"
+    # SDK MCP 2.2 (sept. 2026): las sesiones HTTP con estado se cierran tras 30 min sin
+    # actividad y el cliente recibe 404. Las herramientas de Kriptty no guardan estado por
+    # sesión, así que por defecto el servidor HTTP es stateless (sin sesiones que caduquen).
+    mcp_stateless_http: bool = True
+    mcp_session_idle_timeout: float = 1800.0
 
     @property
     def enabled(self) -> set[str]:

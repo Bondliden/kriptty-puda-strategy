@@ -138,3 +138,44 @@ backtestearlas con datos reales.
 ### Pendiente
 - Ejecutar los backtests con **datos reales** (este entorno de desarrollo no tiene acceso a
   Bitget; el backtester se ha validado con series sintéticas y 60 tests).
+
+## 5. Octubre 2026 — test de estrés de 3 años y novedades
+
+### Test de estrés (`kriptty-stress`)
+Desde el entorno de desarrollo no había acceso a la API de Bitget, así que se generaron mercados
+sintéticos de 3 años (`backtest/stress.py`): ciclo completo con crashes de un día tipo LUNA/FTX,
+bear market prolongado y lateral con flash crashes, 3 trayectorias Monte Carlo cada uno y una
+variante con comisiones y slippage ×2. Se ejecutaron las 9 estrategias backtesteables con el mismo
+código que opera en vivo (162 ejecuciones). Mide supervivencia y control del riesgo, no rentabilidad.
+
+| | Antes | Después |
+|---|---|---|
+| Drawdown de la cartera combinada (8 subcuentas) | −51% a −85% | −16% a −34% |
+| Peor drawdown de una subcuenta | −100% (SUB7) | −56% (SUB8, exenta por diseño); −48% el resto |
+| SUB2 · drawdown mediano | −88% (con retornos de +14.800% por apalancamiento oculto) | −44% |
+| SUB7 · retorno mediano | −95% | −39% (parada dura) |
+
+### Fallos encontrados y corregidos
+27. **Apalancamiento oculto** (`Strategy.open_position`): el tope de nocional era por posición;
+    con 3 posiciones SUB2 y SUB11 llegaban a 9× el equity. Ahora cuenta lo abierto y cada posición
+    tiene como mucho su parte del total.
+28. **Backtester sin margen**: no comprobaba el margen inicial ni descontaba el margen usado del saldo
+    disponible. Ahora lanza `InsufficientFunds` como el exchange.
+29. **SUB6** abría una pata y deshacía el par en bucle cuando una de sus carteras estaba bloqueada.
+30. **SUB7** encadenaba pérdidas del 4% en tendencia bajista (filtro de tendencia EMA20).
+31. **Pausas por drawdown encadenadas**: nuevo corte del 25% (14 días) y **parada dura del 40%**
+    desde el máximo histórico, que no se reinicia (requiere revisión manual).
+32. **SUB4 y SUB7 desactivadas por defecto**: perdían en todos los escenarios.
+
+### Novedades del ecosistema aplicadas
+- ccxt ≥ 4.5.84 (ledger de la cuenta unificada UTA v3).
+- SDK MCP 2.2: servidor HTTP sin estado (las sesiones con estado caducan a los 30 min).
+- Aviso al arrancar si el reloj local se desvía del de Bitget (como Freqtrade 2026.9).
+- Perpetuos de acciones, metales e índices fuera de los universos de SUB2 y SUB6.
+
+### A vigilar
+- **MiCA**: según varias fuentes, Bitget no tenía licencia MiCA a mediados de septiembre de 2026, y la
+  CNMV trata los perpetuos como CFD para minoristas. Confirmar el acceso desde España antes de `live`.
+- Migración automática a UTA desde el 15/09: `BITGET_UTA` debe coincidir con cada subcuenta.
+- API de seguidores de copy trading «temporalmente» no disponible: SUB3 sigue desactivada.
+- Repetir el test con **histórico real** en cuanto haya acceso a `api.bitget.com`.

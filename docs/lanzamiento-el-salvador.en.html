@@ -1,0 +1,356 @@
+<title>PUDA in El Salvador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: phased roadmap (column of steps with checkboxes) + sidebar with the team
+   and progress. PUDA brand (gold on night blue), with a light variant. */
+:root {
+  --bg: hsl(225, 44%, 5%); --surface: hsl(225, 36%, 8%); --surface-2: hsl(224, 30%, 12%);
+  --line: hsl(224, 26%, 18%); --fg: hsl(220, 30%, 96%); --muted: hsl(220, 14%, 64%);
+  --gold: hsl(45, 93%, 52%); --gold-soft: hsla(45, 93%, 52%, .12); --ink: hsl(225, 44%, 6%);
+  --ok: hsl(158, 62%, 50%); --ok-soft: hsla(158, 62%, 50%, .13);
+  --warn: hsl(32, 95%, 60%); --warn-soft: hsla(32, 95%, 60%, .13);
+  --bad: hsl(2, 80%, 64%); --bad-soft: hsla(2, 80%, 64%, .13);
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: hsl(42, 33%, 97%); --surface: #fff; --surface-2: hsl(40, 30%, 93%); --line: hsl(35, 18%, 84%);
+    --fg: hsl(225, 40%, 12%); --muted: hsl(222, 12%, 40%); --gold: hsl(40, 92%, 34%); --gold-soft: hsla(40, 92%, 40%, .11);
+    --ink: #fff; --ok: hsl(160, 70%, 28%); --ok-soft: hsla(160, 70%, 30%, .1); --warn: hsl(28, 90%, 38%);
+    --warn-soft: hsla(28, 90%, 40%, .1); --bad: hsl(2, 68%, 44%); --bad-soft: hsla(2, 68%, 46%, .1); color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: hsl(42, 33%, 97%); --surface: #fff; --surface-2: hsl(40, 30%, 93%); --line: hsl(35, 18%, 84%);
+  --fg: hsl(225, 40%, 12%); --muted: hsl(222, 12%, 40%); --gold: hsl(40, 92%, 34%); --gold-soft: hsla(40, 92%, 40%, .11);
+  --ink: #fff; --ok: hsl(160, 70%, 28%); --ok-soft: hsla(160, 70%, 30%, .1); --warn: hsl(28, 90%, 38%);
+  --warn-soft: hsla(28, 90%, 40%, .1); --bad: hsl(2, 68%, 44%); --bad-soft: hsla(2, 68%, 46%, .1); color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15.5px/1.6 var(--body);
+  background-image: radial-gradient(56rem 28rem at 8% -8%, var(--gold-soft), transparent 60%); background-repeat: no-repeat; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 64px; display: grid; gap: 44px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: clamp(28px, 4.6vw, 48px); line-height: 1.08; }
+h1 em { font-style: normal; color: var(--gold); }
+h2 { font-size: clamp(19px, 2.4vw, 25px); }
+h3 { font-size: 16px; font-weight: 500; }
+p { margin: 0; }
+a { color: var(--gold); }
+.eyebrow { font: 500 12px var(--mono); letter-spacing: .13em; text-transform: uppercase; color: var(--gold); }
+.lead { color: var(--muted); font-size: 17px; max-width: 68ch; }
+.mono { font-family: var(--mono); }
+section { display: grid; gap: 18px; }
+.head { display: grid; gap: 8px; }
+
+.notice { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 14px 16px; border-radius: 12px;
+  background: var(--warn-soft); border: 1px solid color-mix(in hsl, var(--warn) 35%, transparent); }
+.notice b { color: var(--warn); }
+.notice.bad { background: var(--bad-soft); border-color: color-mix(in hsl, var(--bad) 35%, transparent); }
+.notice.bad b { color: var(--bad); }
+
+/* Key answer */
+.answer { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.role { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 8px; align-content: start; }
+.role.key { border-color: var(--gold); background: linear-gradient(var(--gold-soft), var(--gold-soft)), var(--surface); }
+.role .when { font: 500 12px var(--mono); color: var(--muted); }
+.role p { font-size: 14px; color: var(--muted); }
+.role p b { color: var(--fg); }
+
+/* Roadmap */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+.phases { display: grid; gap: 22px; }
+.phase { display: grid; gap: 10px; }
+.phase-h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.phase-h .n { font: 700 13px var(--mono); color: var(--ink); background: var(--gold); border-radius: 6px; padding: 3px 8px; }
+.phase-h small { color: var(--muted); }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.step summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; padding: 12px 14px; }
+.step summary::-webkit-details-marker { display: none; }
+.step summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 12px; }
+.step[open] summary { border-bottom: 1px solid var(--line); }
+.step input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--gold); margin: 0; }
+.step .title { font-weight: 600; }
+.step.done .title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--muted); }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.tag { font: 500 11px/1 var(--mono); padding: 5px 7px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); }
+.tag.v { color: var(--ok); border-color: color-mix(in hsl, var(--ok) 40%, transparent); }
+.tag.u { color: var(--warn); border-color: color-mix(in hsl, var(--warn) 40%, transparent); }
+.tag.l { color: var(--gold); border-color: color-mix(in hsl, var(--gold) 45%, transparent); }
+.body { padding: 12px 14px 14px 50px; display: grid; gap: 8px; font-size: 14.5px; }
+.body dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 14px; margin: 0; }
+.body dt { color: var(--muted); font: 500 12px var(--mono); padding-top: 2px; }
+.body dd { margin: 0; }
+.src { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+
+/* Sidebar */
+.side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 14px); display: grid; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+.meter { height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--gold); width: 0; transition: width .25s; }
+.big { font: 700 26px var(--display); font-variant-numeric: tabular-nums; }
+.team { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; font-size: 14px; }
+.team li { display: grid; grid-template-columns: 12px 1fr; gap: 8px; align-items: baseline; }
+.team li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.team li.on::before { background: var(--gold); }
+.team li span { color: var(--muted); font-size: 12.5px; display: block; }
+button.reset { all: unset; cursor: pointer; font: 500 12px var(--mono); color: var(--muted); }
+button.reset:hover { color: var(--fg); }
+button.reset:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* Tables */
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td q { color: var(--bad); }
+td.fix { color: var(--ok); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.two .card ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14.5px; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 10px; }
+footer ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .side { position: static; order: -1; }
+  .answer, .two { grid-template-columns: 1fr; }
+  .body { padding-left: 14px; }
+  .body dl { grid-template-columns: 1fr; gap: 2px; }
+  .body dd { margin-bottom: 6px; }
+  .step summary { grid-template-columns: 26px 1fr; }
+  .tags { grid-column: 2; justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+
+.langs { display: flex; gap: 4px; justify-self: start; font: 500 12px var(--mono); }
+.langs a, .langs span { padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
+.langs span { color: var(--ink); background: var(--gold); border-color: var(--gold); }
+.langs a:hover { color: var(--fg); border-color: var(--gold); }
+.langs a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <nav class="langs" aria-label="Language"><a href="lanzamiento-el-salvador.html" hreflang="es" lang="es" data-alt="https://claude.ai/artifact/3yHPExy4BXRtk5wA4UbrLT">ES</a><span aria-current="true">EN</span></nav>
+    <span class="eyebrow">PeludaCoin (PUDA) · roadmap · October 2026</span>
+    <h1>Creating and launching PUDA in <em>El Salvador</em></h1>
+    <p class="lead">Steps to issue the token under the Ley de Emisión de Activos Digitales (LEAD, Digital Assets Issuance Law) and the Comisión Nacional de Activos Digitales (CNAD, National Digital Assets Commission). The roadmap starts with a single professional in the pre-launch phase, the auditor, and explains what else the law requires before any sale.</p>
+    <div class="notice"><span aria-hidden="true">⚖️</span><p><b>This is not legal advice.</b> It is based on public sources consulted on 1 October 2026, some of which are secondary summaries. Each step states whether it has been verified. Steps marked <span class="tag l">lawyer</span> require a Salvadoran lawyer; EU matters require a Spanish one.</p></div>
+  </header>
+
+  <section aria-labelledby="clave-h">
+    <div class="head">
+      <span class="eyebrow">The short answer</span>
+      <h2 id="clave-h">Can we start with just an auditor?</h2>
+      <p class="lead">Yes, during pre-launch, as long as the token is neither sold nor promoted. For the public offering the LEAD requires further roles, and none of them is simply an “auditor”.</p>
+    </div>
+    <div class="answer">
+      <div class="role key"><span class="when">Phase 0 · now</span><h3>Smart contract auditor</h3><p>Reviews the ERC-20 contract, the vesting and the per-wallet limits. <b>The law does not require it as a separate role</b>, but its report feeds the technical section of the offering document. It is what the website already promises with <i>“Audit First”</i>.</p></div>
+      <div class="role"><span class="when">Phase 2 · before selling</span><h3>Certificador (certifier) registered with the CNAD</h3><p>This is the role the LEAD <b>does require</b> for a public offering: it analyses the financial, legal and technical information in the offering document and reports to the CNAD. It must be independent and cannot also act as the structurer.</p></div>
+      <div class="role"><span class="when">Phase 1–2</span><h3>Estructurador (structurer) + local lawyer</h3><p>The structurer drafts the Documento de Información Relevante (DIR, offering document). In addition, the issuer must be domiciled in El Salvador or use a platform based there, and the sale is made through licensed digital asset service providers (PSAD).</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="flags-h">
+    <div class="head">
+      <span class="eyebrow">Before hiring anyone</span>
+      <h2 id="flags-h">Fix what the website says today</h2>
+      <p class="lead">The LEAD prohibits promoting an offering before it is registered. In addition, several statements on PeludaRemake describe audited returns and guarantees that do not yet exist. A certifier or a regulator will read them as an investment offer.</p>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Current text</th><th>Problem</th><th>Proposal</th></tr></thead>
+        <tbody>
+          <tr><td><q>Audited 25% annual net performance</q></td><td>No audit exists yet, and it promises a return.</td><td class="fix">Remove it. The bot’s returns are not published until they have been audited.</td></tr>
+          <tr><td><q>Guaranteed liquidity in USDT with real backing</q></td><td>“Guaranteed” is a promise nobody can assure.</td><td class="fix">Describe the liquidity mechanism without the word “guaranteed”.</td></tr>
+          <tr><td><q>Current Price: $10.00</q> · <q>24h Volume: $9.3M</q></td><td>The token is not trading, so these figures are fictitious.</td><td class="fix">“Expected issue price: USD 10 (pending registration)”. No volume.</td></tr>
+          <tr><td><q>Annual Return</q> · <q>Monthly Return</q> · formula <span class="mono">Price × 1.25</span></td><td>A 25% annual appreciation, even if presented as an “internal model”, is perceived as a promise of returns.</td><td class="fix">Remove it from the public website; move it to the DIR together with the risks.</td></tr>
+          <tr><td><q>Presale</q> button and information</td><td>Selling or reserving tokens before the CNAD registers the offering is not permitted.</td><td class="fix">An “interest list” with no purchase commitment, no price and no payments.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="ruta-h">
+    <div class="head">
+      <span class="eyebrow">Roadmap</span>
+      <h2 id="ruta-h">Step by step</h2>
+      <p class="lead">Tick each step as you complete it. Progress is saved only in this browser.</p>
+    </div>
+    <div class="layout">
+      <div class="phases" id="phases"></div>
+      <aside class="side" aria-label="Progress and team">
+        <div class="card">
+          <span class="eyebrow">Progress</span>
+          <span class="big" id="pct">0%</span>
+          <div class="meter" aria-hidden="true"><i id="bar"></i></div>
+          <span class="src" id="next">Next: —</span>
+          <button type="button" class="reset" id="reset">Clear all</button>
+        </div>
+        <div class="card">
+          <span class="eyebrow">Team needed up to your current step</span>
+          <ul class="team" id="team"></ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section aria-labelledby="eu-h">
+    <div class="head">
+      <span class="eyebrow">Outside El Salvador</span>
+      <h2 id="eu-h">Spain and the EU follow their own law</h2>
+    </div>
+    <div class="two">
+      <div class="card">
+        <h3>MiCA (EU Regulation 2023/1114)</h3>
+        <ul>
+          <li>Registering the token in El Salvador <b>does not allow it to be offered to the public in Spain</b>.</li>
+          <li>To offer it in the EU, the offeror (a legal person) notifies the white paper to the CNMV <b>20 working days before</b> publishing it. There is no prior approval, but marketing rules apply.</li>
+          <li>Since 23 December 2025 the CNMV only accepts white papers through its “CWP” electronic procedure, in iXBRL format using the ESMA template.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Main risk</h3>
+        <ul>
+          <li>If PUDA holders earn from the profits of a trading bot, the token may be a <b>financial instrument</b>. In that case it would fall outside MiCA and within securities regulation (prospectus and MiFID; in Spain, Law 6/2023). <span class="tag u">unverified for PUDA</span></li>
+          <li>Managing the issuer from Spain may create Spanish tax residence through its “place of effective management” and cancel out the Salvadoran tax advantages. <span class="tag u">general principle</span></li>
+          <li>Bitget did not hold a MiCA licence as of mid-September 2026: bear this in mind if you plan to list the token or run the bot from Spain.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ej-h">
+    <div class="head">
+      <span class="eyebrow">References</span>
+      <h2 id="ej-h">Real issuances registered with the CNAD</h2>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Issuance</th><th>What it is</th><th>Date</th></tr></thead>
+        <tbody>
+          <tr><td>HILSV</td><td>Inversiones Laguardia bond (airport Hilton hotel), on Bitfinex Securities</td><td class="mono">CNAD approval 13 May 2024</td></tr>
+          <tr><td>USTBL</td><td>NexBridge’s tokenised US Treasury bills</td><td class="mono">Offering 19–29 November 2024</td></tr>
+          <tr><td>2026 market</td><td>Around 230 tokens registered in 2026; ~75% are tokenised shares, ETFs or bonds</td><td class="mono">Press, 2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="src">Context: the Bitcoin Law was amended on 29–30 January 2025 following the agreement with the IMF (accepting bitcoin became voluntary). The LEAD did not change as a result. The August 2024 reform left the CNAD as the sole regulator and strengthened anti-money-laundering obligations.</p>
+  </section>
+
+  <footer>
+    <p><b>Sources</b> (consulted on 1 October 2026; several official websites could not be opened directly, and search-engine summaries were used instead):</p>
+    <ol>
+      <li>CNAD — Ley de Emisión de Activos Digitales (Digital Assets Issuance Law, DL 643): cnad.gob.sv/wp-content/uploads/2024/08/1.-Ley-de-Emision-de-Activos-Digitales-DL-643.pdf</li>
+      <li>CNAD — Register of certifiers and public issuances: cnad.gob.sv/how-to-register/</li>
+      <li>CNAD — List of structurers: cnad.gob.sv/structurers-list/</li>
+      <li>Central Law / Chambers — Analysis of the LEAD: central-law.com · chambers.com</li>
+      <li>Legal500 — El Salvador: Blockchain &amp; Crypto Assets: legal500.com/guides/chapter/el-salvador-blockchain-crypto-assets/</li>
+      <li>GFI and García Bodán — Amendments to the LEAD (2024): gfintegrity.org · garciabodan.com</li>
+      <li>Notabene — Travel Rule in El Salvador: notabene.id/world/el-salvador</li>
+      <li>EY — Taxation under the LEAD: ey.com/es_ce/technical/tax/tax-alerts/</li>
+      <li>El Mundo (SV) — 30 registered PSAD; elsalvador.com — issuance costs of 2–4%; CriptoNoticias — 2026 tokens</li>
+      <li>HILSV (CNAD approval 13 May 2024) and CoinDesk (USTBL, 19 November 2024)</li>
+      <li>MiCA — Regulation (EU) 2023/1114, arts. 4, 7 and 8: eur-lex.europa.eu · CNMV — White paper notification: cnmv.es/portal/mica</li>
+    </ol>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const STEPS = [
+    { phase: "Phase 0 · Pre-launch", note: "No sales, no presale and no promotion of the token", steps: [
+      { id: "web", t: "Remove the return, price and volume figures and the presale from the website", who: "PUDA team", tags: ["v", "l"],
+        what: "Apply the table above. The LEAD prohibits promotion before registration.", docs: "Revised PeludaRemake copy (ES/EN)", time: "1 week", src: "Gofaizen-Sherle; Legal500 (secondary)" },
+      { id: "audit", t: "Hire the smart contract auditor (the only professional in this phase)", who: "Technical auditor", tags: ["u"], role: "Smart contract auditor",
+        what: "Audit the ERC-20 contract, the 10-year linear vesting, the per-wallet limits and the escrow. Publish the report, as “Audit First” promises.", docs: "Contract code, tokenomics specification, audit report", time: "2–6 weeks (typical in the industry)", src: "Not a LEAD requirement; standard practice in DIRs" },
+      { id: "fix", t: "Fix the findings and request the auditor’s final review", who: "Development + auditor", tags: ["u"],
+        what: "Close all critical and high-severity issues. The final report will go into the technical section of the DIR.", docs: "Signed final report", time: "1–3 weeks", src: "Industry practice" },
+      { id: "short", t: "Shortlist a structurer and a certifier from the CNAD public register", who: "Founders", tags: ["v"],
+        what: "Choose two different firms: the certifier must be independent of the structurer. Certifiers need at least 5 years of relevant experience.", docs: "CNAD public lists", time: "1–2 weeks", src: "cnad.gob.sv/structurers-list · register-as-certifier" },
+    ]},
+    { phase: "Phase 1 · Entity and registration", note: "A presence in El Salvador is required", steps: [
+      { id: "entity", t: "Incorporate the issuer in El Salvador (S.A. de C.V. or SRL)", who: "Salvadoran lawyer", tags: ["v", "l"], role: "Salvadoran lawyer",
+        what: "Issuers must be domiciled in El Salvador or use a platform domiciled there. Consider where effective management will reside.", docs: "Deed of incorporation, NIT (tax ID), legal representative", time: "Weeks (no verified figure)", src: "chambers.com (secondary)" },
+      { id: "uif", t: "Register with the UIF (financial intelligence unit) and set up the anti-money-laundering programme", who: "Compliance officer", tags: ["v", "l"], role: "Compliance officer (AML)",
+        what: "Registration as an obliged entity within 15 working days, disclosure of beneficial owners, KYC, limits and suspicious transaction reporting. The Travel Rule applies to PSAD.", docs: "AML manual, beneficial owners", time: "15 working days after incorporation", src: "Notabene; GFI; García Bodán" },
+      { id: "issuer", t: "Register in the CNAD Registro de Emisores (issuer register)", who: "Lawyer + issuer", tags: ["v"],
+        what: "Description and registration of the entity, website, jurisdictions where it operates and offerings in the previous 3 years.", docs: "Issuer form", time: "—", src: "LEAD text" },
+    ]},
+    { phase: "Phase 2 · Offering", note: "Nothing is sold until the CNAD registers the offering", steps: [
+      { id: "dir", t: "Draft the Documento de Información Relevante (DIR, offering document) with the structurer", who: "Structurer", tags: ["v", "l"], role: "Structurer",
+        what: "Issuer, token rights, use of proceeds, risks, governance, custody of the reserve gold, the smart contract and the audit report. Real DIRs include audited financial statements.", docs: "DIR + audited financial statements", time: "Weeks", src: "HILSV and USTBL DIRs" },
+      { id: "cert", t: "The certifier reviews the DIR and sends its report to the CNAD", who: "CNAD certifier", tags: ["v"], role: "CNAD-registered certifier",
+        what: "Analyses the financial, legal, technical and administrative information. The CNAD authorises the offering once the certifier considers it viable.", docs: "Certification report", time: "Weeks", src: "Central Law" },
+      { id: "auditfin", t: "Audit of the issuer’s financial statements", who: "Financial auditor", tags: ["u"], role: "Financial auditor",
+        what: "Separate from the smart contract audit. Standard practice in registered DIRs.", docs: "Audited financial statements", time: "—", src: "Real DIRs (practice)" },
+      { id: "reg", t: "The CNAD registers the public offering", who: "CNAD", tags: ["v"],
+        what: "Total issuance cost estimated at 2–4% of the capital raised. Fees of around USD 6,270 for the application and USD 4,050 per year (unverified). No minimum capital requirement has been found.", docs: "CNAD resolution", time: "“Weeks”, according to the press", src: "elsalvador.com (press)" },
+      { id: "psad", t: "Agree the placement with one or more licensed PSAD", who: "PSAD", tags: ["v"], role: "Licensed PSAD",
+        what: "The CNAD has approved around 30 PSAD out of more than 120 applications. This is where the website’s “presale” becomes the registered offering. A private offering (50 qualified investors or fewer) has lighter requirements but still needs a structurer.", docs: "Placement agreement", time: "—", src: "El Mundo (SV); private offering unverified" },
+    ]},
+    { phase: "Phase 3 · After launch", note: "Ongoing obligations", steps: [
+      { id: "disc", t: "Ongoing disclosure to the CNAD and to holders", who: "Issuer", tags: ["v"],
+        what: "Material events, annual registration renewals and anti-money-laundering reports. Notify the CNAD at least 10 days in advance of any buybacks or redemptions.", docs: "Reporting calendar", time: "Ongoing", src: "Secondary sources" },
+      { id: "gold", t: "Document the gold purchases and the bot’s profits", who: "Issuer + financial auditor", tags: ["u"],
+        what: "The website promises periodic reports or custody certificates for the gold. Publish bot results only once they have been audited.", docs: "Custody certificates, audited reports", time: "Periodic", src: "The website’s own commitments" },
+      { id: "tax", t: "Review the tax regime", who: "Tax adviser", tags: ["v", "l"],
+        what: "According to published sources, Article 36 of the LEAD exempts registered issuers and PSAD from income tax, capital gains tax, VAT, municipal taxes and withholding on digital assets. Confirm the effective tax residence.", docs: "Tax opinion", time: "—", src: "EY; Gofaizen-Sherle" },
+    ]},
+  ];
+  STEPS.forEach((p, i) => p.steps.forEach(s => { s.phase = i; }));
+  const ALL = STEPS.flatMap(p => p.steps);
+  const KEY = "puda-sv-steps";
+  let done = new Set();
+  try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (_) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (_) {} };
+  const tagHTML = t => ({ v: '<span class="tag v">verified</span>', u: '<span class="tag u">unverified</span>', l: '<span class="tag l">lawyer</span>' })[t];
+
+  const root = document.getElementById("phases");
+  root.innerHTML = STEPS.map((p, i) => `
+    <div class="phase">
+      <div class="phase-h"><span class="n">${i}</span><h2>${p.phase.split(" · ")[1]}</h2><small>${p.note}</small></div>
+      ${p.steps.map(s => `
+        <details class="step" id="s-${s.id}">
+          <summary><input type="checkbox" id="c-${s.id}" aria-label="Completed: ${s.t}"><span class="title">${s.t}</span><span class="tags">${s.tags.map(tagHTML).join("")}</span></summary>
+          <div class="body"><dl>
+            <dt>What</dt><dd>${s.what}</dd><dt>Who</dt><dd>${s.who}</dd><dt>Documents</dt><dd>${s.docs}</dd><dt>Timing</dt><dd>${s.time}</dd>
+          </dl><p class="src">Source: ${s.src}</p></div>
+        </details>`).join("")}
+    </div>`).join("");
+
+  root.addEventListener("click", e => { if (e.target.matches("input[type=checkbox]")) e.stopPropagation(); }, true);
+  root.addEventListener("change", e => {
+    const cb = e.target; if (!cb.matches("input[type=checkbox]")) return;
+    const id = cb.id.slice(2); cb.checked ? done.add(id) : done.delete(id); save(); render();
+  });
+  document.getElementById("reset").addEventListener("click", () => { done.clear(); save(); render(); });
+
+  function render() {
+    ALL.forEach(s => {
+      const cb = document.getElementById("c-" + s.id); cb.checked = done.has(s.id);
+      document.getElementById("s-" + s.id).classList.toggle("done", done.has(s.id));
+    });
+    const pct = Math.round(done.size / ALL.length * 100);
+    document.getElementById("pct").textContent = pct + "%";
+    document.getElementById("bar").style.width = pct + "%";
+    const next = ALL.find(s => !done.has(s.id));
+    document.getElementById("next").textContent = next ? "Next: " + next.t : "Roadmap complete";
+    // Team: roles from the current phase and earlier phases are needed now.
+    const phase = next ? next.phase : STEPS.length - 1;
+    document.getElementById("team").innerHTML = ALL.filter(s => s.role).map(s =>
+      `<li class="${s.phase <= phase ? "on" : ""}"><div>${s.role}<span>${s.phase <= phase ? "needed now" : "phase " + s.phase}</span></div></li>`).join("");
+  }
+  render();
+})();
+</script>
+<script>
+// En la versión publicada como artifact, el otro idioma vive en otra URL.
+(() => { if (!/^file:/.test(location.href)) document.querySelectorAll(".langs a[data-alt]").forEach(a => { if (a.dataset.alt) a.href = a.dataset.alt; }); })();
+</script>

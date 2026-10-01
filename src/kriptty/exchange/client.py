@@ -36,6 +36,32 @@ def spot(base: str) -> str:
     return f"{base}/USDT"
 
 
+# Bitget lista perpetuos USDT-M de acciones, metales e índices (RWA) con el mismo formato
+# que los cripto (p. ej. NVDA/USDT:USDT, XAU/USDT:USDT). Tienen horario, gaps y topes de
+# funding propios, así que quedan fuera de los universos cripto de SUB2 y SUB6.
+NON_CRYPTO_BASES = {
+    "XAU", "XAG", "XPT", "XPD", "XCU", "AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "GOOG", "META",
+    "NFLX", "AMD", "INTC", "COIN", "MSTR", "HOOD", "PLTR", "CRCL", "SPY", "QQQ", "NDX", "DJI", "US30",
+    "NAS100", "SPX500", "USOIL", "UKOIL", "WTI", "BRENT", "NATGAS", "EURUSD", "GBPUSD", "USDJPY",
+}
+_RWA_FLAGS = ("isRwa", "isRWA", "rwa")
+_NON_CRYPTO_TYPES = {"stock", "stocks", "equity", "metal", "metals", "index", "indices", "forex", "commodity"}
+
+
+def is_crypto_market(symbol: str, market: dict | None = None, extra_excluded: set[str] | None = None) -> bool:
+    """False para perpetuos de acciones/metales/índices (por la info del mercado o por el activo base)."""
+    base = symbol.split("/")[0].upper()
+    if base in NON_CRYPTO_BASES or base in (extra_excluded or set()):
+        return False
+    info = (market or {}).get("info") or {}
+    if any(str(info.get(k, "")).upper() in ("YES", "TRUE", "1") for k in _RWA_FLAGS):
+        return False
+    for key in ("symbolType", "category", "assetType", "underlyingType"):
+        if str(info.get(key, "")).lower() in _NON_CRYPTO_TYPES:
+            return False
+    return True
+
+
 class ExchangeClient:
     """Una instancia por cuenta/subcuenta (cada una con sus propias API keys)."""
 
@@ -62,6 +88,22 @@ class ExchangeClient:
 
     def market(self, symbol: str) -> dict:
         return self.ex.market(symbol)
+
+    def is_crypto(self, symbol: str) -> bool:
+        try:
+            market = self.market(symbol)
+        except Exception:  # noqa: BLE001 — mercado desconocido: decide solo por el activo base
+            market = None
+        extra = {b.strip().upper() for b in self.settings.excluded_bases.split(",") if b.strip()}
+        return is_crypto_market(symbol, market, extra)
+
+    async def clock_offset_ms(self) -> float:
+        """Diferencia (ms) entre el reloj local y el del exchange. Bitget rechaza firmas con
+        timestamps desfasados; Freqtrade 2026.9 añadió el mismo aviso."""
+        before = time.time() * 1000
+        server = float(await self.ex.fetch_time())
+        after = time.time() * 1000
+        return server - (before + after) / 2
 
     async def ohlcv(self, symbol: str, timeframe: str, limit: int = 200,
                     closed_only: bool = True) -> pd.DataFrame:
