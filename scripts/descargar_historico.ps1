@@ -1,7 +1,7 @@
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $tmp = "$env:TEMP\puda_hist"
-$out = Join-Path ([Environment]::GetFolderPath('Desktop')) 'historico_puda'
+$out = Join-Path ([Environment]::GetFolderPath('Desktop')) 'historico_puda_104'
 New-Item -ItemType Directory -Force $tmp, $out | Out-Null
 $b = 'https://data.binance.vision/data'
 $monedas = ('BTC ETH BNB SOL XRP DOGE ADA TRX AVAX LINK DOT TON 1000SHIB LTC BCH NEAR UNI APT ICP ETC ' +
