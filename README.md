@@ -8,6 +8,7 @@ cliente MCP.
 
 > Revisión y cambios respecto al diseño original: [`docs/REVISION.md`](docs/REVISION.md).
 > Explicación interactiva de las estrategias (abrir en el navegador): [`docs/estrategias-puda.html`](docs/estrategias-puda.html).
+> Presentación en diapositivas, con la estructura del documento original: [`docs/presentacion-estrategias.html`](docs/presentacion-estrategias.html).
 
 ## Estrategias
 

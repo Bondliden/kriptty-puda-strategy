@@ -1,0 +1,777 @@
+<title>Sistema de Trading Algorítmico PUDA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: presentación 16:9 (lienzo de 1280×720 escalado a la ventana) con la misma secuencia que
+   «🤖 Sistema de Trading Algorítmico — Presentación y Confirmación de Directrices»: Paso 1 → Paso 5.
+   En pantallas estrechas las diapositivas se apilan en scroll. Look único oscuro de marca PUDA. */
+:root {
+  --bg: hsl(225, 44%, 4%);
+  --slide: hsl(225, 38%, 7%);
+  --panel: hsl(224, 30%, 11%);
+  --line: hsl(224, 26%, 19%);
+  --fg: hsl(220, 30%, 96%);
+  --muted: hsl(220, 14%, 66%);
+  --gold: hsl(45, 93%, 54%);
+  --gold-soft: hsla(45, 93%, 54%, .12);
+  --ink: hsl(225, 44%, 6%);
+  --long: hsl(158, 62%, 52%);
+  --short: hsl(2, 80%, 66%);
+  --blue: hsl(212, 90%, 66%);
+  --violet: hsl(268, 75%, 72%);
+  --amber: hsl(32, 95%, 62%);
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 18px/1.5 var(--body); overflow: hidden; }
+
+/* Escenario */
+.stage { position: fixed; inset: 0; display: grid; place-items: center; }
+.deck { position: relative; width: 1280px; height: 720px; transform-origin: center center; }
+.slide {
+  position: absolute; inset: 0; padding: 56px 72px 64px; display: flex; flex-direction: column; gap: 22px;
+  background: var(--slide); border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+  background-image: radial-gradient(48rem 26rem at 0% 0%, var(--gold-soft), transparent 60%);
+  visibility: hidden; opacity: 0; transition: opacity .25s ease;
+}
+.slide.on { visibility: visible; opacity: 1; }
+.slide > footer {
+  position: absolute; left: 72px; right: 72px; bottom: 22px; display: flex; justify-content: space-between;
+  font: 12px var(--mono); color: var(--muted); letter-spacing: .06em;
+}
+.kicker { font: 500 13px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+h1, h2, h3 { margin: 0; font-family: var(--display); text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: 54px; line-height: 1.06; font-weight: 700; }
+h2 { font-size: 34px; line-height: 1.12; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 500; }
+p { margin: 0; }
+.lead { font-size: 20px; color: var(--muted); max-width: 60ch; }
+.gold { color: var(--gold); }
+.mono { font-family: var(--mono); }
+.row { display: flex; gap: 22px; min-height: 0; }
+.col { display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0; }
+.grow { flex: 1; min-height: 0; }
+
+/* Listas de directrices */
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font-size: 19px; }
+.checks li { display: grid; grid-template-columns: 30px 1fr; align-items: baseline; }
+.checks li::before { content: "✅"; font-size: 17px; }
+.checks.x li::before { content: "✕"; color: var(--short); font-weight: 700; }
+.bul { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 17px; }
+.bul li::marker { color: var(--gold); }
+.bul b { color: var(--fg); }
+
+/* Tablas «Resumen» */
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+td:first-child { color: var(--gold); white-space: nowrap; font-weight: 500; }
+.tbl { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px 8px; }
+.col.tbl { align-self: flex-start; flex: 1.05; }
+.tbl.grow { flex: none; }
+.tbl-title { font: 500 13px var(--mono); color: var(--fg); padding: 8px 12px 2px; }
+
+/* Caja de lógica central (el recuadro ASCII del documento) */
+.logic { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.logic .tag { font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 500 12px/1 var(--mono); padding: 6px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill.on { color: var(--long); border-color: color-mix(in hsl, var(--long) 40%, transparent); }
+.pill.off { color: var(--amber); border-color: color-mix(in hsl, var(--amber) 40%, transparent); }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.prop { font: 700 13px var(--mono); letter-spacing: .08em; }
+.p-a { color: var(--blue); } .p-b { color: var(--violet); } .p-c { color: var(--gold); } .p-d { color: var(--amber); }
+.why { border-left: 3px solid var(--gold); padding: 4px 0 4px 14px; font-size: 16px; color: var(--muted); }
+.why b { color: var(--fg); }
+
+/* Diagrama de arquitectura */
+.arch { align-content: center; display: grid; grid-template-columns: 1fr 60px 1.25fr 60px 0.8fr; align-items: center; gap: 0; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.box.hl { border-color: var(--gold); background: var(--gold-soft); }
+.box h3 { font-size: 15px; }
+.box small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.inner { display: grid; gap: 8px; }
+.inner .box { padding: 9px 12px; }
+.arrow { text-align: center; color: var(--muted); font: 12px var(--mono); }
+.arrow::before { content: "⟷"; display: block; font-size: 24px; color: var(--gold); }
+.arrow.one::before { content: "⟶"; }
+
+/* Mapa de subcuentas */
+.map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.card .id { font: 500 12px var(--mono); color: var(--gold); display: flex; justify-content: space-between; }
+.card b { font-size: 15px; }
+.card span:last-child { font-size: 12.5px; color: var(--muted); }
+.card.off { border-style: dashed; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--long); display: inline-block; }
+.card.off .dot { background: transparent; border: 1.5px solid var(--amber); }
+
+/* Sinergia */
+.syn { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.syn .box h3 { font-size: 16px; }
+.chips { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; }
+.chip { font: 500 12px/1 var(--mono); padding: 6px 8px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
+.stars { color: var(--gold); letter-spacing: 2px; font-family: var(--mono); }
+
+/* Orden de prioridad */
+.order { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; align-items: stretch; }
+.order .box { border-radius: 0; border-right: 0; }
+.order .box:first-child { border-radius: 12px 0 0 12px; }
+.order .box:last-child { border-radius: 0 12px 12px 0; border-right: 1px solid var(--line); }
+.order .n { font: 700 28px var(--display); color: var(--gold); }
+
+/* Portada */
+.cover { justify-content: center; gap: 28px; }
+.cover h1 { font-size: 64px; max-width: 16ch; }
+.cover .emoji { font-size: 64px; line-height: 1; }
+
+/* Controles */
+.nav { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; z-index: 5;
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+.nav button { all: unset; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--panel); border: 1px solid var(--line); color: var(--fg); font-size: 18px; }
+.nav button:hover { border-color: var(--gold); }
+.nav button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.nav .count { font: 500 13px var(--mono); color: var(--muted); min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+.bar { position: fixed; left: 0; top: 0; height: 3px; background: var(--gold); transition: width .25s; z-index: 5; }
+.hint { position: fixed; right: 16px; bottom: 22px; font: 12px var(--mono); color: var(--muted); }
+
+/* Modo lista en pantallas estrechas */
+@media (max-width: 820px), (max-height: 520px) {
+  body { overflow: auto; }
+  .stage { position: static; display: block; padding-inline: 16px; padding-block: 16px 40px; }
+  .deck { width: auto; height: auto; transform: none !important; display: grid; gap: 16px; }
+  .slide { position: relative; inset: auto; visibility: visible; opacity: 1; padding: 28px 20px 48px; gap: 16px; }
+  .slide > footer { left: 20px; right: 20px; bottom: 16px; }
+  .nav, .bar, .hint { display: none; }
+  h1, .cover h1 { font-size: 34px; } h2 { font-size: 24px; }
+  .lead { font-size: 17px; }
+  .row { flex-direction: column; }
+  .arch { grid-template-columns: 1fr; gap: 8px; }
+  .arrow::before { content: "⇅"; }
+  .map, .syn, .order { grid-template-columns: 1fr 1fr; }
+  .order .box { border-radius: 12px !important; border-right: 1px solid var(--line); }
+  .order { gap: 8px; }
+  .tbl { overflow-x: auto; }
+  table { font-size: 14px; }
+  td:first-child { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) { .slide, .bar { transition: none; } }
+</style>
+
+<div class="bar" id="bar"></div>
+<main class="stage" id="stage">
+<div class="deck" id="deck">
+
+<!-- 1 · Portada -->
+<section class="slide cover on" aria-label="Portada">
+  <div class="emoji" aria-hidden="true">🤖</div>
+  <span class="kicker">Kriptty · PeludaCoin (PUDA) · revisión septiembre 2026</span>
+  <h1>Sistema de Trading Algorítmico <span class="gold">MCP + Bitget</span></h1>
+  <p class="lead">Presentación y confirmación de directrices. Una cuenta principal y 11 subcuentas, cada una con una estrategia independiente y un Stop Loss obligatorio en toda orden.</p>
+  <footer><span>Sistema de Trading Algorítmico</span><span>Usa ← → para avanzar</span></footer>
+</section>
+
+<!-- 2 · Directrices -->
+<section class="slide" aria-label="Directrices">
+  <span class="kicker">Presentación y confirmación de directrices</span>
+  <h2>Lo que el sistema garantiza</h2>
+  <ul class="checks">
+    <li><span><b>12 cuentas</b> (1 principal + 11 subcuentas), cada una con una estrategia independiente. El diseño original tenía 9; SUB10 y SUB11 se añadieron en la revisión.</span></li>
+    <li><span><b>Regla inquebrantable:</b> cero órdenes sin Stop Loss (estructural, dinámico o por ATR). El guardián rechaza la orden antes de enviarla.</span></li>
+    <li><span><b>MCP sobre Antigravity</b> como capa de orquestación e inteligencia, con el SDK oficial de MCP.</span></li>
+    <li><span><b>Mismo código en todas las fases:</b> backtest → dry_run → demo → live.</span></li>
+    <li><span><b>Propuestas antes de código:</b> SUB6–SUB9 se presentaron y aprobaron antes de implementarse.</span></li>
+  </ul>
+  <footer><span>Directrices</span><span>02</span></footer>
+</section>
+
+<!-- 3 · Paso 1 diagrama -->
+<section class="slide" aria-label="Paso 1 — Arquitectura">
+  <span class="kicker">Paso 1 — Arquitectura MCP en Antigravity + Docker</span>
+  <h2>Diagrama de flujo conceptual</h2>
+  <div class="arch grow">
+    <div class="box">
+      <h3>Antigravity (MCP host)</h3>
+      <small>Agente de IA / orquestador (Claude u otro LLM). Consulta datos, revisa el diario y, si se permite, opera.</small>
+    </div>
+    <div class="arrow">MCP<br>stdio · HTTP</div>
+    <div class="box">
+      <h3>Trading engine (Docker)</h3>
+      <div class="inner">
+        <div class="box"><h3>Servidor MCP</h3><small>7 tools de lectura; place_order y close_position solo con MCP_READ_ONLY=false</small></div>
+        <div class="box"><h3>Strategy runner</h3><small>APScheduler + tareas por WebSocket (SUB4)</small></div>
+        <div class="box hl"><h3>Account router + guardián SL</h3><small>Credenciales por subcuenta, kill-switch y diario de órdenes</small></div>
+      </div>
+    </div>
+    <div class="arrow one">ccxt<br>REST · WS</div>
+    <div class="box">
+      <h3>Bitget</h3>
+      <small>API v2 y Unified Trading Account v3. Demo Trading para pruebas.</small>
+    </div>
+  </div>
+  <footer><span>Paso 1 · Arquitectura</span><span>03</span></footer>
+</section>
+
+<!-- 4 · Paso 1 resumen -->
+<section class="slide" aria-label="Resumen del Paso 1">
+  <span class="kicker">Paso 1 — Arquitectura</span>
+  <h2>✅ Resumen del Paso 1</h2>
+  <div class="tbl grow">
+    <table>
+      <thead><tr><th>Componente</th><th>Tecnología</th><th>Función</th></tr></thead>
+      <tbody>
+        <tr><td>Servidor MCP</td><td>SDK oficial <span class="mono">mcp</span> v2 (stdio / Streamable HTTP)</td><td>Expone herramientas de mercado, cuentas y diario a Antigravity</td></tr>
+        <tr><td>Trading engine</td><td>Python asyncio + APScheduler</td><td>Ejecuta cada estrategia con su calendario; un fallo no tumba el motor</td></tr>
+        <tr><td>Exchange</td><td>ccxt 4.5 (Bitget v2, UTA v3, Demo)</td><td>Órdenes, precisión y mínimos por mercado, WebSocket con ccxt.pro</td></tr>
+        <tr><td>Datos</td><td>RSS + VADER/FinBERT · FRED · alternative.me</td><td>Sentimiento (SUB1) y panel macro (SUB5, SUB9)</td></tr>
+        <tr><td>Estado</td><td>SQLite</td><td>Estado de estrategias y diario de órdenes compartido con el MCP</td></tr>
+        <tr><td>Validador SL</td><td><span class="mono">risk/guard.py</span></td><td>Una sola implementación para el motor y el MCP</td></tr>
+        <tr><td>Backtester</td><td><span class="mono">kriptty-backtest</span></td><td>Histórico de Bitget y el mismo código de estrategias con reloj simulado</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <footer><span>Paso 1 · Resumen</span><span>04</span></footer>
+</section>
+
+<!-- 5 · Paso 2 -->
+<section class="slide" aria-label="Paso 2 — Conexión Bitget">
+  <span class="kicker">Paso 2 — Conexión con Bitget + account router</span>
+  <h2>Cada orden pasa dos controles</h2>
+  <div class="row grow">
+    <div class="col">
+      <div class="logic">
+        <span class="tag">Validador de Stop Loss · núcleo de seguridad</span>
+        <ul class="bul">
+          <li><b>SL obligatorio</b> en toda orden que abre o aumenta riesgo.</li>
+          <li>El SL de un LONG va <b>por debajo</b> del precio; el de un SHORT, <b>por encima</b>.</li>
+          <li>Distancia máxima del SL: <b>25%</b> del precio.</li>
+          <li>El TP, si existe, tiene que estar en el lado correcto.</li>
+          <li>Exentas: cierres, reduce-only y ventas spot. La pata spot de SUB6 está exenta de forma explícita.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col">
+      <div class="tbl">
+        <div class="tbl-title">Modos de ejecución</div>
+        <table>
+          <thead><tr><th>Modo</th><th>Qué hace</th></tr></thead>
+          <tbody>
+            <tr><td>dry_run</td><td>Precios reales, órdenes simuladas en un broker en memoria</td></tr>
+            <tr><td>demo</td><td>API keys de Demo Trading de Bitget por subcuenta</td></tr>
+            <tr><td>live</td><td>Exige <span class="mono">CONFIRM_LIVE_TRADING=yes</span>; keys sin retiro y con IP en lista blanca</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="why"><b>Sizing por riesgo:</b> cantidad = equity × riesgo ÷ |entrada − SL|. Si queda por debajo del mínimo del mercado, la orden no se envía en lugar de redondearse hacia arriba.</p>
+    </div>
+  </div>
+  <footer><span>Paso 2 · Account router</span><span>05</span></footer>
+</section>
+
+<!-- 6 · Paso 3 mapa -->
+<section class="slide" aria-label="Paso 3 — Mapa de estrategias">
+  <span class="kicker">Paso 3 — Desarrollo de estrategias</span>
+  <h2>Once subcuentas, once fuentes de retorno</h2>
+  <div class="map grow">
+    <div class="card"><span class="id">SUB1 <i class="dot"></i></span><b>News Sentiment</b><span>NLP sobre noticias · cada 2H</span></div>
+    <div class="card"><span class="id">SUB2 <i class="dot"></i></span><b>Stat Arb · vasos comunicantes</b><span>Rotación de capital · cada 4H</span></div>
+    <div class="card off"><span class="id">SUB3 <i class="dot"></i></span><b>Copy trading + guardián</b><span>Señales externas · cada 60 s</span></div>
+    <div class="card"><span class="id">SUB4 <i class="dot"></i></span><b>Scalping 1m</b><span>Alta frecuencia · WebSocket</span></div>
+    <div class="card"><span class="id">SUB5 <i class="dot"></i></span><b>Macro-shorting</b><span>Macro bajista · cada 6H</span></div>
+    <div class="card"><span class="id">SUB6 <i class="dot"></i></span><b>Funding rate arbitrage</b><span>Delta-neutral · cada 5 min</span></div>
+    <div class="card"><span class="id">SUB7 <i class="dot"></i></span><b>Grid adaptativo</b><span>Mercado lateral · cada 5 min</span></div>
+    <div class="card"><span class="id">SUB8 <i class="dot"></i></span><b>DCA inteligente</b><span>Acumulación spot · diario</span></div>
+    <div class="card"><span class="id">SUB9 <i class="dot"></i></span><b>Collar dinámico</b><span>Cobertura macro · cada 15 min</span></div>
+    <div class="card off"><span class="id">SUB10 <i class="dot"></i></span><b>Pairs trading</b><span>Cointegración · cada 1H</span></div>
+    <div class="card off"><span class="id">SUB11 <i class="dot"></i></span><b>SuperTrend 4H</b><span>Tendencia · cada 4H</span></div>
+    <div class="card" style="align-content:center"><span class="pills"><span class="pill on">● activa por defecto</span><span class="pill off">○ desactivada</span></span></div>
+  </div>
+  <footer><span>Paso 3 · Mapa</span><span>06</span></footer>
+</section>
+
+<!-- 7 · SUB1 -->
+<section class="slide" aria-label="SUB1">
+  <span class="kicker">Subcuenta 1 — News Sentiment Trading (NLP)</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Opera lo que dicen las noticias</h2>
+      <ul class="bul">
+        <li>Lee RSS de CoinDesk, Cointelegraph, Decrypt y The Block; CryptoPanic es opcional.</li>
+        <li>Puntúa con <b>VADER</b> (FinBERT opcional) y pondera por fuente y frescura, con una vida media de 3 horas.</li>
+        <li>Solo opera activos con volumen &gt; 5M USDT para evitar manipulación.</li>
+        <li>El SL se recalcula en cada ciclo con ATR(14) de 4H y <b>solo se mueve a favor</b>.</li>
+      </ul>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB1</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Activos</td><td>BTC, ETH, SOL, BNB</td></tr>
+        <tr><td>Umbral BUY</td><td>score &gt; 0.65 (mín. 3 noticias en 6H)</td></tr>
+        <tr><td>Umbral SELL</td><td>score &lt; 0.35</td></tr>
+        <tr><td>Stop Loss</td><td>entrada ∓ 1.5 × ATR(14, 4H), trailing</td></tr>
+        <tr><td>Take Profit</td><td>entrada ± 2.5 × ATR (R:R 1.67)</td></tr>
+        <tr><td>Frecuencia</td><td>cada 2H · apalancamiento 3x</td></tr>
+        <tr><td>Sizing</td><td>1.5% de riesgo, máx. 2 posiciones</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 3 · SUB1</span><span>07</span></footer>
+</section>
+
+<!-- 8 · SUB2 -->
+<section class="slide" aria-label="SUB2">
+  <span class="kicker">SUB2 — Arbitraje estadístico «vasos comunicantes»</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Compra la rezagada antes de que alcance a los líderes</h2>
+      <p class="why"><b>Principio económico:</b> cuando el capital rota en cripto, los líderes del ciclo suben primero. Las altcoins correlacionadas que aún no se han movido suelen seguirlos en las siguientes 2 a 24 horas.</p>
+      <ul class="bul">
+        <li><b>SL estructural:</b> bajo el mínimo de 48H, no un porcentaje arbitrario.</li>
+        <li>Si en 48H no ha alcanzado a los líderes, ya no es un rezago y se cierra.</li>
+      </ul>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB2</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Universo</td><td>perpetuos USDT-M con volumen 24H ≥ 5M</td></tr>
+        <tr><td>Líderes</td><td>top 5 por % 24H, subida ≥ +4%</td></tr>
+        <tr><td>Score de lag</td><td>0.7·Δ24H + 0.3·Δ1H ≥ 4%</td></tr>
+        <tr><td>Correlación</td><td>≥ 0.65 (retornos diarios de 30 días)</td></tr>
+        <tr><td>Stop Loss</td><td>mínimo de 48H − 0.5% (máx. 12%)</td></tr>
+        <tr><td>Take Profit</td><td>máximo de 48H, mín. +6%; R:R ≥ 1.5</td></tr>
+        <tr><td>Máx. posiciones</td><td>3 · salida por tiempo a las 48H</td></tr>
+        <tr><td>Riesgo/trade</td><td>2% · cada 4H · 3x</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 3 · SUB2</span><span>08</span></footer>
+</section>
+
+<!-- 9 · SUB3 -->
+<section class="slide" aria-label="SUB3">
+  <span class="kicker">SUB3 — Copy trading con filtros de riesgo propios</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Copiar a otros sin confiar en su Stop Loss</h2>
+      <p class="why"><b>Rediseñada:</b> los endpoints para leer posiciones de traders ajenos no existen en la API v2. Ahora se copia con el copy trading nativo de Bitget y un guardián propio revisa cada orden copiada.</p>
+      <ul class="bul">
+        <li>Los traders se eligen en la web de Bitget con los filtros del diseño original.</li>
+        <li>Cada 60 s el guardián impone el SL más conservador entre el del trader y el suyo.</li>
+        <li>Desactivada hasta validar los campos de la API en Demo.</li>
+      </ul>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB3</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Fuente de señales</td><td>copy trading nativo de Bitget</td></tr>
+        <tr><td>Filtros de trader</td><td>win rate &gt; 55%, PF &gt; 1.5, DD &lt; 25%, &gt; 50 trades</td></tr>
+        <tr><td>SL LONG</td><td>max(SL del trader, entrada − 1.5·ATR 1H)</td></tr>
+        <tr><td>SL SHORT</td><td>min(SL del trader, entrada + 1.5·ATR 1H)</td></tr>
+        <tr><td>Take Profit</td><td>el del trader o ± 3.75·ATR</td></tr>
+        <tr><td>Corte diario</td><td>pérdida del día sobre el límite → cierra todo</td></tr>
+        <tr><td>Polling</td><td>cada 60 s</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 3 · SUB3</span><span>09</span></footer>
+</section>
+
+<!-- 10 · SUB4 -->
+<section class="slide" aria-label="SUB4">
+  <span class="kicker">SUB4 — Intraday scalping por WebSocket</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Patrones de 1 minuto a favor de la tendencia de 5</h2>
+      <ul class="bul">
+        <li><b>Dos timeframes:</b> la entrada se confirma en 1m y la tendencia se filtra en 5m (EMA9/EMA21).</li>
+        <li><b>Filtro de costes:</b> el TP debe cubrir al menos 3 veces la comisión de ida y vuelta (0.12%). Sin él, la mayoría de operaciones perdía solo por comisiones.</li>
+        <li><b>Trailing:</b> breakeven en +1 ATR y seguimiento a 0.8 ATR desde +2 ATR.</li>
+        <li><b>Circuit breaker:</b> si el drawdown del día supera el 3%, se apaga hasta el día siguiente.</li>
+      </ul>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB4</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Activos</td><td>BTC, ETH, SOL</td></tr>
+        <tr><td>Disparo</td><td>cierre de cada vela de 1m (ccxt.pro)</td></tr>
+        <tr><td>Patrones</td><td>hammer, shooting star, engulfing, 3 soldados, 3 cuervos</td></tr>
+        <tr><td>Filtros</td><td>volumen &gt; 1.5×, RSI no extremo, spread &lt; 0.05%</td></tr>
+        <tr><td>Stop Loss</td><td>1.2 × ATR(1m)</td></tr>
+        <tr><td>Take Profit</td><td>2 × ATR</td></tr>
+        <tr><td>Límites</td><td>2 posiciones, 10 trades/día por símbolo, nada de 23 a 00 UTC</td></tr>
+        <tr><td>Sizing</td><td>1% de riesgo · 5x</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 3 · SUB4</span><span>10</span></footer>
+</section>
+
+<!-- 11 · SUB5 -->
+<section class="slide" aria-label="SUB5">
+  <span class="kicker">SUB5 — Macro-shorting (solo cortos)</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Cortos solo cuando la macro y el gráfico coinciden</h2>
+      <ul class="bul">
+        <li><b>Panel macro</b> (escala ±10): tipos de la Fed, CPI interanual, S&amp;P 500, Nasdaq, VIX, dólar y Fear &amp; Greed. Todo desde FRED y alternative.me.</li>
+        <li><b>Fail-closed:</b> con datos insuficientes no se opera.</li>
+        <li>Si el régimen pasa a STRONG_BULL con la posición abierta, se cierra.</li>
+      </ul>
+      <p class="why"><b>Corregido:</b> el diseño original leía el CPI como índice (~320) y no como % interanual, así que la estrategia veía la macro «muy bajista» siempre.</p>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB5</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Activación</td><td>score ≤ −3 (≤ −5 = convicción alta)</td></tr>
+        <tr><td>Confirmación</td><td>precio ≤ EMA200·1.02, RSI 30–55, ≥ 2 de 3 velas bajistas</td></tr>
+        <tr><td>Stop Loss</td><td>máximo de 7 días + 0.3%</td></tr>
+        <tr><td>Take Profit</td><td>−4% (33%), −8% (33%), −15% (34%)</td></tr>
+        <tr><td>Riesgo</td><td>1.5% (2% con convicción alta)</td></tr>
+        <tr><td>Circuit breaker</td><td>drawdown &gt; 5% → pausa</td></tr>
+        <tr><td>Frecuencia</td><td>cada 6H · BTC y ETH · 2x</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 3 · SUB5</span><span>11</span></footer>
+</section>
+
+<!-- 12 · Paso 4 criterios -->
+<section class="slide" aria-label="Paso 4 — Criterios">
+  <span class="kicker">Paso 4 — Propuestas para las subcuentas 6, 7, 8 y 9</span>
+  <h2>Criterios de selección</h2>
+  <p class="lead">Las cinco primeras cubren momentum (SUB1), rotación de capital (SUB2), señales externas (SUB3), alta frecuencia (SUB4) y macro bajista (SUB5). Las cuatro siguientes debían ser:</p>
+  <ul class="checks">
+    <li><span><b>Complementarias:</b> no correlacionadas con las cinco existentes.</span></li>
+    <li><span><b>De bajo riesgo direccional:</b> mejor market-neutral o con un sesgo controlado.</span></li>
+    <li><span><b>Una fuente de retorno independiente</b> que no dependa del precio.</span></li>
+    <li><span><b>Implementables</b> con la API de Bitget ya construida.</span></li>
+    <li><span><b>Con un Stop Loss</b> definible de forma objetiva y programática.</span></li>
+  </ul>
+  <footer><span>Paso 4 · Criterios</span><span>12</span></footer>
+</section>
+
+<!-- 13 · SUB6 -->
+<section class="slide" aria-label="SUB6">
+  <span class="prop p-a">🔵 PROPUESTA A · SUB6</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Funding rate arbitrage (delta-neutral)</h2>
+      <div class="logic">
+        <span class="tag">Lógica central</span>
+        <p>Cuando los largos pagan funding alto: <b>SHORT en el perpetuo + LONG en spot</b> por el mismo importe. El precio deja de importar y la cuenta cobra el funding en cada intervalo.</p>
+      </div>
+      <p class="why"><b>¿Por qué es de bajo riesgo?</b> La exposición larga y la corta se compensan. El riesgo real es que el perpetuo y el spot se desanclen temporalmente.</p>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB6</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Intervalo</td><td>el real de cada par (1H, 4H u 8H)</td></tr>
+        <tr><td>Entrada</td><td>funding &gt; 0, APY ≥ 20%, basis ≤ 0.15%</td></tr>
+        <tr><td>Filtro neto</td><td>funding de 7D ≥ 1.5 × comisiones (~0.32%)</td></tr>
+        <tr><td>Salida</td><td>basis &gt; 1.5%, funding &lt; 0 o APY &lt; 8%</td></tr>
+        <tr><td>SL emergencia</td><td>+10% en el perpetuo; si salta, se vende el spot</td></tr>
+        <tr><td>Capital</td><td>20% por par, máx. 3 pares</td></tr>
+        <tr><td>Vigilancia</td><td>cada 5 min · escaneo cada 30 min · 2x</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 4 · SUB6</span><span>13</span></footer>
+</section>
+
+<!-- 14 · SUB7 -->
+<section class="slide" aria-label="SUB7">
+  <span class="prop p-b">🟣 PROPUESTA B · SUB7</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Grid trading adaptativo</h2>
+      <div class="logic">
+        <span class="tag">Lógica central</span>
+        <p>Rejilla de compras límite dentro de las <b>Bandas de Bollinger</b> de 4H, con el paso ajustado al <b>ATR diario</b>. Cada oscilación dentro del rango da una compra abajo y una venta arriba.</p>
+      </div>
+      <p class="why"><b>¿Por qué es de bajo riesgo?</b> Rinde en mercado lateral. Una ruptura del rango cancela la rejilla, cierra y la reconstruye, y cada compra lleva su propio SL en el exchange.</p>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB7</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Activo</td><td>BTC, solo largo</td></tr>
+        <tr><td>Rango</td><td>Bollinger(20, 2σ) en 4H, se rehace cada 24H</td></tr>
+        <tr><td>Celda</td><td>0.5 × ATR(14) diario, entre 4 y 20 niveles</td></tr>
+        <tr><td>Stop Loss</td><td>banda inferior − ½ celda, en cada compra</td></tr>
+        <tr><td>Pérdida máx.</td><td>4% del equity con todas las compras llenas</td></tr>
+        <tr><td>Reinicios</td><td>3 en 24H → pausa hasta el día siguiente</td></tr>
+        <tr><td>Frecuencia</td><td>cada 5 min · 3x</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 4 · SUB7</span><span>14</span></footer>
+</section>
+
+<!-- 15 · SUB8 -->
+<section class="slide" aria-label="SUB8">
+  <span class="prop p-c">🟡 PROPUESTA C · SUB8</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>DCA inteligente con filtro de momentum</h2>
+      <div class="logic">
+        <span class="tag">Lógica central</span>
+        <p>El DCA clásico compra a intervalos fijos. Este compra <b>más cuando el precio cae</b> y la tendencia de largo plazo sigue intacta, y <b>nada</b> si el mercado está caro.</p>
+      </div>
+      <p class="why"><b>¿Por qué es de bajo riesgo?</b> No intenta predecir el precio: solo acumula BTC y ETH en caídas. Nunca compra bajo la EMA200 semanal.</p>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB8</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Activos</td><td>BTC 60% · ETH 40%, en spot</td></tr>
+        <tr><td>Filtro</td><td>precio &gt; EMA200 semanal</td></tr>
+        <tr><td>Multiplicador</td><td>RSI 40–60 ×1 · 30–40 ×1.5 · &lt; 30 ×2 · &gt; 60 no compra</td></tr>
+        <tr><td>Compra base</td><td>4% de la asignación, cada 48H</td></tr>
+        <tr><td>Stop Loss</td><td>max(medio − 20%, precio − 24%), sobre todo el saldo</td></tr>
+        <tr><td>Take Profit</td><td>RSI &gt; 70 y +8% → 25% · RSI &gt; 80 y +15% → 50%</td></tr>
+        <tr><td>Límite</td><td>10 entradas por activo</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 4 · SUB8</span><span>15</span></footer>
+</section>
+
+<!-- 16 · SUB9 -->
+<section class="slide" aria-label="SUB9">
+  <span class="prop p-d">🟠 PROPUESTA D · SUB9</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Collar dinámico por régimen macro</h2>
+      <div class="logic">
+        <span class="tag">Lógica central</span>
+        <p>Exposición larga en BTC o ETH (el de más momentum a 30 días) que <b>se reduce cuando empeora la macro</b>. Reutiliza el panel macro de SUB5.</p>
+      </div>
+      <p class="why"><b>Corregido:</b> el original tenía un LONG y un SHORT del mismo perpetuo en la misma cuenta. Equivalía a un LONG más pequeño pagando comisiones y margen dobles. Ahora se mantiene directamente la exposición neta.</p>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB9</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Exposición</td><td>80% del equity × (1 − ratio de cobertura)</td></tr>
+        <tr><td>Ratio</td><td>alcista 0.30 · neutral 0.50 · bajista 0.70 · crisis 0.90</td></tr>
+        <tr><td>Sin datos</td><td>0.70 (conservador)</td></tr>
+        <tr><td>Stop Loss</td><td>EMA200 diaria − 1%, como mucho 15% bajo el precio</td></tr>
+        <tr><td>Circuit breaker</td><td>pérdida &gt; 3% → cierra y pausa 24H</td></tr>
+        <tr><td>Rebalanceo</td><td>cada 6H si el ratio se desvía &gt; 0.05</td></tr>
+        <tr><td>Frecuencia</td><td>cada 15 min · 2x</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 4 · SUB9</span><span>16</span></footer>
+</section>
+
+<!-- 17 · Tabla comparativa -->
+<section class="slide" aria-label="Tabla comparativa">
+  <span class="kicker">Paso 4 — Propuestas</span>
+  <h2>Tabla comparativa final</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Sub</th><th>Estrategia</th><th>Riesgo direccional</th><th>Mejor mercado</th><th>Correlación con SUB1–5</th><th>Complejidad</th></tr></thead>
+      <tbody>
+        <tr><td>SUB6 (A)</td><td>Funding rate arbitrage</td><td class="stars">★☆☆☆☆</td><td>Euforia alcista</td><td>Muy baja</td><td>Media</td></tr>
+        <tr><td>SUB7 (B)</td><td>Grid adaptativo</td><td class="stars">★★☆☆☆</td><td>Lateral</td><td>Baja</td><td>Media-alta</td></tr>
+        <tr><td>SUB8 (C)</td><td>DCA inteligente + momentum</td><td class="stars">★★★☆☆</td><td>Alcista a largo plazo</td><td>Media</td><td>Baja-media</td></tr>
+        <tr><td>SUB9 (D)</td><td>Collar dinámico</td><td class="stars">★★☆☆☆</td><td>Cualquiera</td><td>Media</td><td>Alta</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="why">El documento original incluía retornos estimados por estrategia. Se han quitado porque no tenían respaldo: los rendimientos solo se pueden estimar con el backtester y con semanas en Demo.</p>
+  <footer><span>Paso 4 · Comparativa</span><span>17</span></footer>
+</section>
+
+<!-- 18 · Sinergia -->
+<section class="slide" aria-label="Sinergia del portafolio">
+  <span class="kicker">Paso 4 — Sinergia del portafolio completo</span>
+  <h2>Cobertura de condiciones de mercado</h2>
+  <div class="syn">
+    <div class="box"><h3>📈 Alcista fuerte</h3><div class="chips"><span class="chip">SUB1 sentimiento +</span><span class="chip">SUB2 rotación</span><span class="chip">SUB6 funding alto</span><span class="chip">SUB8 acumula</span><span class="chip">SUB9 cobertura 30%</span><span class="chip">SUB11 tendencia</span></div></div>
+    <div class="box"><h3>↔️ Lateral</h3><div class="chips"><span class="chip">SUB7 grid óptimo</span><span class="chip">SUB10 pares</span><span class="chip">SUB3 copy</span><span class="chip">SUB9 cobertura 50%</span></div></div>
+    <div class="box"><h3>📉 Bajista</h3><div class="chips"><span class="chip">SUB5 cortos</span><span class="chip">SUB9 cobertura 70–90%</span><span class="chip">SUB11 tendencia corta</span><span class="chip">SUB8 deja de comprar</span><span class="chip">SUB6 cierra pares</span></div></div>
+    <div class="box"><h3>⚡ Alta volatilidad</h3><div class="chips"><span class="chip">SUB4 scalping</span><span class="chip">SUB7 grid más amplio</span><span class="chip">SUB6 funding sube</span><span class="chip">SUB10 entradas |z| ≥ 2</span></div></div>
+  </div>
+  <p class="why"><b>Cambio respecto al original:</b> con funding negativo SUB6 ya no invierte las patas, porque exigiría pedir prestado en margin spot. Ahora cierra el par.</p>
+  <footer><span>Paso 4 · Sinergia</span><span>18</span></footer>
+</section>
+
+<!-- 19 · Orden de prioridad -->
+<section class="slide" aria-label="Orden de prioridad">
+  <span class="kicker">Paso 4 — Orden de desarrollo recomendado</span>
+  <h2>Primero las de menor riesgo</h2>
+  <div class="order">
+    <div class="box"><span class="n">1</span><h3>SUB6 · Funding</h3><small>Riesgo direccional casi nulo y retorno independiente del precio. La primera que debería correr.</small></div>
+    <div class="box"><span class="n">2</span><h3>SUB9 · Collar</h3><small>El seguro del portafolio. Cuanto antes esté activa, antes protege el capital ante un crash.</small></div>
+    <div class="box"><span class="n">3</span><h3>SUB7 · Grid</h3><small>Más órdenes simultáneas y más sensible a la configuración. Mejor con el sistema ya probado.</small></div>
+    <div class="box"><span class="n">4</span><h3>SUB8 · DCA</h3><small>La de más largo plazo y la más simple. No pierde valor por empezar unas semanas después.</small></div>
+  </div>
+  <div class="pills"><span class="pill">Mayor prioridad: menor riesgo, activa antes</span><span class="pill">Menor prioridad: mayor plazo, mayor simplicidad</span></div>
+  <footer><span>Paso 4 · Prioridad</span><span>19</span></footer>
+</section>
+
+<!-- 20 · SUB10 -->
+<section class="slide" aria-label="SUB10">
+  <span class="kicker">Paso 5 — Nuevas estrategias · SUB10</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>Pairs trading por cointegración</h2>
+      <div class="logic">
+        <span class="tag">Lógica central</span>
+        <p>Dos activos que se mueven juntos. Cuando su diferencial se aleja de lo normal (<b>|z| ≥ 2</b>), vende el caro y compra el barato, y cierra cuando vuelven a juntarse.</p>
+      </div>
+      <p class="why">Inspirada en el controlador <span class="mono">stat_arb</span> de Hummingbot, pero con velas de 1H, apalancamiento 2x y modo one-way en lugar de 1m, 20x y modo hedge. <b>Desactivada por defecto.</b></p>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB10</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Pares</td><td>BTC/ETH, ETH/SOL, SOL/AVAX, LINK/DOT</td></tr>
+        <tr><td>Modelo</td><td>log(A) = α + β·log(B) + spread, 240 velas 1H</td></tr>
+        <tr><td>Calidad</td><td>β &gt; 0, ADF &lt; −3.34, vida media 2–72 h</td></tr>
+        <tr><td>Entrada</td><td>|z| ≥ 2; nocional de B = β × A</td></tr>
+        <tr><td>Salida</td><td>|z| ≤ 0.5, ruptura |z| ≥ 4, −3% del par, 5 días</td></tr>
+        <tr><td>Stop Loss</td><td>±10% por pata</td></tr>
+        <tr><td>Capital</td><td>25% por par, máx. 2 pares</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 5 · SUB10</span><span>20</span></footer>
+</section>
+
+<!-- 21 · SUB11 -->
+<section class="slide" aria-label="SUB11">
+  <span class="kicker">Paso 5 — Nuevas estrategias · SUB11</span>
+  <div class="row grow">
+    <div class="col">
+      <h2>SuperTrend 4H stop-and-reverse</h2>
+      <div class="logic">
+        <span class="tag">Lógica central</span>
+        <p>Siempre en el lado de la tendencia según SuperTrend(20, 4.0). Cuando la línea cambia de lado, <b>cierra y abre en sentido contrario</b>. No tiene TP.</p>
+      </div>
+      <p class="why">Inspirada en <span class="mono">supertrend_v1</span> de Hummingbot. El backtester mostró que su filtro de proximidad (&lt; 1%) casi nunca se cumplía en 4H, así que se sustituyó por un filtro anti-persecución de 5 ATR. <b>Desactivada por defecto.</b></p>
+    </div>
+    <div class="col tbl">
+      <div class="tbl-title">✅ Resumen SUB11</div>
+      <table><thead><tr><th>Componente</th><th>Detalle</th></tr></thead><tbody>
+        <tr><td>Activos</td><td>BTC, ETH, SOL</td></tr>
+        <tr><td>Señal</td><td>vela 4H cerrada, dirección ±1</td></tr>
+        <tr><td>Filtro</td><td>precio a ≤ 5 ATR de la línea</td></tr>
+        <tr><td>Stop Loss</td><td>línea SuperTrend ∓ 0.2%, trailing</td></tr>
+        <tr><td>Take Profit</td><td>ninguno: sale con el cambio de tendencia</td></tr>
+        <tr><td>Riesgo</td><td>1% por operación, máx. 3 posiciones</td></tr>
+        <tr><td>Frecuencia</td><td>cada 4H · 3x</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <footer><span>Paso 5 · SUB11</span><span>21</span></footer>
+</section>
+
+<!-- 22 · Revisión -->
+<section class="slide" aria-label="Revisión">
+  <span class="kicker">Revisión — 29 de septiembre de 2026</span>
+  <h2>Fallos críticos del diseño original, ya corregidos</h2>
+  <div class="row grow">
+    <ul class="checks x col">
+      <li><span><b>El TP nunca llegaba al exchange:</b> se enviaba el campo equivocado de la API v2.</span></li>
+      <li><span><b>SUB3 era imposible:</b> los endpoints de traders ajenos no existen.</span></li>
+      <li><span><b>SUB5 siempre bajista:</b> el CPI se leía como índice y no como % interanual.</span></li>
+      <li><span><b>El sizing multiplicaba el riesgo</b> al redondear hacia arriba (hasta 2,5×).</span></li>
+    </ul>
+    <ul class="checks x col">
+      <li><span><b>SUB1 no operaba nunca:</b> leía un campo de saldo que no existe.</span></li>
+      <li><span><b>SUB6 no era neutral:</b> un SL del 3% dejaba la pata spot desnuda.</span></li>
+      <li><span><b>Las noticias de SUB1 se descartaban</b> para siempre tras verlas una vez.</span></li>
+      <li><span><b>El servidor MCP no cumplía el protocolo:</b> Antigravity no podía usarlo.</span></li>
+    </ul>
+  </div>
+  <p class="why">La lista completa (22 puntos) y las decisiones tomadas están en <span class="mono">docs/REVISION.md</span>.</p>
+  <footer><span>Revisión</span><span>22</span></footer>
+</section>
+
+<!-- 23 · Camino a real -->
+<section class="slide" aria-label="Camino a real">
+  <span class="kicker">Puesta en producción</span>
+  <h2>Camino recomendado hacia real</h2>
+  <div class="order">
+    <div class="box"><span class="n">1</span><h3>backtest</h3><small>De 12 a 24 meses por estrategia, con comisiones (taker 0.06%), slippage y funding históricos.</small></div>
+    <div class="box"><span class="n">2</span><h3>dry_run</h3><small>Precios reales y órdenes simuladas. Revisar los logs y el diario de órdenes.</small></div>
+    <div class="box"><span class="n">3</span><h3>demo</h3><small>Demo Trading de Bitget en cada subcuenta, de 2 a 4 semanas por estrategia.</small></div>
+    <div class="box"><span class="n">4</span><h3>live</h3><small>Pocas estrategias y poco capital al principio. Keys sin permiso de retiro.</small></div>
+  </div>
+  <div class="tbl">
+    <table><thead><tr><th>Backtesting</th><th>Detalle</th></tr></thead><tbody>
+      <tr><td>Ejecución</td><td>conservadora: si una vela toca SL y TP se asume el SL; los gaps se ejecutan a la apertura</td></tr>
+      <tr><td>No backtesteables</td><td>SUB1 (no hay histórico de noticias) y SUB3 (copy trading nativo). SUB5 y SUB9 usan un score macro fijo</td></tr>
+    </tbody></table>
+  </div>
+  <footer><span>Puesta en producción</span><span>23</span></footer>
+</section>
+
+<!-- 24 · Cierre -->
+<section class="slide cover" aria-label="Cierre">
+  <span class="kicker">¿Listo para continuar?</span>
+  <h1>Del documento al <span class="gold">código</span></h1>
+  <p class="lead">Las once estrategias están implementadas en el repositorio <span class="mono">kriptty-puda-strategy</span>, con 60 tests sin red, el backtester y el servidor MCP. Las cifras de esta presentación describen reglas, no rendimientos.</p>
+  <div class="pills"><span class="pill on">8 activas por defecto</span><span class="pill off">3 desactivadas: SUB3, SUB10, SUB11</span><span class="pill">TRADING_MODE=dry_run por defecto</span></div>
+  <footer><span>Software experimental · no es asesoramiento financiero</span><span>24</span></footer>
+</section>
+
+</div>
+</main>
+
+<nav class="nav" aria-label="Navegación de diapositivas">
+  <button type="button" id="prev" aria-label="Diapositiva anterior">←</button>
+  <span class="count" id="count" aria-live="polite">1 / 24</span>
+  <button type="button" id="next" aria-label="Diapositiva siguiente">→</button>
+</nav>
+<span class="hint">← → · espacio · F pantalla completa</span>
+
+<script>
+(() => {
+  const slides = [...document.querySelectorAll(".slide")];
+  const deck = document.getElementById("deck"), count = document.getElementById("count"), bar = document.getElementById("bar");
+  const listMode = () => matchMedia("(max-width: 820px), (max-height: 520px)").matches;
+  let i = 0;
+
+  function fit() {
+    if (listMode()) { deck.style.transform = ""; return; }
+    const s = Math.min(innerWidth / 1320, (innerHeight - 70) / 740);
+    deck.style.transform = `scale(${s})`;
+  }
+  function go(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle("on", k === i));
+    count.textContent = `${i + 1} / ${slides.length}`;
+    bar.style.width = `${(i + 1) / slides.length * 100}%`;
+    try { history.replaceState(null, "", "#" + (i + 1)); } catch (_) {}
+  }
+  document.getElementById("prev").addEventListener("click", () => go(i - 1));
+  document.getElementById("next").addEventListener("click", () => go(i + 1));
+  addEventListener("keydown", e => {
+    if (listMode()) return;
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); go(i + 1); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); go(i - 1); }
+    else if (e.key === "Home") go(0);
+    else if (e.key === "End") go(slides.length - 1);
+    else if (e.key === "f" || e.key === "F") {
+      const d = document.documentElement;
+      (document.fullscreenElement ? document.exitFullscreen() : d.requestFullscreen?.())?.catch?.(() => {});
+    }
+  });
+  let x0 = null;
+  addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+  addEventListener("touchend", e => {
+    if (x0 == null || listMode()) return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) go(i + (dx < 0 ? 1 : -1));
+  });
+  addEventListener("resize", fit);
+  const start = parseInt((location.hash || "").slice(1), 10);
+  go(Number.isFinite(start) ? start - 1 : 0);
+  fit();
+})();
+</script>
