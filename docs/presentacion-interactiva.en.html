@@ -1,4 +1,4 @@
-<title>Presentación interactiva PUDA</title>
+<title>PUDA Interactive Presentation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -158,7 +158,7 @@ select:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outl
 /* Camino a real */
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; counter-reset: s; }
 .steps li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; align-content: start; }
-.steps li::before { content: "Paso " counter(s); font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.steps li::before { content: "Step " counter(s); font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
 .steps b { font-family: var(--mono); font-size: 15px; }
 .steps p { color: var(--muted); font-size: 14px; }
 footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 18px; max-width: 80ch; }
@@ -252,92 +252,92 @@ section { scroll-margin-top: 64px; }
 .langs a:hover { color: var(--fg); border-color: var(--gold); }
 .langs a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 </style>
-<nav class="stepnav" aria-label="Pasos de la presentación"><ol>
-  <li><a href="#directrices">Directrices</a></li><li><a href="#paso1">Paso 1 · Arquitectura</a></li>
-  <li><a href="#paso2">Paso 2 · Guardián</a></li><li><a href="#explorador">Pasos 3–5 · Estrategias</a></li>
-  <li><a href="#sinergia">Sinergia</a></li><li><a href="#estres">Estrés 3 años</a></li>
-  <li><a href="#novedades">Novedades oct. 2026</a></li><li><a href="#real">Camino a real</a></li></ol></nav>
+<nav class="stepnav" aria-label="Presentation steps"><ol>
+  <li><a href="#directrices">Guidelines</a></li><li><a href="#paso1">Step 1 · Architecture</a></li>
+  <li><a href="#paso2">Step 2 · Guard</a></li><li><a href="#explorador">Steps 3–5 · Strategies</a></li>
+  <li><a href="#sinergia">Synergy</a></li><li><a href="#estres">3-year stress</a></li>
+  <li><a href="#novedades">News Oct 2026</a></li><li><a href="#real">Road to live</a></li></ol></nav>
 <div class="wrap">
   <header class="hero" id="portada">
-    <nav class="langs" aria-label="Idioma"><span aria-current="true">ES</span><a href="presentacion-interactiva.en.html" hreflang="en" lang="en" data-alt="">EN</a></nav>
-    <span class="eyebrow">🤖 Sistema de Trading Algorítmico — Arquitectura MCP + Bitget</span>
-    <h1>Presentación interactiva del bot de <em>PUDA</em></h1>
-    <p class="lead">La presentación original, «Presentación y Confirmación de Directrices», convertida en una página que se puede manejar: cada estrategia tiene su simulador, hay un test de estrés de 3 años y las novedades a 1 de octubre de 2026 ya están aplicadas al código.</p>
+    <nav class="langs" aria-label="Language"><a href="presentacion-interactiva.html" hreflang="es" lang="es" data-alt="">ES</a><span aria-current="true">EN</span></nav>
+    <span class="eyebrow">🤖 Algorithmic Trading System — MCP + Bitget Architecture</span>
+    <h1>Interactive presentation of the <em>PUDA</em> bot</h1>
+    <p class="lead">The original presentation, “Presentation and Confirmation of Guidelines”, turned into a page you can interact with: each strategy has its own simulator, there is a 3-year stress test, and the updates as of 1 October 2026 are already applied to the code.</p>
     <div class="hero-stats">
-      <span><b>12</b>cuentas (1 + 11)</span>
-      <span><b>100%</b>de las órdenes con SL</span>
-      <span><b>3 años</b>de estrés por estrategia</span>
-      <span><b>4</b>fallos encontrados y corregidos</span>
+      <span><b>12</b>accounts (1 + 11)</span>
+      <span><b>100%</b>of orders with an SL</span>
+      <span><b>3 years</b>of stress per strategy</span>
+      <span><b>4</b>issues found and fixed</span>
     </div>
   </header>
 
   <section aria-labelledby="dir-h" id="directrices">
     <div class="sec-head">
-      <span class="eyebrow">Presentación y confirmación de directrices</span>
-      <h2 id="dir-h">Lo que el sistema garantiza</h2>
+      <span class="eyebrow">Presentation and confirmation of guidelines</span>
+      <h2 id="dir-h">What the system guarantees</h2>
     </div>
     <ul class="checklist">
-      <li><span><b>12 cuentas</b> (1 principal + 11 subcuentas), cada una con una estrategia independiente.</span></li>
-      <li><span><b>Regla inquebrantable:</b> cero órdenes sin Stop Loss; el guardián rechaza la orden antes de enviarla.</span></li>
-      <li><span><b>Exposición total limitada:</b> como mucho equity × apalancamiento por subcuenta, contando lo que ya está abierto (nuevo).</span></li>
-      <li><span><b>Corte por drawdown:</b> una subcuenta que cae más de un 25% desde su máximo deja de abrir durante 14 días (nuevo).</span></li>
-      <li><span><b>MCP sobre Antigravity</b> con el SDK oficial 2.2, en modo HTTP sin estado.</span></li>
-      <li><span><b>El mismo código en todas las fases:</b> backtest → dry_run → demo → live.</span></li>
+      <li><span><b>12 accounts</b> (1 main + 11 subaccounts), each running an independent strategy.</span></li>
+      <li><span><b>Unbreakable rule:</b> zero orders without a Stop Loss; the guard rejects the order before it is sent.</span></li>
+      <li><span><b>Capped total exposure:</b> at most equity × leverage per subaccount, counting what is already open (new).</span></li>
+      <li><span><b>Drawdown cut-off:</b> a subaccount that falls more than 25% from its peak stops opening positions for 14 days (new).</span></li>
+      <li><span><b>MCP on Antigravity</b> with the official SDK 2.2, in stateless HTTP mode.</span></li>
+      <li><span><b>The same code in every phase:</b> backtest → dry_run → demo → live.</span></li>
     </ul>
   </section>
 
   <section aria-labelledby="flujo-h" id="paso1">
     <div class="sec-head">
-      <span class="eyebrow">Paso 1 — Arquitectura MCP + Docker</span>
-      <h2 id="flujo-h">El recorrido de una orden</h2>
+      <span class="eyebrow">Step 1 — MCP + Docker architecture</span>
+      <h2 id="flujo-h">The journey of an order</h2>
     </div>
     <div class="flow-box">
-      <svg id="flow" viewBox="0 50 960 200" role="img" aria-label="Diagrama: cuenta principal, 11 subcuentas, guardián de riesgo y Bitget"></svg>
+      <svg id="flow" viewBox="0 50 960 200" role="img" aria-label="Diagram: main account, 11 subaccounts, risk guard and Bitget"></svg>
     </div>
-    <p class="flow-note">Pulsa una subcuenta del diagrama para abrir su estrategia. El motor (APScheduler) lanza cada estrategia con su propio calendario; SUB4 funciona por WebSocket en cada vela de 1 minuto.</p>
+    <p class="flow-note">Click a subaccount in the diagram to open its strategy. The engine (APScheduler) launches each strategy on its own schedule; SUB4 runs over WebSocket on every 1-minute candle.</p>
   </section>
 
   <section aria-labelledby="lab-h" id="paso2">
     <div class="sec-head">
-      <span class="eyebrow">Paso 2 — Account router y guardián</span>
-      <h2 id="lab-h">Laboratorio del guardián</h2>
-      <p class="lead">Las mismas reglas que aplica <span class="mono">risk/guard.py</span> a toda orden (motor y servidor MCP) y el cálculo de tamaño de <span class="mono">risk/sizing.py</span>.</p>
+      <span class="eyebrow">Step 2 — Account router and guard</span>
+      <h2 id="lab-h">Guard lab</h2>
+      <p class="lead">The same rules that <span class="mono">risk/guard.py</span> applies to every order (engine and MCP server), and the position sizing from <span class="mono">risk/sizing.py</span>.</p>
     </div>
     <div class="lab">
       <div class="card">
-        <h3>¿Pasaría esta orden?</h3>
+        <h3>Would this order pass?</h3>
         <div class="grid2">
-          <div class="ctl"><label for="g-side">Lado</label>
-            <select id="g-side"><option value="buy">Compra (LONG)</option><option value="sell">Venta (SHORT)</option></select></div>
-          <div class="ctl"><label for="g-price">Precio</label><input id="g-price" type="number" value="64000" step="any"></div>
-          <div class="ctl"><label for="g-sl">Stop Loss (vacío = sin SL)</label><input id="g-sl" type="number" value="61500" step="any"></div>
-          <div class="ctl"><label for="g-tp">Take Profit (opcional)</label><input id="g-tp" type="number" value="69000" step="any"></div>
+          <div class="ctl"><label for="g-side">Side</label>
+            <select id="g-side"><option value="buy">Buy (LONG)</option><option value="sell">Sell (SHORT)</option></select></div>
+          <div class="ctl"><label for="g-price">Price</label><input id="g-price" type="number" value="64000" step="any"></div>
+          <div class="ctl"><label for="g-sl">Stop Loss (empty = no SL)</label><input id="g-sl" type="number" value="61500" step="any"></div>
+          <div class="ctl"><label for="g-tp">Take Profit (optional)</label><input id="g-tp" type="number" value="69000" step="any"></div>
         </div>
         <div class="out" id="g-out" aria-live="polite"></div>
-        <p class="note">Las órdenes que reducen o cierran posición, y las ventas spot, no necesitan SL. La pata spot de SUB6 está exenta de forma explícita porque es la cobertura.</p>
+        <p class="note">Orders that reduce or close a position, and spot sells, do not need an SL. The spot leg of SUB6 is explicitly exempt because it is the hedge.</p>
       </div>
       <div class="card">
-        <h3>Tamaño por riesgo</h3>
+        <h3>Risk-based sizing</h3>
         <div class="grid2">
-          <div class="ctl"><label for="s-eq">Equity de la subcuenta (USDT)</label><input id="s-eq" type="number" value="2000" step="any"></div>
-          <div class="ctl"><label for="s-risk">Riesgo por operación (%)</label><input id="s-risk" type="number" value="1.5" step="0.1"></div>
-          <div class="ctl"><label for="s-entry">Entrada</label><input id="s-entry" type="number" value="64000" step="any"></div>
+          <div class="ctl"><label for="s-eq">Subaccount equity (USDT)</label><input id="s-eq" type="number" value="2000" step="any"></div>
+          <div class="ctl"><label for="s-risk">Risk per trade (%)</label><input id="s-risk" type="number" value="1.5" step="0.1"></div>
+          <div class="ctl"><label for="s-entry">Entry</label><input id="s-entry" type="number" value="64000" step="any"></div>
           <div class="ctl"><label for="s-sl">Stop Loss</label><input id="s-sl" type="number" value="61500" step="any"></div>
         </div>
         <dl class="kv" id="s-out"></dl>
-        <p class="note">Cantidad = equity × riesgo ÷ |entrada − SL|. Si la cantidad queda por debajo del mínimo del mercado, la orden no se envía. Desde octubre de 2026 el tope de nocional también descuenta lo que ya está abierto. El diseño original la redondeaba hacia arriba a 0.01 BTC y multiplicaba el riesgo hasta 2,5×.</p>
+        <p class="note">Quantity = equity × risk ÷ |entry − SL|. If the quantity is below the market minimum, the order is not sent. Since October 2026 the notional cap also subtracts what is already open. The original design rounded it up to 0.01 BTC and multiplied the risk by up to 2.5×.</p>
       </div>
     </div>
   </section>
 
   <section aria-labelledby="exp-h" id="explorador">
     <div class="sec-head">
-      <span class="eyebrow">Pasos 3, 4 y 5 — Estrategias</span>
-      <h2 id="exp-h">Las 11 estrategias, una a una</h2>
-      <p class="lead">Los valores de los controles son un escenario de ejemplo. Los precios se normalizan a 100 para que los niveles se lean como porcentajes.</p>
+      <span class="eyebrow">Steps 3, 4 and 5 — Strategies</span>
+      <h2 id="exp-h">The 11 strategies, one by one</h2>
+      <p class="lead">The control values are an example scenario. Prices are normalized to 100 so that levels read as percentages.</p>
     </div>
     <div class="explorer">
-      <nav class="list" id="list" role="tablist" aria-label="Estrategias"></nav>
+      <nav class="list" id="list" role="tablist" aria-label="Strategies"></nav>
       <article class="panel" id="panel" role="tabpanel"></article>
     </div>
   </section>
@@ -345,90 +345,90 @@ section { scroll-margin-top: 64px; }
   <!--SINERGIA-->
   <section aria-labelledby="syn-h" id="sinergia">
     <div class="sec-head">
-      <span class="eyebrow">Paso 4 — Sinergia del portafolio</span>
-      <h2 id="syn-h">¿Qué subcuentas trabajan en cada mercado?</h2>
-      <p class="lead">Elige un tipo de mercado para ver qué estrategias están pensadas para él. Es la tabla de sinergia de la presentación original, actualizada con SUB10, SUB11 y los cambios de la revisión.</p>
+      <span class="eyebrow">Step 4 — Portfolio synergy</span>
+      <h2 id="syn-h">Which subaccounts work in each market?</h2>
+      <p class="lead">Choose a market type to see which strategies are designed for it. This is the synergy table from the original presentation, updated with SUB10, SUB11 and the changes from the review.</p>
     </div>
-    <div class="regimes" id="regimes" role="group" aria-label="Tipo de mercado"></div>
+    <div class="regimes" id="regimes" role="group" aria-label="Market type"></div>
     <div class="syn-grid" id="syn-grid"></div>
   </section>
 
   <!--ESTRES-->
   <section aria-labelledby="stress-h" id="estres" class="viz">
     <div class="sec-head">
-      <span class="eyebrow">Test de estrés · 3 años · mismo código que en real</span>
-      <h2 id="stress-h">Qué pasa con 3 años de crashes, bear market y rangos</h2>
-      <p class="lead">Cada estrategia se ejecutó con su calendario real y el guardián de riesgo sobre mercados sintéticos de 3 años: <span id="stress-meta"></span>. Hay dos versiones: <b>antes</b>, el código tal como estaba, y <b>después</b>, con los arreglos que reveló el propio test.</p>
+      <span class="eyebrow">Stress test · 3 years · same code as live</span>
+      <h2 id="stress-h">What happens over 3 years of crashes, bear markets and ranges</h2>
+      <p class="lead">Each strategy was run on its real schedule, with the risk guard, over 3-year synthetic markets: <span id="stress-meta"></span>. There are two versions: <b>before</b>, the code as it was, and <b>after</b>, with the fixes that the test itself revealed.</p>
     </div>
-    <div class="callout"><b>Datos sintéticos, no históricos.</b> Desde este entorno el acceso a la API de Bitget estaba bloqueado, así que el test usa mercados generados con regímenes y crashes realistas (velas de 1H, colas gruesas, crashes correlacionados, funding ligado al régimen, macro con 30 días de retraso). Sirve para medir <b>supervivencia y control del riesgo</b>, no para predecir rentabilidad. Con acceso a Bitget, <span class="mono">kriptty-backtest</span> repite la prueba con histórico real.</div>
+    <div class="callout"><b>Synthetic data, not historical.</b> Access to the Bitget API was blocked from this environment, so the test uses generated markets with realistic regimes and crashes (1H candles, fat tails, correlated crashes, regime-linked funding, macro data with a 30-day lag). It measures <b>survival and risk control</b>; it does not predict profitability. With access to Bitget, <span class="mono">kriptty-backtest</span> repeats the test on real historical data.</div>
     <div class="controls-row">
-      <div><span class="seg-label">Escenario</span><span class="seg" id="seg-sc" role="group" aria-label="Escenario"></span></div>
-      <div><span class="seg-label">Trayectoria</span><span class="seg" id="seg-seed" role="group" aria-label="Trayectoria Monte Carlo"></span></div>
-      <div><span class="seg-label">Costes</span><span class="seg" id="seg-cost" role="group" aria-label="Costes"></span></div>
+      <div><span class="seg-label">Scenario</span><span class="seg" id="seg-sc" role="group" aria-label="Scenario"></span></div>
+      <div><span class="seg-label">Path</span><span class="seg" id="seg-seed" role="group" aria-label="Monte Carlo path"></span></div>
+      <div><span class="seg-label">Costs</span><span class="seg" id="seg-cost" role="group" aria-label="Costs"></span></div>
     </div>
     <p class="note" id="sc-desc"></p>
     <div class="tiles" id="tiles"></div>
     <div class="chartbox big-chart">
-      <h3>Cartera combinada (8 subcuentas de 3 años, base 100)</h3>
-      <div class="legend"><span><i style="background:var(--s-before)"></i>Antes de los arreglos</span><span><i style="background:var(--s-after)"></i>Después de los arreglos</span><span>Bandas = fases del escenario</span></div>
+      <h3>Combined portfolio (8 subaccounts over 3 years, base 100)</h3>
+      <div class="legend"><span><i style="background:var(--s-before)"></i>Before the fixes</span><span><i style="background:var(--s-after)"></i>After the fixes</span><span>Bands = scenario phases</span></div>
       <div id="big"></div>
     </div>
     <div class="minis" id="minis"></div>
     <details>
-      <summary class="note" style="cursor:pointer">Ver la tabla con todas las métricas</summary>
+      <summary class="note" style="cursor:pointer">Show the table with all metrics</summary>
       <div class="data-table" id="table" style="margin-top:10px"></div>
     </details>
-    <div class="sec-head" style="margin-top:8px"><h3>Lo que encontró el test y cómo se ha corregido</h3></div>
+    <div class="sec-head" style="margin-top:8px"><h3>What the test found and how it was fixed</h3></div>
     <div class="findings">
-      <div class="finding fixed"><span class="status ok">corregido</span><h3>Apalancamiento oculto en SUB2 y SUB11</h3><p>El tope de tamaño se aplicaba <b>por posición</b>: con 3 posiciones a la vez la exposición llegaba a <b>9× el equity</b> en vez de 3×. Ahora el tope cuenta lo que ya está abierto, y el backtester exige margen como el exchange.</p></div>
-      <div class="finding fixed"><span class="status ok">corregido</span><h3>SUB7 encadenaba pérdidas del 4% en bear market</h3><p>El grid se reconstruía cada día y cada ruptura costaba hasta un 4%: <b>−94%</b> en el ciclo completo. Ahora no se monta si la EMA20 diaria cae más de un 3% en 5 días.</p></div>
-      <div class="finding fixed"><span class="status ok">corregido</span><h3>SUB6 abría y deshacía pares en bucle</h3><p>Con el kill-switch diario activo en una cartera, abría la pata permitida, se rechazaba la otra y la deshacía, pagando comisiones en cada escaneo. Ahora comprueba las dos carteras antes de abrir.</p></div>
-      <div class="finding fixed"><span class="status ok">nuevo</span><h3>Corte por drawdown en todas las subcuentas</h3><p>Si una subcuenta cae más de un <b>25% desde su máximo</b>, no abre posiciones durante 14 días (configurable). SUB8, el DCA, queda fuera porque acumula en caídas por diseño.</p></div>
+      <div class="finding fixed"><span class="status ok">fixed</span><h3>Hidden leverage in SUB2 and SUB11</h3><p>The size cap was applied <b>per position</b>: with 3 positions open at once, exposure reached <b>9× equity</b> instead of 3×. Now the cap counts what is already open, and the backtester requires margin just like the exchange.</p></div>
+      <div class="finding fixed"><span class="status ok">fixed</span><h3>SUB7 chained 4% losses in bear markets</h3><p>The grid was rebuilt every day and each breakout cost up to 4%: <b>−94%</b> over the full cycle. Now it is not set up if the daily EMA20 falls more than 3% in 5 days.</p></div>
+      <div class="finding fixed"><span class="status ok">fixed</span><h3>SUB6 opened and unwound pairs in a loop</h3><p>With the daily kill-switch active on one wallet, it opened the allowed leg, the other leg was rejected, and it unwound the first, paying fees on every scan. Now it checks both wallets before opening.</p></div>
+      <div class="finding fixed"><span class="status ok">new</span><h3>Drawdown cut-off on every subaccount</h3><p>If a subaccount falls more than <b>25% from its peak</b>, it opens no positions for 14 days (configurable). SUB8, the DCA, is excluded because it accumulates on dips by design.</p></div>
     </div>
   </section>
 
   <!--NOVEDADES-->
   <section aria-labelledby="news-h" id="novedades">
     <div class="sec-head">
-      <span class="eyebrow">Novedades a 1 de octubre de 2026</span>
-      <h2 id="news-h">Qué ha cambiado y qué se ha hecho</h2>
+      <span class="eyebrow">Updates as of 1 October 2026</span>
+      <h2 id="news-h">What has changed and what has been done</h2>
     </div>
-    <div class="callout"><b>Lo más importante: MiCA.</b> Según varias fuentes, Bitget no tenía licencia MiCA a mediados de septiembre de 2026 y no daría servicio a residentes del EEE hasta obtenerla; además, la CNMV trata los perpetuos como CFD para clientes minoristas. Comprueba que tu cuenta puede operar perpetuos desde España <b>antes de pasar a live</b>: afecta a SUB2–SUB7 y SUB9–SUB11.</div>
+    <div class="callout"><b>Most important: MiCA.</b> According to several sources, Bitget did not hold a MiCA license in mid-September 2026 and would not serve EEA residents until it obtains one; in addition, the CNMV treats perpetuals as CFDs for retail clients. Check that your account can trade perpetuals from Spain <b>before going live</b>: this affects SUB2–SUB7 and SUB9–SUB11.</div>
     <div class="data-table news">
       <table>
-        <thead><tr><th>Novedad</th><th>Impacto</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Update</th><th>Impact</th><th>Status</th></tr></thead>
         <tbody>
-          <tr><td>ccxt 4.5.84 (24/09): ledger de la cuenta unificada UTA v3 en <span class="mono">fetchLedger</span></td><td>Necesario para leer funding y PnL en modo UTA</td><td><span class="status ok">implementado: ccxt ≥ 4.5.84</span></td></tr>
-          <tr><td>SDK MCP 2.2 (07/09): las sesiones HTTP se cierran tras 30 min sin actividad (404)</td><td>Antigravity o Claude perdían la conexión</td><td><span class="status ok">implementado: HTTP sin estado</span></td></tr>
-          <tr><td>Bitget lista perpetuos de acciones, metales e índices con formato cripto</td><td>Entraban en los universos de SUB2 y SUB6</td><td><span class="status ok">implementado: filtro</span></td></tr>
-          <tr><td>Freqtrade 2026.9: aviso de desfase del reloj con el exchange</td><td>Firmas rechazadas y velas mal cortadas</td><td><span class="status ok">implementado al arrancar</span></td></tr>
-          <tr><td>Migración automática de cuentas clásicas a UTA (desde el 15/09); una key UTA no usa endpoints clásicos</td><td><span class="mono">BITGET_UTA</span> tiene que coincidir con el tipo real de cada subcuenta</td><td><span class="status warn">revisar en tu cuenta</span></td></tr>
-          <tr><td>API de seguidores de copy trading «temporalmente» no disponible</td><td>SUB3 podría no funcionar aunque los campos estén bien</td><td><span class="status warn">SUB3 sigue desactivada</span></td></tr>
-          <tr><td>El canal <span class="mono">books50</span> de UTA pasa a incremental el 05/11/2026</td><td>SUB4 usa velas y no libro de órdenes: riesgo bajo</td><td><span class="status warn">probar en demo</span></td></tr>
-          <tr><td>Intervalos de funding por par cambiados en septiembre (1H ↔ 4H)</td><td>El sistema ya lee el intervalo real de cada par</td><td><span class="status ok">ya cubierto</span></td></tr>
-          <tr><td>Comisiones VIP0 sin cambios: futuros 0.02% / 0.06%, spot 0.1%</td><td>El backtester usa estas cifras</td><td><span class="status ok">ya cubierto</span></td></tr>
-          <tr><td>MiCA: Bitget sin licencia y la CNMV trata los perpetuos como CFD</td><td>Puede impedir operar futuros desde España</td><td><span class="status bad">acción tuya</span></td></tr>
+          <tr><td>ccxt 4.5.84 (24 Sep): ledger for the UTA v3 unified account in <span class="mono">fetchLedger</span></td><td>Needed to read funding and PnL in UTA mode</td><td><span class="status ok">implemented: ccxt ≥ 4.5.84</span></td></tr>
+          <tr><td>MCP SDK 2.2 (7 Sep): HTTP sessions are closed after 30 min of inactivity (404)</td><td>Antigravity or Claude lost the connection</td><td><span class="status ok">implemented: stateless HTTP</span></td></tr>
+          <tr><td>Bitget lists perpetuals on stocks, metals and indices in crypto format</td><td>They were entering the SUB2 and SUB6 universes</td><td><span class="status ok">implemented: filter</span></td></tr>
+          <tr><td>Freqtrade 2026.9: warning about clock drift against the exchange</td><td>Rejected signatures and incorrectly cut candles</td><td><span class="status ok">implemented at startup</span></td></tr>
+          <tr><td>Automatic migration of classic accounts to UTA (since 15 Sep); a UTA key does not use classic endpoints</td><td><span class="mono">BITGET_UTA</span> must match the actual type of each subaccount</td><td><span class="status warn">check on your account</span></td></tr>
+          <tr><td>Copy trading follower API “temporarily” unavailable</td><td>SUB3 might not work even if the fields are correct</td><td><span class="status warn">SUB3 remains disabled</span></td></tr>
+          <tr><td>The UTA <span class="mono">books50</span> channel switches to incremental on 5 November 2026</td><td>SUB4 uses candles, not the order book: low risk</td><td><span class="status warn">test in demo</span></td></tr>
+          <tr><td>Per-pair funding intervals changed in September (1H ↔ 4H)</td><td>The system already reads each pair's actual interval</td><td><span class="status ok">already covered</span></td></tr>
+          <tr><td>VIP0 fees unchanged: futures 0.02% / 0.06%, spot 0.1%</td><td>The backtester uses these figures</td><td><span class="status ok">already covered</span></td></tr>
+          <tr><td>MiCA: Bitget has no license and the CNMV treats perpetuals as CFDs</td><td>May prevent trading futures from Spain</td><td><span class="status bad">action required from you</span></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Fuentes: PyPI (ccxt, mcp), GitHub (ccxt, MCP python-sdk v2.2.0, Freqtrade 2026.9, BitgetLimited/agent_hub), registro UTA de Bitget y avisos de soporte (resúmenes de buscador), crypto.news y casptracker.eu (MiCA). Varias webs de Bitget no se pudieron abrir directamente.</p>
+    <p class="note">Sources: PyPI (ccxt, mcp), GitHub (ccxt, MCP python-sdk v2.2.0, Freqtrade 2026.9, BitgetLimited/agent_hub), Bitget UTA changelog and support notices (search engine summaries), crypto.news and casptracker.eu (MiCA). Several Bitget pages could not be opened directly.</p>
   </section>
 
   <section aria-labelledby="real-h" id="real">
     <div class="sec-head">
-      <span class="eyebrow">Puesta en producción</span>
-      <h2 id="real-h">Camino recomendado hacia real</h2>
+      <span class="eyebrow">Going to production</span>
+      <h2 id="real-h">Recommended road to live trading</h2>
     </div>
     <ol class="steps">
-      <li><b>backtest</b><p>De 12 a 24 meses por estrategia, con comisiones (0,06% taker), slippage y funding históricos. Ejecuta el mismo código que en real.</p></li>
-      <li><b>dry_run</b><p>Precios reales y órdenes simuladas. Se revisan los logs y el diario de órdenes.</p></li>
-      <li><b>demo</b><p>API keys de Demo Trading de Bitget en cada subcuenta, de 2 a 4 semanas por estrategia.</p></li>
-      <li><b>live</b><p>Requiere <span class="mono">CONFIRM_LIVE_TRADING=yes</span>. Keys sin permiso de retiro y con lista blanca de IP. Se empieza con pocas estrategias y poco capital.</p></li>
+      <li><b>backtest</b><p>12 to 24 months per strategy, with historical fees (0.06% taker), slippage and funding. Runs the same code as live.</p></li>
+      <li><b>dry_run</b><p>Real prices and simulated orders. The logs and the order journal are reviewed.</p></li>
+      <li><b>demo</b><p>Bitget Demo Trading API keys on each subaccount, 2 to 4 weeks per strategy.</p></li>
+      <li><b>live</b><p>Requires <span class="mono">CONFIRM_LIVE_TRADING=yes</span>. Keys without withdrawal permission and with an IP whitelist. Start with a few strategies and little capital.</p></li>
     </ol>
-    <p class="note">Para lanzar el token PUDA en El Salvador hay una hoja de ruta aparte: <span class="mono">docs/lanzamiento-el-salvador.html</span>.</p>
+    <p class="note">There is a separate roadmap for launching the PUDA token in El Salvador: <span class="mono">docs/lanzamiento-el-salvador.html</span>.</p>
   </section>
 
-  <footer>Software experimental. Ninguna cifra de esta página es una previsión de rentabilidad: los simuladores y el test de estrés usan escenarios sintéticos y los rendimientos solo pueden estimarse con el backtester y con semanas en demo. Fuente: repositorio <span class="mono">kriptty-puda-strategy</span> (estrategias SUB1–SUB11).</footer>
+  <footer>Experimental software. No figure on this page is a profitability forecast: the simulators and the stress test use synthetic scenarios, and returns can only be estimated with the backtester and weeks in demo. Source: <span class="mono">kriptty-puda-strategy</span> repository (strategies SUB1–SUB11).</footer>
 </div>
 
 <script id="stress-data">window.STRESS = null;</script>
@@ -442,167 +442,167 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 /* ── Definición de estrategias (parámetros reales del código) ─────────── */
 const S = [
 {
-  id: "SUB1", name: "News Sentiment", on: true, freq: "cada 2H", lev: "3x",
-  idea: "Lee noticias por RSS (CoinDesk, Cointelegraph, Decrypt, The Block), puntúa el sentimiento con VADER o FinBERT y lo pondera por fuente y frescura (vida media de 3 horas).",
-  facts: { "Activos": "BTC, ETH, SOL, BNB", "Entrada": "score > 0.65 LONG · < 0.35 SHORT (mín. 3 noticias en 6H)", "Stop Loss": "1.5 × ATR(14, 4H), trailing solo a favor", "Take Profit": "2.5 × ATR (R:R 1.67)", "Riesgo": "1.5% por operación, máx. 2 posiciones" },
+  id: "SUB1", name: "News Sentiment", on: true, freq: "every 2H", lev: "3x",
+  idea: "Reads news via RSS (CoinDesk, Cointelegraph, Decrypt, The Block), scores the sentiment with VADER or FinBERT and weights it by source and freshness (3-hour half-life).",
+  facts: { "Assets": "BTC, ETH, SOL, BNB", "Entry": "score > 0.65 LONG · < 0.35 SHORT (min. 3 news items in 6H)", "Stop Loss": "1.5 × ATR(14, 4H), trailing only in favor", "Take Profit": "2.5 × ATR (R:R 1.67)", "Risk": "1.5% per trade, max. 2 positions" },
   inputs: [
-    { id: "score", label: "Score de sentimiento", min: 0, max: 1, step: .01, v: .72, fmt: f2 },
-    { id: "atr", label: "ATR 4H (% del precio)", min: .5, max: 6, step: .1, v: 2.2, fmt: v => pct(v) },
+    { id: "score", label: "Sentiment score", min: 0, max: 1, step: .01, v: .72, fmt: f2 },
+    { id: "atr", label: "4H ATR (% of price)", min: .5, max: 6, step: .1, v: 2.2, fmt: v => pct(v) },
   ],
   run(x) {
     const a = x.atr;
-    const checks = [[`Score ${f2(x.score)} fuera de la zona neutra 0.35–0.65`, x.score > .65 || x.score < .35]];
-    if (x.score > .65) return { tone: "long", tag: "LONG", why: "Noticias claramente positivas.", checks,
+    const checks = [[`Score ${f2(x.score)} outside the 0.35–0.65 neutral zone`, x.score > .65 || x.score < .35]];
+    if (x.score > .65) return { tone: "long", tag: "LONG", why: "Clearly positive news.", checks,
       levels: [{ y: P - 1.5 * a, k: "sl", t: "SL" }, { y: P + 2.5 * a, k: "tp", t: "TP" }] };
-    if (x.score < .35) return { tone: "short", tag: "SHORT", why: "Noticias claramente negativas.", checks,
+    if (x.score < .35) return { tone: "short", tag: "SHORT", why: "Clearly negative news.", checks,
       levels: [{ y: P + 1.5 * a, k: "sl", t: "SL" }, { y: P - 2.5 * a, k: "tp", t: "TP" }] };
-    return { tone: "none", tag: "ESPERA", why: "El sentimiento está en la zona neutra: no se opera.", checks,
-      levels: [{ y: P - 1.5 * a, k: "ghost", t: "SL si LONG" }, { y: P + 1.5 * a, k: "ghost", t: "SL si SHORT" }] };
+    return { tone: "none", tag: "WAIT", why: "Sentiment is in the neutral zone: no trade.", checks,
+      levels: [{ y: P - 1.5 * a, k: "ghost", t: "SL if LONG" }, { y: P + 1.5 * a, k: "ghost", t: "SL if SHORT" }] };
   }
 },
 {
-  id: "SUB2", name: "Stat Arb · vasos comunicantes", on: true, freq: "cada 4H", lev: "3x",
-  idea: "Cuando las 5 criptos líderes suben con fuerza, busca altcoins muy correlacionadas que aún no han seguido el movimiento y compra la rezagada esperando que lo alcance.",
-  facts: { "Universo": "Perpetuos USDT-M con volumen 24H ≥ 5M USDT", "Entrada": "líderes ≥ +4%, rezago ≥ 4%, correlación 30D ≥ 0.65", "Stop Loss": "mínimo de 48H − 0.5% (máx. 12%)", "Take Profit": "máximo de 48H, mínimo +6%; R:R ≥ 1.5", "Salida por tiempo": "48 horas", "Riesgo": "2% por operación, máx. 3 posiciones", "Nuevo (oct. 2026)": "la exposición total de las 3 posiciones ≤ equity × 3; sin acciones ni metales en el universo" },
+  id: "SUB2", name: "Stat Arb · communicating vessels", on: true, freq: "every 4H", lev: "3x",
+  idea: "When the 5 leading cryptos rise strongly, it looks for highly correlated altcoins that have not yet followed the move and buys the laggard, expecting it to catch up.",
+  facts: { "Universe": "USDT-M perpetuals with 24H volume ≥ 5M USDT", "Entry": "leaders ≥ +4%, lag ≥ 4%, 30D correlation ≥ 0.65", "Stop Loss": "48H low − 0.5% (max. 12%)", "Take Profit": "48H high, min. +6%; R:R ≥ 1.5", "Time exit": "48 hours", "Risk": "2% per trade, max. 3 positions", "New (Oct 2026)": "total exposure of the 3 positions ≤ equity × 3; no stocks or metals in the universe" },
   inputs: [
-    { id: "lead", label: "Subida de los líderes 24H", min: 0, max: 15, step: .1, v: 6.5, fmt: v => pct(v) },
-    { id: "lag", label: "Rezago de la altcoin", min: 0, max: 10, step: .1, v: 5.2, fmt: v => pct(v) },
-    { id: "corr", label: "Correlación 30D con los líderes", min: 0, max: 1, step: .01, v: .78, fmt: f2 },
-    { id: "low", label: "Mínimo 48H bajo el precio", min: 1, max: 15, step: .1, v: 3.5, fmt: v => pct(v) },
-    { id: "high", label: "Máximo 48H sobre el precio", min: 0, max: 20, step: .1, v: 8, fmt: v => pct(v) },
+    { id: "lead", label: "Leaders' 24H rise", min: 0, max: 15, step: .1, v: 6.5, fmt: v => pct(v) },
+    { id: "lag", label: "Altcoin lag", min: 0, max: 10, step: .1, v: 5.2, fmt: v => pct(v) },
+    { id: "corr", label: "30D correlation with the leaders", min: 0, max: 1, step: .01, v: .78, fmt: f2 },
+    { id: "low", label: "48H low below the price", min: 1, max: 15, step: .1, v: 3.5, fmt: v => pct(v) },
+    { id: "high", label: "48H high above the price", min: 0, max: 20, step: .1, v: 8, fmt: v => pct(v) },
   ],
   run(x) {
     const sl = P * (1 - x.low / 100) * (1 - .005), tp = Math.max(P * (1 + x.high / 100), P * 1.06);
     const slPct = (P - sl), rr = (tp - P) / (P - sl);
     const checks = [
-      [`Líderes suben ${pct(x.lead)} (mín. 4%)`, x.lead >= 4],
-      [`Rezago ${pct(x.lag)} (mín. 4%)`, x.lag >= 4],
-      [`Correlación ${f2(x.corr)} (mín. 0.65)`, x.corr >= .65],
-      [`SL a ${pct(slPct)} (máx. 12%)`, slPct <= 12],
-      [`R:R ${f2(rr)} (mín. 1.5)`, rr >= 1.5],
+      [`Leaders up ${pct(x.lead)} (min. 4%)`, x.lead >= 4],
+      [`Lag ${pct(x.lag)} (min. 4%)`, x.lag >= 4],
+      [`Correlation ${f2(x.corr)} (min. 0.65)`, x.corr >= .65],
+      [`SL at ${pct(slPct)} (max. 12%)`, slPct <= 12],
+      [`R:R ${f2(rr)} (min. 1.5)`, rr >= 1.5],
     ];
     const ok = checks.every(c => c[1]);
-    return { tone: ok ? "long" : "none", tag: ok ? "LONG" : "DESCARTA", why: ok ? "Rezagada válida: compra y espera a que alcance a los líderes." : "Alguna condición no se cumple.", checks,
+    return { tone: ok ? "long" : "none", tag: ok ? "LONG" : "SKIP", why: ok ? "Valid laggard: buy and wait for it to catch up with the leaders." : "One of the conditions is not met.", checks,
       levels: [{ y: sl, k: ok ? "sl" : "ghost", t: "SL" }, { y: tp, k: ok ? "tp" : "ghost", t: "TP" }] };
   }
 },
 {
-  id: "SUB3", name: "Copy trading + guardián", on: false, freq: "cada 60 s", lev: "la del trader",
-  idea: "Se copian traders desde la web de Bitget (win rate > 55%, PF > 1.5, DD < 25%). El bot no elige operaciones: revisa cada orden copiada y le impone su propio SL si el del trader es más arriesgado.",
-  facts: { "Regla LONG": "SL = max(SL del trader, entrada − 1.5·ATR 1H)", "Regla SHORT": "SL = min(SL del trader, entrada + 1.5·ATR 1H)", "Take Profit": "el del trader o ± 3.75·ATR", "Corte diario": "si la pérdida del día supera el límite, cierra todo", "Estado": "Desactivada: hay que validar los campos de la API en Demo" },
+  id: "SUB3", name: "Copy trading + guard", on: false, freq: "every 60 s", lev: "same as trader",
+  idea: "Traders are copied from the Bitget website (win rate > 55%, PF > 1.5, DD < 25%). The bot does not pick trades: it reviews every copied order and imposes its own SL if the trader's is riskier.",
+  facts: { "LONG rule": "SL = max(trader's SL, entry − 1.5·ATR 1H)", "SHORT rule": "SL = min(trader's SL, entry + 1.5·ATR 1H)", "Take Profit": "the trader's, or ± 3.75·ATR", "Daily cut-off": "if the day's loss exceeds the limit, it closes everything", "Status": "Disabled: the API fields must be validated in Demo" },
   inputs: [
-    { id: "side", label: "Operación copiada", type: "select", opts: [["long", "LONG"], ["short", "SHORT"]], v: "long" },
-    { id: "tsl", label: "SL del trader (0 = sin SL)", min: 0, max: 12, step: .1, v: 6, fmt: v => +v ? pct(v) : "sin SL" },
-    { id: "atr", label: "ATR 1H (% del precio)", min: .3, max: 4, step: .1, v: 1.6, fmt: v => pct(v) },
+    { id: "side", label: "Copied trade", type: "select", opts: [["long", "LONG"], ["short", "SHORT"]], v: "long" },
+    { id: "tsl", label: "Trader's SL (0 = no SL)", min: 0, max: 12, step: .1, v: 6, fmt: v => +v ? pct(v) : "no SL" },
+    { id: "atr", label: "1H ATR (% of price)", min: .3, max: 4, step: .1, v: 1.6, fmt: v => pct(v) },
   ],
   run(x) {
     const d = x.side === "long" ? -1 : 1, ours = 1.5 * x.atr, t = +x.tsl;
     const final = t ? Math.min(t, ours) : ours, mine = !t || ours < t;
     const checks = [
-      [t ? `SL del trader a ${pct(t)}` : "El trader no puso SL", !!t && !mine],
-      [`SL del guardián a ${pct(ours)} (1.5 × ATR)`, mine],
-      ["Se aplica el más conservador de los dos", true],
+      [t ? `Trader's SL at ${pct(t)}` : "The trader set no SL", !!t && !mine],
+      [`Guard SL at ${pct(ours)} (1.5 × ATR)`, mine],
+      ["The more conservative of the two is applied", true],
     ];
-    return { tone: "ok", tag: mine ? "SL PROPIO" : "SL TRADER", why: mine ? "El guardián ajusta el SL de la orden copiada." : "El SL del trader ya es más prudente: se respeta.", checks,
+    return { tone: "ok", tag: mine ? "OWN SL" : "TRADER SL", why: mine ? "The guard adjusts the SL of the copied order." : "The trader's SL is already more cautious: it is kept.", checks,
       levels: [
-        ...(t ? [{ y: P + d * t, k: "ghost", t: "SL trader" }] : []),
-        { y: P + d * final, k: "sl", t: "SL final" }, { y: P - d * 3.75 * x.atr, k: "tp", t: "TP" }] };
+        ...(t ? [{ y: P + d * t, k: "ghost", t: "trader SL" }] : []),
+        { y: P + d * final, k: "sl", t: "final SL" }, { y: P - d * 3.75 * x.atr, k: "tp", t: "TP" }] };
   }
 },
 {
-  id: "SUB4", name: "Scalping 1m (WebSocket)", on: true, freq: "cada vela de 1m", lev: "5x",
-  idea: "Busca patrones de vela en 1 minuto a favor de la tendencia de 5 minutos, con pico de volumen. Antes de entrar comprueba que el beneficio objetivo cubre de sobra las comisiones.",
-  facts: { "Activos": "BTC, ETH, SOL", "Filtros": "patrón + EMA9/21 en 5m + volumen > 1.5× + RSI no extremo + spread < 0.05%", "Filtro de costes": "TP (2·ATR) ≥ 3 × comisión ida y vuelta (0.12%)", "Stop Loss": "1.2 × ATR, breakeven en +1 ATR, trailing desde +2 ATR", "Límites": "2 posiciones, 10 trades/día por símbolo, pausa si DD diario > 3%, nada de 23:00 a 00:00 UTC" },
+  id: "SUB4", name: "Scalping 1m (WebSocket)", on: true, freq: "every 1m candle", lev: "5x",
+  idea: "Looks for 1-minute candle patterns in the direction of the 5-minute trend, with a volume spike. Before entering, it checks that the target profit comfortably covers the fees.",
+  facts: { "Assets": "BTC, ETH, SOL", "Filters": "pattern + EMA9/21 on 5m + volume > 1.5× + RSI not extreme + spread < 0.05%", "Cost filter": "TP (2·ATR) ≥ 3 × round-trip fee (0.12%)", "Stop Loss": "1.2 × ATR, breakeven at +1 ATR, trailing from +2 ATR", "Limits": "2 positions, 10 trades/day per symbol, pause if daily DD > 3%, no trading from 23:00 to 00:00 UTC" },
   inputs: [
-    { id: "pat", label: "Patrón de vela 1m", type: "select", opts: [["up", "Alcista (hammer, engulfing…)"], ["down", "Bajista (shooting star…)"], ["none", "Ninguno"]], v: "up" },
-    { id: "trend", label: "Tendencia 5m (EMA9 vs EMA21)", type: "select", opts: [["up", "Alcista"], ["down", "Bajista"]], v: "up" },
-    { id: "vol", label: "Volumen / media 20 velas", min: .5, max: 4, step: .1, v: 2.1, fmt: v => `${f1(v)}×` },
-    { id: "rsi", label: "RSI 1m", min: 0, max: 100, step: 1, v: 58, fmt: v => v },
-    { id: "atr", label: "ATR 1m (% del precio)", min: .02, max: .4, step: .01, v: .21, fmt: v => pct(v, 2) },
+    { id: "pat", label: "1m candle pattern", type: "select", opts: [["up", "Bullish (hammer, engulfing…)"], ["down", "Bearish (shooting star…)"], ["none", "None"]], v: "up" },
+    { id: "trend", label: "5m trend (EMA9 vs EMA21)", type: "select", opts: [["up", "Bullish"], ["down", "Bearish"]], v: "up" },
+    { id: "vol", label: "Volume / 20-candle average", min: .5, max: 4, step: .1, v: 2.1, fmt: v => `${f1(v)}×` },
+    { id: "rsi", label: "1m RSI", min: 0, max: 100, step: 1, v: 58, fmt: v => v },
+    { id: "atr", label: "1m ATR (% of price)", min: .02, max: .4, step: .01, v: .21, fmt: v => pct(v, 2) },
     { id: "spr", label: "Spread", min: 0, max: .1, step: .005, v: .02, fmt: v => pct(v, 3) },
   ],
   run(x) {
     const dir = x.pat === "none" ? 0 : (x.pat === "up" ? 1 : -1);
     const tr = x.trend === "up" ? 1 : -1;
     const checks = [
-      ["Hay patrón de vela", dir !== 0],
-      ["El patrón va a favor de la tendencia de 5m", dir !== 0 && dir === tr],
-      [`Volumen ${f1(x.vol)}× (mín. 1.5×)`, x.vol > 1.5],
+      ["There is a candle pattern", dir !== 0],
+      ["The pattern goes with the 5m trend", dir !== 0 && dir === tr],
+      [`Volume ${f1(x.vol)}× (min. 1.5×)`, x.vol > 1.5],
       [dir >= 0 ? `RSI ${x.rsi} < 75` : `RSI ${x.rsi} > 25`, dir >= 0 ? x.rsi < 75 : x.rsi > 25],
       [`Spread ${pct(x.spr, 3)} < 0.05%`, x.spr < .05],
-      [`TP ${pct(2 * x.atr, 2)} ≥ 0.36% (3 × comisiones)`, 2 * x.atr >= .36],
+      [`TP ${pct(2 * x.atr, 2)} ≥ 0.36% (3 × fees)`, 2 * x.atr >= .36],
     ];
     const ok = checks.every(c => c[1]);
     const d = dir || 1, s = P * x.atr / 100;
-    return { tone: ok ? (d > 0 ? "long" : "short") : "none", tag: ok ? (d > 0 ? "LONG" : "SHORT") : "ESPERA",
-      why: ok ? "Todas las condiciones se cumplen en el cierre de la vela." : "Falta alguna condición: no se opera en esta vela.", checks,
+    return { tone: ok ? (d > 0 ? "long" : "short") : "none", tag: ok ? (d > 0 ? "LONG" : "SHORT") : "WAIT",
+      why: ok ? "All conditions are met at the candle close." : "A condition is missing: no trade on this candle.", checks,
       levels: [{ y: P - d * 1.2 * x.atr, k: ok ? "sl" : "ghost", t: "SL" }, { y: P + d * 1 * x.atr, k: "ghost", t: "breakeven" }, { y: P + d * 2 * x.atr, k: ok ? "tp" : "ghost", t: "TP" }],
       span: s };
   }
 },
 {
-  id: "SUB5", name: "Macro-shorting", on: true, freq: "cada 6H", lev: "2x",
-  idea: "Solo abre cortos en BTC y ETH cuando el panel macro (tipos de la Fed, CPI interanual, S&P 500, Nasdaq, VIX, dólar y Fear & Greed) es claramente bajista y el gráfico diario lo confirma.",
-  facts: { "Activación": "score macro ≤ −3 (≤ −5 = convicción alta)", "Confirmación diaria": "precio ≤ EMA200·1.02, 30 ≤ RSI ≤ 55, ≥ 2 de 3 velas bajistas", "Stop Loss": "máximo de 7 días + 0.3%", "Take Profit": "escalonado −4% (33%), −8% (33%), −15% (34%)", "Riesgo": "1.5% (2% con convicción alta); pausa si DD > 5%", "Salida extra": "si el régimen pasa a STRONG_BULL, cierra" },
+  id: "SUB5", name: "Macro-shorting", on: true, freq: "every 6H", lev: "2x",
+  idea: "Only opens shorts on BTC and ETH when the macro panel (Fed rates, year-on-year CPI, S&P 500, Nasdaq, VIX, the dollar and Fear & Greed) is clearly bearish and the daily chart confirms it.",
+  facts: { "Activation": "macro score ≤ −3 (≤ −5 = high conviction)", "Daily confirmation": "price ≤ EMA200·1.02, 30 ≤ RSI ≤ 55, ≥ 2 of 3 bearish candles", "Stop Loss": "7-day high + 0.3%", "Take Profit": "staggered −4% (33%), −8% (33%), −15% (34%)", "Risk": "1.5% (2% with high conviction); pause if DD > 5%", "Extra exit": "closes if the regime switches to STRONG_BULL" },
   inputs: [
-    { id: "macro", label: "Score macro (−10 a +10)", min: -10, max: 10, step: .5, v: -4, fmt: v => (v > 0 ? "+" : "") + f1(v) },
-    { id: "ema", label: "Precio vs EMA200 diaria", min: -20, max: 20, step: .5, v: -3, fmt: v => (v > 0 ? "+" : "") + pct(v) },
-    { id: "rsi", label: "RSI diario", min: 0, max: 100, step: 1, v: 44, fmt: v => v },
-    { id: "bear", label: "Velas bajistas (de las 3 últimas)", min: 0, max: 3, step: 1, v: 2, fmt: v => v },
-    { id: "hi", label: "Máximo de 7D sobre el precio", min: 1, max: 15, step: .1, v: 5, fmt: v => pct(v) },
+    { id: "macro", label: "Macro score (−10 to +10)", min: -10, max: 10, step: .5, v: -4, fmt: v => (v > 0 ? "+" : "") + f1(v) },
+    { id: "ema", label: "Price vs daily EMA200", min: -20, max: 20, step: .5, v: -3, fmt: v => (v > 0 ? "+" : "") + pct(v) },
+    { id: "rsi", label: "Daily RSI", min: 0, max: 100, step: 1, v: 44, fmt: v => v },
+    { id: "bear", label: "Bearish candles (of the last 3)", min: 0, max: 3, step: 1, v: 2, fmt: v => v },
+    { id: "hi", label: "7D high above the price", min: 1, max: 15, step: .1, v: 5, fmt: v => pct(v) },
   ],
   run(x) {
     const checks = [
-      [`Score macro ${f1(x.macro)} ≤ −3`, x.macro <= -3],
-      [`Precio ${pct(x.ema)} vs EMA200 (≤ +2%)`, x.ema <= 2],
-      [`RSI ${x.rsi} entre 30 y 55`, x.rsi >= 30 && x.rsi <= 55],
-      [`${x.bear} de 3 velas bajistas (mín. 2)`, x.bear >= 2],
+      [`Macro score ${f1(x.macro)} ≤ −3`, x.macro <= -3],
+      [`Price ${pct(x.ema)} vs EMA200 (≤ +2%)`, x.ema <= 2],
+      [`RSI ${x.rsi} between 30 and 55`, x.rsi >= 30 && x.rsi <= 55],
+      [`${x.bear} of 3 candles bearish (min. 2)`, x.bear >= 2],
     ];
     const ok = checks.every(c => c[1]);
-    if (ok) checks.push([`Riesgo ${x.macro <= -5 ? "2%" : "1.5%"} (${x.macro <= -5 ? "convicción alta" : "convicción normal"})`, true]);
+    if (ok) checks.push([`Risk ${x.macro <= -5 ? "2%" : "1.5%"} (${x.macro <= -5 ? "high conviction" : "normal conviction"})`, true]);
     const sl = Math.max(P * (1 + x.hi / 100) * 1.003, P * 1.005);
     const k = ok ? "tp" : "ghost";
-    return { tone: ok ? "short" : "none", tag: ok ? "SHORT" : "ESPERA", why: ok ? "Régimen bajista confirmado por el gráfico diario." : "Sin régimen bajista confirmado no se abren cortos.", checks,
+    return { tone: ok ? "short" : "none", tag: ok ? "SHORT" : "WAIT", why: ok ? "Bearish regime confirmed by the daily chart." : "Without a confirmed bearish regime, no shorts are opened.", checks,
       levels: [{ y: sl, k: ok ? "sl" : "ghost", t: "SL" }, { y: 96, k, t: "TP1 33%" }, { y: 92, k, t: "TP2 33%" }, { y: 85, k, t: "TP3 34%" }] };
   }
 },
 {
-  id: "SUB6", name: "Funding rate arbitrage", on: true, freq: "cada 5 min (escaneo cada 30 min)", lev: "2x",
-  idea: "Cuando los largos pagan funding alto, compra el activo en spot y vende la misma cantidad en perpetuo. El precio se neutraliza y la cuenta cobra el funding.",
-  facts: { "Posición": "SHORT perpetuo + LONG spot (delta-neutral)", "Entrada": "funding positivo, APY ≥ 20%, basis ≤ 0.15%, funding de 7D ≥ 1.5 × comisiones (~0.32%)", "Salida": "basis > 1.5%, funding < 0 o APY < 8%", "Stop Loss": "emergencia +10% en el perpetuo; si salta, se vende el spot", "Capital": "20% por par, máx. 3 pares; ≈ 2/3 en spot y 1/3 en futuros" },
+  id: "SUB6", name: "Funding rate arbitrage", on: true, freq: "every 5 min (scan every 30 min)", lev: "2x",
+  idea: "When longs pay high funding, it buys the asset on spot and sells the same amount on the perpetual. The price exposure cancels out and the account collects the funding.",
+  facts: { "Position": "SHORT perpetual + LONG spot (delta-neutral)", "Entry": "positive funding, APY ≥ 20%, basis ≤ 0.15%, 7D funding ≥ 1.5 × fees (~0.32%)", "Exit": "basis > 1.5%, funding < 0 or APY < 8%", "Stop Loss": "emergency +10% on the perpetual; if it triggers, the spot is sold", "Capital": "20% per pair, max. 3 pairs; ≈ 2/3 in spot and 1/3 in futures" },
   inputs: [
-    { id: "rate", label: "Funding por intervalo", min: -.05, max: .15, step: .001, v: .03, fmt: v => pct(v, 3) },
-    { id: "int", label: "Intervalo de funding del par", type: "select", opts: [["1", "1 hora"], ["4", "4 horas"], ["8", "8 horas"]], v: "8" },
+    { id: "rate", label: "Funding per interval", min: -.05, max: .15, step: .001, v: .03, fmt: v => pct(v, 3) },
+    { id: "int", label: "Pair's funding interval", type: "select", opts: [["1", "1 hour"], ["4", "4 hours"], ["8", "8 hours"]], v: "8" },
     { id: "basis", label: "Basis (perp vs spot)", min: 0, max: 2, step: .01, v: .08, fmt: v => pct(v, 2) },
   ],
   run(x) {
     const per = 24 / +x.int, apy = x.rate * per * 365, exp7 = x.rate * per * 7;
     const checks = [
-      ["Funding positivo", x.rate > 0],
+      ["Positive funding", x.rate > 0],
       [`APY ${pct(apy)} ≥ 20%`, apy >= 20],
       [`Basis ${pct(x.basis, 2)} ≤ 0.15%`, x.basis <= .15],
-      [`Funding esperado 7D ${pct(exp7, 2)} ≥ 0.48%`, exp7 >= .48],
+      [`Expected 7D funding ${pct(exp7, 2)} ≥ 0.48%`, exp7 >= .48],
     ];
     const ok = checks.every(c => c[1]);
     const exit = x.rate < 0 || apy < 8 || x.basis > 1.5;
-    return { tone: ok ? "ok" : (exit ? "warn" : "none"), tag: ok ? "ABRE PAR" : (exit ? "CIERRA" : "ESPERA"),
-      why: ok ? "Compra spot y vende perpetuo por el mismo importe." : (exit ? "Si hubiera un par abierto, se cerrarían las dos patas." : "No compensa: el par se mantiene, pero no se abre uno nuevo."), checks,
+    return { tone: ok ? "ok" : (exit ? "warn" : "none"), tag: ok ? "OPEN PAIR" : (exit ? "CLOSE" : "WAIT"),
+      why: ok ? "Buys spot and sells the perpetual for the same amount." : (exit ? "If a pair were open, both legs would be closed." : "Not worth it: an open pair is kept, but no new one is opened."), checks,
       bars: [
-        { label: "APY anualizado", v: apy, max: 80, mark: 20, fmt: pct(apy), good: apy >= 20 },
-        { label: "Funding esperado en 7 días", v: exp7, max: 2, mark: .48, fmt: pct(exp7, 2), good: exp7 >= .48 },
-        { label: "Basis (salida > 1.5%)", v: x.basis, max: 2, mark: 1.5, fmt: pct(x.basis, 2), good: x.basis <= .15 },
+        { label: "Annualized APY", v: apy, max: 80, mark: 20, fmt: pct(apy), good: apy >= 20 },
+        { label: "Expected funding over 7 days", v: exp7, max: 2, mark: .48, fmt: pct(exp7, 2), good: exp7 >= .48 },
+        { label: "Basis (exit > 1.5%)", v: x.basis, max: 2, mark: 1.5, fmt: pct(x.basis, 2), good: x.basis <= .15 },
       ] };
   }
 },
 {
-  id: "SUB7", name: "Grid adaptativo", on: true, freq: "cada 5 min (se reconstruye cada 24H)", lev: "3x",
-  idea: "Coloca una rejilla de compras dentro de las Bandas de Bollinger de 4H. Cada compra ejecutada pone una venta un nivel más arriba; cada venta repone la compra.",
-  facts: { "Activo": "BTC, solo largo", "Rango": "Bollinger(20, 2σ) en 4H", "Celda": "0.5 × ATR(14) diario; entre 4 y 20 niveles", "Stop Loss": "en cada compra: banda inferior − ½ celda", "Límites": "pérdida máx. del grid 4% del equity; 3 reinicios en 24H → pausa", "Nuevo (oct. 2026)": "no se monta el grid si la EMA20 diaria cae > 3% en 5 días" },
+  id: "SUB7", name: "Adaptive grid", on: true, freq: "every 5 min (rebuilt every 24H)", lev: "3x",
+  idea: "Places a grid of buy orders inside the 4H Bollinger Bands. Each filled buy places a sell one level higher; each sell replaces the buy.",
+  facts: { "Asset": "BTC, long only", "Range": "Bollinger(20, 2σ) on 4H", "Cell": "0.5 × daily ATR(14); between 4 and 20 levels", "Stop Loss": "on each buy: lower band − ½ cell", "Limits": "max. grid loss 4% of equity; 3 resets in 24H → pause", "New (Oct 2026)": "the grid is not set up if the daily EMA20 falls > 3% in 5 days" },
   inputs: [
-    { id: "w", label: "Ancho de las bandas", min: 2, max: 20, step: .1, v: 9, fmt: v => pct(v) },
-    { id: "atr", label: "ATR diario (% del precio)", min: 1, max: 6, step: .1, v: 2.4, fmt: v => pct(v) },
-    { id: "pos", label: "Posición del precio en la banda", min: 0, max: 1, step: .01, v: .55, fmt: v => `${Math.round(v * 100)}%` },
-    { id: "trend", label: "EMA20 diaria, cambio en 5 días", min: -10, max: 6, step: .1, v: -1, fmt: v => (v > 0 ? "+" : "") + pct(v) },
+    { id: "w", label: "Band width", min: 2, max: 20, step: .1, v: 9, fmt: v => pct(v) },
+    { id: "atr", label: "Daily ATR (% of price)", min: 1, max: 6, step: .1, v: 2.4, fmt: v => pct(v) },
+    { id: "pos", label: "Price position within the band", min: 0, max: 1, step: .01, v: .55, fmt: v => `${Math.round(v * 100)}%` },
+    { id: "trend", label: "Daily EMA20, change over 5 days", min: -10, max: 6, step: .1, v: -1, fmt: v => (v > 0 ? "+" : "") + pct(v) },
   ],
   run(x) {
     const L = P - x.w * x.pos, U = L + x.w, cell = .5 * x.atr;
@@ -610,21 +610,21 @@ const S = [
     const lv = Array.from({ length: n + 1 }, (_, i) => L + i * step);
     const buys = lv.filter(v => v < P * .999), sells = lv.filter(v => v >= P * .999);
     const sl = L - .5 * step;
-    if (x.trend < -3) return { tone: "none", tag: "SIN GRID", why: "Tendencia bajista: el filtro añadido tras el test de estrés no monta la rejilla.",
-      checks: [[`EMA20 ${pct(x.trend)} en 5 días (mín. −3%)`, false]], levels: [{ y: L, k: "ghost", t: "BB inf." }, { y: U, k: "ghost", t: "BB sup." }] };
-    return { tone: "ok", tag: `${n} NIVELES`, why: `${buys.length} compras límite bajo el precio, cada una con su SL en el exchange.`,
-      checks: [[`Celda objetivo ${pct(cell, 2)}; real ${pct(step, 2)}`, true, "info"], [`SL de las compras en ${f2(sl)} (${pct(P - sl)} bajo el precio)`, true, "info"], [`Fuera de [${f2(L - step / 2)}, ${f2(U + step / 2)}] se cancela todo y se reconstruye`, true, "info"]],
-      levels: [...buys.map(y => ({ y, k: "buy", t: "" })), ...sells.map(y => ({ y, k: "grid", t: "" })), { y: L, k: "ghost", t: "BB inf." }, { y: U, k: "ghost", t: "BB sup." }, { y: sl, k: "sl", t: "SL" }] };
+    if (x.trend < -3) return { tone: "none", tag: "NO GRID", why: "Downtrend: the filter added after the stress test does not set up the grid.",
+      checks: [[`EMA20 ${pct(x.trend)} in 5 days (min. −3%)`, false]], levels: [{ y: L, k: "ghost", t: "Lower BB" }, { y: U, k: "ghost", t: "Upper BB" }] };
+    return { tone: "ok", tag: `${n} LEVELS`, why: `${buys.length} limit buys below the price, each with its own SL on the exchange.`,
+      checks: [[`Target cell ${pct(cell, 2)}; actual ${pct(step, 2)}`, true, "info"], [`Buy SL at ${f2(sl)} (${pct(P - sl)} below the price)`, true, "info"], [`Outside [${f2(L - step / 2)}, ${f2(U + step / 2)}] everything is canceled and rebuilt`, true, "info"]],
+      levels: [...buys.map(y => ({ y, k: "buy", t: "" })), ...sells.map(y => ({ y, k: "grid", t: "" })), { y: L, k: "ghost", t: "Lower BB" }, { y: U, k: "ghost", t: "Upper BB" }, { y: sl, k: "sl", t: "SL" }] };
   }
 },
 {
-  id: "SUB8", name: "DCA inteligente spot", on: true, freq: "diario, compra cada 48H", lev: "spot (1x)",
-  idea: "Acumula BTC (60%) y ETH (40%) en spot. Compra más cuando el RSI está bajo y nada si el mercado está caro o por debajo de su tendencia de largo plazo.",
-  facts: { "Filtro": "precio > EMA200 semanal (si no, no compra)", "Tamaño": "4% de la asignación × multiplicador por RSI", "Stop Loss": "venta de todo el saldo en max(medio − 20%, precio − 24%)", "Take Profit": "RSI > 70 y PnL > 8% → 25% · RSI > 80 y PnL > 15% → 50% más", "Límite": "10 entradas por activo" },
+  id: "SUB8", name: "Smart spot DCA", on: true, freq: "daily, buys every 48H", lev: "spot (1x)",
+  idea: "Accumulates BTC (60%) and ETH (40%) on spot. Buys more when the RSI is low, and nothing if the market is expensive or below its long-term trend.",
+  facts: { "Filter": "price > weekly EMA200 (otherwise it does not buy)", "Size": "4% of the allocation × RSI multiplier", "Stop Loss": "sell the whole balance at max(average − 20%, price − 24%)", "Take Profit": "RSI > 70 and PnL > 8% → 25% · RSI > 80 and PnL > 15% → another 50%", "Limit": "10 entries per asset" },
   inputs: [
-    { id: "ema", label: "Precio vs EMA200 semanal", min: -30, max: 80, step: 1, v: 35, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
-    { id: "rsi", label: "RSI diario", min: 0, max: 100, step: 1, v: 36, fmt: v => v },
-    { id: "pnl", label: "PnL sobre el precio medio", min: -20, max: 60, step: 1, v: 6, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
+    { id: "ema", label: "Price vs weekly EMA200", min: -30, max: 80, step: 1, v: 35, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
+    { id: "rsi", label: "Daily RSI", min: 0, max: 100, step: 1, v: 36, fmt: v => v },
+    { id: "pnl", label: "PnL over the average price", min: -20, max: 60, step: 1, v: 6, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
   ],
   run(x) {
     const mult = x.rsi > 60 ? 0 : x.rsi >= 40 ? 1 : x.rsi >= 30 ? 1.5 : 2;
@@ -632,23 +632,23 @@ const S = [
     const tp2 = x.rsi > 80 && x.pnl > 15, tp1 = x.rsi > 70 && x.pnl > 8;
     const above = x.ema > 0;
     const checks = [
-      [`Precio ${above ? "por encima" : "por debajo"} de la EMA200 semanal`, above],
-      [`RSI ${x.rsi} → multiplicador ×${mult}`, mult > 0],
+      [`Price ${above ? "above" : "below"} the weekly EMA200`, above],
+      [`RSI ${x.rsi} → multiplier ×${mult}`, mult > 0],
     ];
-    let tone = "none", tag = "NO COMPRA", why = above ? "RSI por encima de 60: el mercado está caro." : "Bajo la tendencia de largo plazo no se acumula.";
-    if (tp2) { tone = "warn"; tag = "VENDE 50%"; why = "Segundo escalón de toma de beneficios."; }
-    else if (tp1) { tone = "warn"; tag = "VENDE 25%"; why = "Primer escalón de toma de beneficios."; }
-    else if (above && mult) { tone = "long"; tag = `COMPRA ×${mult}`; why = `Compra ${pct(4 * mult, 0)} de la asignación del activo.`; }
-    return { tone, tag, why, checks, levels: [{ y: avg, k: "ghost", t: "precio medio" }, { y: sl, k: "sl", t: "SL (todo el saldo)" }] };
+    let tone = "none", tag = "NO BUY", why = above ? "RSI above 60: the market is expensive." : "No accumulation below the long-term trend.";
+    if (tp2) { tone = "warn"; tag = "SELL 50%"; why = "Second take-profit step."; }
+    else if (tp1) { tone = "warn"; tag = "SELL 25%"; why = "First take-profit step."; }
+    else if (above && mult) { tone = "long"; tag = `BUY ×${mult}`; why = `Buys ${pct(4 * mult, 0)} of the asset's allocation.`; }
+    return { tone, tag, why, checks, levels: [{ y: avg, k: "ghost", t: "average price" }, { y: sl, k: "sl", t: "SL (whole balance)" }] };
   }
 },
 {
-  id: "SUB9", name: "Collar dinámico", on: true, freq: "cada 15 min, rebalanceo 6H", lev: "2x",
-  idea: "Mantiene una exposición larga en BTC o ETH (el de más momentum a 30 días) que se reduce cuando el panel macro empeora. Por debajo de la EMA200 diaria la exposición es cero.",
-  facts: { "Exposición": "80% del equity × (1 − ratio de cobertura)", "Ratios": "STRONG_BULL 0.30 · NEUTRAL 0.50 · BEAR 0.70 · CRISIS 0.90 · sin datos 0.70", "Stop Loss": "EMA200 diaria − 1%, como mucho 15% bajo el precio", "Circuit breaker": "pérdida > 3% del capital asignado → cierra y pausa 24H", "Rebalanceo": "si el ratio se desvía más de 0.05" },
+  id: "SUB9", name: "Dynamic collar", on: true, freq: "every 15 min, 6H rebalance", lev: "2x",
+  idea: "Holds a long exposure in BTC or ETH (whichever has more 30-day momentum) that is reduced when the macro panel worsens. Below the daily EMA200 the exposure is zero.",
+  facts: { "Exposure": "80% of equity × (1 − hedge ratio)", "Ratios": "STRONG_BULL 0.30 · NEUTRAL 0.50 · BEAR 0.70 · CRISIS 0.90 · no data 0.70", "Stop Loss": "daily EMA200 − 1%, at most 15% below the price", "Circuit breaker": "loss > 3% of allocated capital → closes and pauses 24H", "Rebalancing": "if the ratio deviates by more than 0.05" },
   inputs: [
-    { id: "macro", label: "Score macro (−10 a +10)", min: -10, max: 10, step: .5, v: 1, fmt: v => (v > 0 ? "+" : "") + f1(v) },
-    { id: "ema", label: "Precio vs EMA200 diaria", min: -20, max: 60, step: 1, v: 14, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
+    { id: "macro", label: "Macro score (−10 to +10)", min: -10, max: 10, step: .5, v: 1, fmt: v => (v > 0 ? "+" : "") + f1(v) },
+    { id: "ema", label: "Price vs daily EMA200", min: -20, max: 60, step: 1, v: 14, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
   ],
   run(x) {
     const reg = x.macro <= -5 ? "CRISIS" : x.macro <= -3 ? "BEAR" : x.macro >= 3 ? "STRONG_BULL" : "NEUTRAL";
@@ -656,52 +656,52 @@ const S = [
     const ema = P / (1 + x.ema / 100), floor = ema * .99, below = P < floor;
     const exp = below ? 0 : 80 * (1 - ratio);
     const sl = Math.max(floor, P * .85);
-    return { tone: below ? "none" : "long", tag: below ? "SIN EXPOSICIÓN" : `LONG ${pct(exp, 0)}`,
-      why: below ? "El precio está bajo la EMA200 diaria − 1%: se cierra la exposición." : `Régimen ${reg}: cobertura del ${Math.round(ratio * 100)}%.`,
-      checks: [[`Régimen macro: ${reg}`, true, "info"], [`SL en ${f2(sl)} (${pct(P - sl)} bajo el precio${sl > floor ? ", limitado al 15%" : ""})`, !below, below ? "info" : ""]],
+    return { tone: below ? "none" : "long", tag: below ? "NO EXPOSURE" : `LONG ${pct(exp, 0)}`,
+      why: below ? "The price is below the daily EMA200 − 1%: the exposure is closed." : `${reg} regime: ${Math.round(ratio * 100)}% hedge.`,
+      checks: [[`Macro regime: ${reg}`, true, "info"], [`SL at ${f2(sl)} (${pct(P - sl)} below the price${sl > floor ? ", capped at 15%" : ""})`, !below, below ? "info" : ""]],
       bars: [
-        { label: "Exposición larga (% del equity)", v: exp, max: 80, fmt: pct(exp, 0), good: exp > 0 },
-        { label: "Ratio de cobertura", v: ratio * 100, max: 100, fmt: pct(ratio * 100, 0) },
-        { label: "Distancia al SL", v: below ? 0 : P - sl, max: 20, mark: 15, fmt: below ? "—" : pct(P - sl) },
+        { label: "Long exposure (% of equity)", v: exp, max: 80, fmt: pct(exp, 0), good: exp > 0 },
+        { label: "Hedge ratio", v: ratio * 100, max: 100, fmt: pct(ratio * 100, 0) },
+        { label: "Distance to SL", v: below ? 0 : P - sl, max: 20, mark: 15, fmt: below ? "—" : pct(P - sl) },
       ] };
   }
 },
 {
-  id: "SUB10", name: "Pairs trading (cointegración)", on: false, freq: "cada 1H", lev: "2x",
-  idea: "Busca pares que se mueven juntos (BTC/ETH, ETH/SOL, SOL/AVAX, LINK/DOT). Cuando el diferencial se aleja de lo normal, vende la cara y compra la barata, y espera a que vuelvan a juntarse.",
-  facts: { "Modelo": "log(A) = α + β·log(B) + spread, 240 velas de 1H", "Calidad": "β > 0, ADF < −3.34, vida media 2–72 h", "Entrada": "|z| ≥ 2; nocional de B = β × nocional de A", "Salida": "|z| ≤ 0.5, |z| ≥ 4 (ruptura), pérdida del par > 3%, 5 días", "Stop Loss": "±10% en cada pata", "Estado": "Nueva y desactivada (inspirada en stat_arb de Hummingbot)" },
+  id: "SUB10", name: "Pairs trading (cointegration)", on: false, freq: "every 1H", lev: "2x",
+  idea: "Looks for pairs that move together (BTC/ETH, ETH/SOL, SOL/AVAX, LINK/DOT). When the spread moves away from normal, it sells the expensive one, buys the cheap one and waits for them to converge again.",
+  facts: { "Model": "log(A) = α + β·log(B) + spread, 240 1H candles", "Quality": "β > 0, ADF < −3.34, half-life 2–72 h", "Entry": "|z| ≥ 2; notional of B = β × notional of A", "Exit": "|z| ≤ 0.5, |z| ≥ 4 (breakdown), pair loss > 3%, 5 days", "Stop Loss": "±10% on each leg", "Status": "New and disabled (inspired by Hummingbot's stat_arb)" },
   inputs: [
-    { id: "z", label: "z-score del spread", min: -5, max: 5, step: .05, v: 2.3, fmt: v => (v > 0 ? "+" : "") + f2(v) },
-    { id: "adf", label: "Estadístico ADF", min: -6, max: -1, step: .05, v: -3.8, fmt: f2 },
-    { id: "hl", label: "Vida media de reversión (horas)", min: 0, max: 100, step: 1, v: 18, fmt: v => `${v} h` },
-    { id: "beta", label: "β (cobertura)", min: -.5, max: 2, step: .05, v: .9, fmt: f2 },
+    { id: "z", label: "Spread z-score", min: -5, max: 5, step: .05, v: 2.3, fmt: v => (v > 0 ? "+" : "") + f2(v) },
+    { id: "adf", label: "ADF statistic", min: -6, max: -1, step: .05, v: -3.8, fmt: f2 },
+    { id: "hl", label: "Mean-reversion half-life (hours)", min: 0, max: 100, step: 1, v: 18, fmt: v => `${v} h` },
+    { id: "beta", label: "β (hedge)", min: -.5, max: 2, step: .05, v: .9, fmt: f2 },
   ],
   run(x) {
-    const q = [[`β ${f2(x.beta)} > 0`, x.beta > 0], [`ADF ${f2(x.adf)} < −3.34`, x.adf < -3.34], [`Vida media ${x.hl} h entre 2 y 72`, x.hl >= 2 && x.hl <= 72]];
+    const q = [[`β ${f2(x.beta)} > 0`, x.beta > 0], [`ADF ${f2(x.adf)} < −3.34`, x.adf < -3.34], [`Half-life ${x.hl} h between 2 and 72`, x.hl >= 2 && x.hl <= 72]];
     const good = q.every(c => c[1]), az = Math.abs(x.z);
-    let tone = "none", tag = "ESPERA", why = "El spread está en zona normal.";
-    if (!good) { tag = "PAR NO VÁLIDO"; why = "El par no está cointegrado: no se opera."; }
-    else if (az >= 4) { tone = "warn"; tag = "RUPTURA"; why = "La relación se ha roto: se cierran las dos patas."; }
-    else if (az >= 2) { tone = "ok"; tag = x.z > 0 ? "SHORT A · LONG B" : "LONG A · SHORT B"; why = `Por cada 1 USDT en A, ${f2(x.beta)} USDT en B.`; }
-    else if (az <= .5) { tag = "SALIDA"; why = "El spread ha vuelto a la media: se recoge el beneficio."; }
+    let tone = "none", tag = "WAIT", why = "The spread is in its normal zone.";
+    if (!good) { tag = "INVALID PAIR"; why = "The pair is not cointegrated: no trade."; }
+    else if (az >= 4) { tone = "warn"; tag = "BREAKDOWN"; why = "The relationship has broken down: both legs are closed."; }
+    else if (az >= 2) { tone = "ok"; tag = x.z > 0 ? "SHORT A · LONG B" : "LONG A · SHORT B"; why = `For every 1 USDT in A, ${f2(x.beta)} USDT in B.`; }
+    else if (az <= .5) { tag = "EXIT"; why = "The spread has returned to the mean: the profit is taken."; }
     return { tone, tag, why, checks: q, unit: "z", domain: [-5, 5], last: x.z,
-      levels: [{ y: 4, k: "sl", t: "+4 ruptura" }, { y: 2, k: "grid", t: "+2 entrada" }, { y: .5, k: "tp", t: "+0.5 salida" }, { y: -.5, k: "tp", t: "−0.5 salida" }, { y: -2, k: "grid", t: "−2 entrada" }, { y: -4, k: "sl", t: "−4 ruptura" }] };
+      levels: [{ y: 4, k: "sl", t: "+4 breakdown" }, { y: 2, k: "grid", t: "+2 entry" }, { y: .5, k: "tp", t: "+0.5 exit" }, { y: -.5, k: "tp", t: "−0.5 exit" }, { y: -2, k: "grid", t: "−2 entry" }, { y: -4, k: "sl", t: "−4 breakdown" }] };
   }
 },
 {
-  id: "SUB11", name: "SuperTrend 4H", on: false, freq: "cada 4H", lev: "3x",
-  idea: "Sigue la tendencia con el indicador SuperTrend(20, 4.0) en velas de 4H. Siempre en el lado de la tendencia: cuando la línea cambia de lado, cierra y abre en sentido contrario.",
-  facts: { "Activos": "BTC, ETH, SOL", "Entrada": "a ≤ 5 ATR de la línea (filtro anti-persecución)", "Stop Loss": "línea SuperTrend ∓ 0.2%, se mueve con ella solo a favor", "Take Profit": "ninguno: sale al cambiar la tendencia", "Riesgo": "1% por operación, máx. 3 posiciones", "Estado": "Nueva y desactivada (inspirada en supertrend_v1 de Hummingbot)" },
+  id: "SUB11", name: "SuperTrend 4H", on: false, freq: "every 4H", lev: "3x",
+  idea: "Follows the trend with the SuperTrend(20, 4.0) indicator on 4H candles. Always on the side of the trend: when the line flips, it closes and opens in the opposite direction.",
+  facts: { "Assets": "BTC, ETH, SOL", "Entry": "within ≤ 5 ATR of the line (anti-chasing filter)", "Stop Loss": "SuperTrend line ∓ 0.2%, moves with it only in favor", "Take Profit": "none: exits when the trend changes", "Risk": "1% per trade, max. 3 positions", "Status": "New and disabled (inspired by Hummingbot's supertrend_v1)" },
   inputs: [
-    { id: "dir", label: "Dirección del SuperTrend", type: "select", opts: [["1", "+1 alcista"], ["-1", "−1 bajista"]], v: "1" },
-    { id: "dist", label: "Distancia del precio a la línea", min: 0, max: 10, step: .1, v: 2.8, fmt: v => `${f1(v)} ATR` },
-    { id: "atr", label: "ATR 4H (% del precio)", min: .5, max: 6, step: .1, v: 2.2, fmt: v => pct(v) },
+    { id: "dir", label: "SuperTrend direction", type: "select", opts: [["1", "+1 bullish"], ["-1", "−1 bearish"]], v: "1" },
+    { id: "dist", label: "Price distance to the line", min: 0, max: 10, step: .1, v: 2.8, fmt: v => `${f1(v)} ATR` },
+    { id: "atr", label: "4H ATR (% of price)", min: .5, max: 6, step: .1, v: 2.2, fmt: v => pct(v) },
   ],
   run(x) {
     const d = +x.dir, line = P - d * x.dist * x.atr, sl = line * (1 - .002 * d), ok = x.dist <= 5;
-    return { tone: ok ? (d > 0 ? "long" : "short") : "none", tag: ok ? (d > 0 ? "LONG" : "SHORT") : "NO PERSIGUE",
-      why: ok ? "Entra a favor de la tendencia; el SL sigue a la línea." : "El precio está demasiado lejos de la línea: no se persigue.",
-      checks: [[`Distancia ${f1(x.dist)} ATR ≤ 5`, ok], [`SL a ${pct(Math.abs(P - sl))} del precio`, ok, ok ? "" : "info"]],
+    return { tone: ok ? (d > 0 ? "long" : "short") : "none", tag: ok ? (d > 0 ? "LONG" : "SHORT") : "NO CHASE",
+      why: ok ? "Enters in the direction of the trend; the SL follows the line." : "The price is too far from the line: no chasing.",
+      checks: [[`Distance ${f1(x.dist)} ATR ≤ 5`, ok], [`SL at ${pct(Math.abs(P - sl))} from the price`, ok, ok ? "" : "info"]],
       levels: [{ y: line, k: "ghost", t: "SuperTrend" }, { y: sl, k: ok ? "sl" : "ghost", t: "SL" }] };
   }
 },
@@ -726,7 +726,7 @@ function drawFlow() {
     el("text", { x: x + w / 2, y: y + h / 2 - 4, "text-anchor": "middle", fill: c("--fg"), "font-size": 14, "font-weight": 600 }, flow, t1);
     el("text", { x: x + w / 2, y: y + h / 2 + 14, "text-anchor": "middle", fill: c("--muted"), "font-size": 11.5 }, flow, t2);
   };
-  box(10, 112, 150, 76, "Cuenta principal", "Bitget · capital");
+  box(10, 112, 150, 76, "Main account", "Bitget · capital");
   const cols = 4, w = 112, h = 44, gx = 12, gy = 10, x0 = 210, y0 = 74;
   S.forEach((s, i) => {
     const r = Math.floor(i / cols), cI = i % cols, x = x0 + cI * (w + gx), y = y0 + r * (h + gy);
@@ -741,9 +741,9 @@ function drawFlow() {
   el("line", { x1: 160, y1: 150, x2: 202, y2: 150, stroke: c("--muted"), "stroke-width": 1.5, "marker-end": "url(#arr)" });
   const xr = x0 + cols * (w + gx) - gx;
   el("line", { x1: xr + 6, y1: 150, x2: 716, y2: 150, stroke: c("--muted"), "stroke-width": 1.5, "marker-end": "url(#arr)" });
-  el("text", { x: (xr + 716) / 2 + 3, y: 140, "text-anchor": "middle", fill: c("--muted"), "font-size": 11 }, flow, "orden");
-  box(720, 100, 146, 100, "Guardián SL", "SL obligatorio · ≤ 25%", true);
-  el("text", { x: 793, y: 222, "text-anchor": "middle", fill: c("--short"), "font-size": 11 }, flow, "sin SL → rechazada");
+  el("text", { x: (xr + 716) / 2 + 3, y: 140, "text-anchor": "middle", fill: c("--muted"), "font-size": 11 }, flow, "order");
+  box(720, 100, 146, 100, "SL guard", "mandatory SL · ≤ 25%", true);
+  el("text", { x: 793, y: 222, "text-anchor": "middle", fill: c("--short"), "font-size": 11 }, flow, "no SL → rejected");
   el("line", { x1: 866, y1: 150, x2: 878, y2: 150, stroke: c("--muted"), "stroke-width": 1.5, "marker-end": "url(#arr)" });
   box(880, 112, 72, 76, "Bitget", "ccxt");
 }
@@ -755,7 +755,7 @@ S.forEach(s => { state[s.id] = Object.fromEntries(s.inputs.map(i => [i.id, i.v])
 
 const list = $("#list"), panel = $("#panel");
 list.innerHTML = S.map(s => `<button role="tab" id="tab-${s.id}" aria-controls="panel" aria-selected="false" data-id="${s.id}">
-  <span class="id">${s.id}</span><span>${s.name}</span><span class="dot${s.on ? "" : " off"}" title="${s.on ? "activa por defecto" : "desactivada por defecto"}"></span></button>`).join("");
+  <span class="id">${s.id}</span><span>${s.name}</span><span class="dot${s.on ? "" : " off"}" title="${s.on ? "enabled by default" : "disabled by default"}"></span></button>`).join("");
 list.addEventListener("click", e => { const b = e.target.closest("button"); if (b) select(b.dataset.id); });
 list.addEventListener("keydown", e => {
   if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(e.key)) return;
@@ -784,15 +784,15 @@ function renderPanel() {
   panel.innerHTML = `
     <div class="panel-head">
       <div class="row"><span class="eyebrow">${s.id}</span>
-        <span class="chip ${s.on ? "on" : "off"}">${s.on ? "activa por defecto" : "desactivada por defecto"}</span>
-        <span class="chip">${s.freq}</span><span class="chip">apalancamiento ${s.lev}</span></div>
+        <span class="chip ${s.on ? "on" : "off"}">${s.on ? "enabled by default" : "disabled by default"}</span>
+        <span class="chip">${s.freq}</span><span class="chip">leverage ${s.lev}</span></div>
       <h2>${s.name}</h2>
       <p class="idea">${s.idea}</p>
     </div>
     <dl class="facts">${Object.entries(s.facts).map(([k, val]) => `<div><dt>${k}</dt><dd>${val}</dd></div>`).join("")}</dl>
     <div class="sim">
-      <div class="controls"><h3>Simula un escenario</h3>${ctl}
-        <button type="button" class="chip" id="reset" style="justify-self:start;cursor:pointer;border:0">Restablecer ejemplo</button></div>
+      <div class="controls"><h3>Simulate a scenario</h3>${ctl}
+        <button type="button" class="chip" id="reset" style="justify-self:start;cursor:pointer;border:0">Reset example</button></div>
       <div class="result" id="result" aria-live="polite"></div>
     </div>`;
   panel.querySelectorAll("[data-k]").forEach(inp => inp.addEventListener("input", () => {
@@ -820,8 +820,8 @@ function barsHTML(bars) {
     const w = clamp(b.v / b.max * 100, 0, 100), m = b.mark != null ? clamp(b.mark / b.max * 100, 0, 100) : null;
     const cls = b.good === true ? "good" : b.good === false ? "bad" : "";
     return `<div class="bar"><div class="top"><span>${b.label}</span><span>${b.fmt}</span></div>
-      <div class="track"><div class="fill ${cls}" style="width:${w}%"></div>${m != null ? `<div class="mark" style="left:calc(${m}% - 1px)" title="umbral"></div>` : ""}</div></div>`;
-  }).join("")}</div><p class="note">La línea vertical marca el umbral de la regla.</p>`;
+      <div class="track"><div class="fill ${cls}" style="width:${w}%"></div>${m != null ? `<div class="mark" style="left:calc(${m}% - 1px)" title="threshold"></div>` : ""}</div></div>`;
+  }).join("")}</div><p class="note">The vertical line marks the rule's threshold.</p>`;
 }
 
 /* Serie sintética determinista que termina en el valor actual */
@@ -857,12 +857,12 @@ function chartSVG(r) {
   }).join("");
   const texts = labs.map(l => `<text x="${W - padR + 10}" y="${(l.py + 4).toFixed(1)}" fill="${color[l.k]}">${l.t} ${r.unit === "z" ? "" : f1(l.y)}</text>`).join("");
   const ly = Y(last);
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico con el precio y los niveles de la estrategia">
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Chart with the price and the strategy's levels">
     ${r.unit === "z" ? `<line x1="${padL}" x2="${W - padR + 6}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)" />` : ""}
     ${lines}
     <polyline points="${pts.join(" ")}" fill="none" stroke="var(--fg)" stroke-width="1.8" stroke-linejoin="round" />
     <circle cx="${padL + plotW}" cy="${ly.toFixed(1)}" r="4.5" fill="var(--gold)" />
-    <text x="${padL + plotW - 8}" y="${(ly - 9).toFixed(1)}" text-anchor="end" fill="var(--gold)">${r.unit === "z" ? "z " + f2(last) : "precio 100"}</text>
+    <text x="${padL + plotW - 8}" y="${(ly - 9).toFixed(1)}" text-anchor="end" fill="var(--gold)">${r.unit === "z" ? "z " + f2(last) : "price 100"}</text>
     ${texts}
   </svg>`;
 }
@@ -871,30 +871,30 @@ function chartSVG(r) {
 function guard() {
   const side = $("#g-side").value, p = parseFloat($("#g-price").value), slRaw = $("#g-sl").value.trim(), tpRaw = $("#g-tp").value.trim();
   const out = $("#g-out"), res = (ok, m) => { out.className = "out " + (ok ? "ok" : "bad"); out.textContent = m; };
-  if (!(p > 0)) return res(false, "Precio de referencia inválido.");
-  if (slRaw === "") return res(false, "🚫 ORDEN RECHAZADA: stop_loss es OBLIGATORIO.");
+  if (!(p > 0)) return res(false, "Invalid reference price.");
+  if (slRaw === "") return res(false, "🚫 ORDER REJECTED: stop_loss is MANDATORY.");
   const sl = parseFloat(slRaw), long = side === "buy";
-  if (!(sl > 0)) return res(false, `stop_loss inválido: ${slRaw}`);
-  if (long && sl >= p) return res(false, `El SL de un LONG debe estar por debajo del precio (${sl} ≥ ${p}).`);
-  if (!long && sl <= p) return res(false, `El SL de un SHORT debe estar por encima del precio (${sl} ≤ ${p}).`);
+  if (!(sl > 0)) return res(false, `Invalid stop_loss: ${slRaw}`);
+  if (long && sl >= p) return res(false, `The SL of a LONG must be below the price (${sl} ≥ ${p}).`);
+  if (!long && sl <= p) return res(false, `The SL of a SHORT must be above the price (${sl} ≤ ${p}).`);
   const d = Math.abs(sl - p) / p;
-  if (d > .25) return res(false, `SL a ${(d * 100).toFixed(1)}% del precio (máximo 25%). Revisa el cálculo.`);
+  if (d > .25) return res(false, `SL at ${(d * 100).toFixed(1)}% from the price (maximum 25%). Check the calculation.`);
   if (tpRaw !== "") {
     const tp = parseFloat(tpRaw);
-    if ((long && tp <= p) || (!long && tp >= p)) return res(false, `TP en el lado equivocado del precio: ${tp} vs ${p}.`);
+    if ((long && tp <= p) || (!long && tp >= p)) return res(false, `TP on the wrong side of the price: ${tp} vs ${p}.`);
   }
-  res(true, `✓ Orden aceptada. SL a ${(d * 100).toFixed(2)}% del precio.`);
+  res(true, `✓ Order accepted. SL at ${(d * 100).toFixed(2)}% from the price.`);
 }
 function sizing() {
   const eq = +$("#s-eq").value, r = +$("#s-risk").value / 100, e = +$("#s-entry").value, sl = +$("#s-sl").value;
   const dist = Math.abs(e - sl), amt = eq > 0 && r > 0 && dist > 0 && e > 0 ? eq * r / dist : 0;
-  const fmt = (v, d = 2) => Number.isFinite(v) ? v.toLocaleString("es-ES", { maximumFractionDigits: d, minimumFractionDigits: d }) : "—";
+  const fmt = (v, d = 2) => Number.isFinite(v) ? v.toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d }) : "—";
   $("#s-out").innerHTML = `
-    <dt>Pérdida si salta el SL</dt><dd>${fmt(eq * r)} USDT</dd>
-    <dt>Distancia al SL</dt><dd>${e > 0 ? fmt(dist / e * 100) : "—"} %</dd>
-    <dt>Cantidad</dt><dd>${fmt(amt, 5)}</dd>
-    <dt>Nocional</dt><dd>${fmt(amt * e)} USDT</dd>
-    <dt>Apalancamiento implícito</dt><dd>${eq > 0 ? fmt(amt * e / eq) : "—"}×</dd>`;
+    <dt>Loss if the SL is hit</dt><dd>${fmt(eq * r)} USDT</dd>
+    <dt>Distance to SL</dt><dd>${e > 0 ? fmt(dist / e * 100) : "—"} %</dd>
+    <dt>Quantity</dt><dd>${fmt(amt, 5)}</dd>
+    <dt>Notional</dt><dd>${fmt(amt * e)} USDT</dd>
+    <dt>Implied leverage</dt><dd>${eq > 0 ? fmt(amt * e / eq) : "—"}×</dd>`;
 }
 ["#g-side", "#g-price", "#g-sl", "#g-tp"].forEach(s => $(s).addEventListener("input", guard));
 ["#s-eq", "#s-risk", "#s-entry", "#s-sl"].forEach(s => $(s).addEventListener("input", sizing));
@@ -910,19 +910,19 @@ new MutationObserver(drawFlow).observe(document.documentElement, { attributes: t
 /* ── Sinergia ─────────────────────────────────────────────────────── */
 (() => {
   const REG = {
-    alcista: { label: "📈 Alcista fuerte", ids: { SUB1: "sentimiento positivo", SUB2: "rotación hacia altcoins", SUB6: "funding alto", SUB8: "acumula sobre la EMA200", SUB9: "cobertura 30%", SUB11: "sigue la tendencia" } },
-    lateral: { label: "↔️ Lateral", ids: { SUB7: "grid en su mercado ideal", SUB10: "spreads que revierten", SUB3: "copy trading neutral", SUB9: "cobertura 50%", SUB6: "funding moderado" } },
-    bajista: { label: "📉 Bajista", ids: { SUB5: "cortos con macro bajista", SUB9: "cobertura 70–90%", SUB11: "tendencia corta", SUB8: "deja de comprar", SUB6: "cierra pares si el funding es negativo", SUB7: "no monta grid (filtro nuevo)" } },
-    volatil: { label: "⚡ Alta volatilidad", ids: { SUB4: "scalping con más ATR", SUB7: "rejilla más ancha", SUB6: "el funding sube", SUB10: "más entradas con |z| ≥ 2" } },
+    alcista: { label: "📈 Strong bull", ids: { SUB1: "positive sentiment", SUB2: "rotation into altcoins", SUB6: "high funding", SUB8: "accumulates above the EMA200", SUB9: "30% hedge", SUB11: "follows the trend" } },
+    lateral: { label: "↔️ Sideways", ids: { SUB7: "grid in its ideal market", SUB10: "mean-reverting spreads", SUB3: "neutral copy trading", SUB9: "50% hedge", SUB6: "moderate funding" } },
+    bajista: { label: "📉 Bear", ids: { SUB5: "shorts with bearish macro", SUB9: "70–90% hedge", SUB11: "trend on the short side", SUB8: "stops buying", SUB6: "closes pairs if funding turns negative", SUB7: "does not set up the grid (new filter)" } },
+    volatil: { label: "⚡ High volatility", ids: { SUB4: "scalping with higher ATR", SUB7: "wider grid", SUB6: "funding rises", SUB10: "more entries with |z| ≥ 2" } },
   };
-  const NAMES = { SUB1: "News Sentiment", SUB2: "Stat Arb", SUB3: "Copy + guardián", SUB4: "Scalping 1m", SUB5: "Macro-shorting", SUB6: "Funding arb", SUB7: "Grid adaptativo", SUB8: "DCA inteligente", SUB9: "Collar dinámico", SUB10: "Pairs trading", SUB11: "SuperTrend 4H" };
+  const NAMES = { SUB1: "News Sentiment", SUB2: "Stat Arb", SUB3: "Copy + guard", SUB4: "Scalping 1m", SUB5: "Macro-shorting", SUB6: "Funding arb", SUB7: "Adaptive grid", SUB8: "Smart DCA", SUB9: "Dynamic collar", SUB10: "Pairs trading", SUB11: "SuperTrend 4H" };
   const wrap = document.getElementById("regimes"), grid = document.getElementById("syn-grid");
   let cur = "alcista";
   wrap.innerHTML = Object.entries(REG).map(([k, r]) => `<button type="button" data-k="${k}" aria-pressed="${k === cur}">${r.label}</button>`).join("");
   function render() {
     wrap.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === cur));
     const ids = REG[cur].ids;
-    grid.innerHTML = Object.entries(NAMES).map(([id, n]) => `<div class="syn-card ${ids[id] ? "hit" : "dim"}"><span class="id">${id}</span><b>${n}</b><small>${ids[id] || "no es su mercado"}</small></div>`).join("");
+    grid.innerHTML = Object.entries(NAMES).map(([id, n]) => `<div class="syn-card ${ids[id] ? "hit" : "dim"}"><span class="id">${id}</span><b>${n}</b><small>${ids[id] || "not its market"}</small></div>`).join("");
   }
   wrap.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { cur = b.dataset.k; render(); } });
   render();
@@ -934,7 +934,17 @@ new MutationObserver(drawFlow).observe(document.documentElement, { attributes: t
   if (!D) return;
   const $ = s => document.querySelector(s);
   const ACC = ["SUB2", "SUB5", "SUB6", "SUB7", "SUB8", "SUB9", "SUB10", "SUB11", "SUB4"];
-  const NAMES = { SUB2: "Stat Arb", SUB4: "Scalping 1m (30 días)", SUB5: "Macro-shorting", SUB6: "Funding arb", SUB7: "Grid adaptativo", SUB8: "DCA inteligente", SUB9: "Collar dinámico", SUB10: "Pairs trading", SUB11: "SuperTrend 4H" };
+  const NAMES = { SUB2: "Stat Arb", SUB4: "Scalping 1m (30 days)", SUB5: "Macro-shorting", SUB6: "Funding arb", SUB7: "Adaptive grid", SUB8: "Smart DCA", SUB9: "Dynamic collar", SUB10: "Pairs trading", SUB11: "SuperTrend 4H" };
+  // The stress report carries the scenario texts in Spanish; render them in English (fall back to the original).
+  const SC_EN = {
+    ciclo: { title: "Full cycle", description: "Accumulation, euphoria with a flash crash, a −70% bear market with two one-day crashes (LUNA- and FTX-style), a sideways bottom and recovery." },
+    bear: { title: "Prolonged bear market", description: "Three years of decline with false rebounds and crashes: the worst case for long strategies." },
+    lateral: { title: "Sideways with flash crashes", description: "Three years with no trend, medium volatility and flash crashes that recover." },
+  };
+  const PHASE_EN = { "acumulación": "accumulation", "euforia": "euphoria", "distribución": "distribution", "bear market": "bear market", "suelo lateral": "sideways bottom", "recuperación": "recovery", "techo": "top", "primera caída": "first leg down", "rebote falso": "false rebound", "capitulación": "capitulation", "lateral bajista": "bearish sideways", "rango": "range", "rango volátil": "volatile range", "rango estrecho": "tight range" };
+  const scTitle = k => (SC_EN[k] && SC_EN[k].title) || D.scenarios[k].title;
+  const scDesc = k => (SC_EN[k] && SC_EN[k].description) || D.scenarios[k].description;
+  const phaseName = n => PHASE_EN[n] || n;
   const scs = Object.keys(D.scenarios);
   const seeds = [...new Set(D.runs.map(r => r.seed))].sort((a, b) => a - b);
   const st = { sc: scs[0], seed: seeds[0], cost: 1 };
@@ -948,23 +958,23 @@ new MutationObserver(drawFlow).observe(document.documentElement, { attributes: t
       st[key] = isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v; render();
     });
   }
-  seg($("#seg-sc"), scs.map(k => [k, D.scenarios[k].title]), "sc");
+  seg($("#seg-sc"), scs.map(k => [k, scTitle(k)]), "sc");
   seg($("#seg-seed"), seeds.map(s => [s, `#${s + 1}`]), "seed");
-  seg($("#seg-cost"), [[1, "reales"], [2, "×2"]], "cost");
+  seg($("#seg-cost"), [[1, "actual"], [2, "×2"]], "cost");
   const nSeeds = seeds.length;
-  $("#stress-meta").textContent = `${scs.length} escenarios × ${nSeeds} trayectorias Monte Carlo, ${ACC.length} estrategias`;
+  $("#stress-meta").textContent = `${scs.length} scenarios × ${nSeeds} Monte Carlo paths, ${ACC.length} strategies`;
 
   // Las dos series que se comparan dependen de los costes elegidos.
   const pair = () => st.cost === 1
-    ? [{ set: "antes", cost: 1, label: "Antes de los arreglos" }, { set: "despues", cost: 1, label: "Después de los arreglos" }]
-    : [{ set: "despues", cost: 1, label: "Después, costes reales" }, { set: "despues", cost: 2, label: "Después, comisiones y slippage ×2" }];
+    ? [{ set: "antes", cost: 1, label: "Before the fixes" }, { set: "despues", cost: 1, label: "After the fixes" }]
+    : [{ set: "despues", cost: 1, label: "After, actual costs" }, { set: "despues", cost: 2, label: "After, fees and slippage ×2" }];
   const findRun = (p, acc) => D.runs.find(r => r.set === p.set && r.cost_mult === p.cost && r.scenario === st.sc && r.seed === st.seed && r.account === acc);
   const findPort = p => D.portfolio.find(r => r.set === p.set && r.cost_mult === p.cost && r.scenario === st.sc && r.seed === st.seed);
 
   function lineChart(series, opts) {
     const W = opts.w, H = opts.h, L = opts.pl ?? 44, R = 10, T = 10, B = opts.pb ?? 22;
     const all = series.flatMap(s => s.pts);
-    if (!all.length) return `<p class="note">Sin datos para esta combinación.</p>`;
+    if (!all.length) return `<p class="note">No data for this combination.</p>`;
     let lo = Math.min(...all, 100), hi = Math.max(...all, 100);
     const log = hi / Math.max(lo, 1) > 6;  // escala logarítmica si el rango es enorme
     const f = v => log ? Math.log(Math.max(v, 0.5)) : v;
@@ -989,7 +999,7 @@ new MutationObserver(drawFlow).observe(document.documentElement, { attributes: t
       g += `<circle cx="${X(i)}" cy="${Y(s.pts[i])}" r="4" fill="${s.color}" stroke="var(--surface)" stroke-width="2" />`;
     });
     if (opts.xlabels) g += `<text x="${L}" y="${H - 4}">${opts.xlabels[0]}</text><text x="${W - R}" y="${H - 4}" text-anchor="end">${opts.xlabels[1]}</text>`;
-    if (log) g += `<text x="${W - R}" y="${T + 12}" text-anchor="end">escala log</text>`;
+    if (log) g += `<text x="${W - R}" y="${T + 12}" text-anchor="end">log scale</text>`;
     g += `<line class="xh" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-width="1" visibility="hidden" />`;
     g += `<rect class="hit" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent" />`;
     return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.aria}" data-n="${n}" data-l="${L}" data-r="${R}" data-w="${W}">${g}</svg>`;
@@ -1026,13 +1036,13 @@ new MutationObserver(drawFlow).observe(document.documentElement, { attributes: t
       document.querySelectorAll(`${s} button`).forEach(b => b.setAttribute("aria-pressed", String(st[key]) === b.dataset.v));
     });
     const sc = D.scenarios[st.sc];
-    $("#sc-desc").textContent = `${sc.title}: ${sc.description}`;
+    $("#sc-desc").textContent = `${scTitle(st.sc)}: ${scDesc(st.sc)}`;
     const [A, B] = pair();
     const colA = "var(--s-before)", colB = "var(--s-after)";
     const pA = findPort(A), pB = findPort(B);
     const total = sc.phases.reduce((a, p) => a + p[1], 0);
     let acc = 0;
-    const bands = sc.phases.map(p => { const b = [acc / total, (acc + p[1]) / total, p[0]]; acc += p[1]; return b; });
+    const bands = sc.phases.map(p => { const b = [acc / total, (acc + p[1]) / total, phaseName(p[0])]; acc += p[1]; return b; });
     const any = D.runs.find(r => r.scenario === st.sc && r.account !== "SUB4" && r.seed === st.seed);
     const start = any ? new Date(any.start) : null;
     const dateAt = i => start ? new Date(start.getTime() + i * 7 * 864e5).toISOString().slice(0, 10) : "";
@@ -1041,24 +1051,24 @@ new MutationObserver(drawFlow).observe(document.documentElement, { attributes: t
       { label: B.label, color: colB, pts: pB ? pB.curve : [] },
     ];
     const big = $("#big");
-    big.innerHTML = lineChart(seriesBig, { w: 1000, h: 300, bands, bandLabels: true, aria: "Equity de la cartera combinada", xlabels: any ? [any.start, any.end] : null });
+    big.innerHTML = lineChart(seriesBig, { w: 1000, h: 300, bands, bandLabels: true, aria: "Combined portfolio equity", xlabels: any ? [any.start, any.end] : null });
     hover(big.closest(".chartbox"), seriesBig, dateAt);
     document.querySelector(".big-chart .legend").innerHTML =
-      `<span><i style="background:${colA}"></i>${A.label}</span><span><i style="background:${colB}"></i>${B.label}</span><span>Bandas = fases del escenario</span>`;
+      `<span><i style="background:${colA}"></i>${A.label}</span><span><i style="background:${colB}"></i>${B.label}</span><span>Bands = scenario phases</span>`;
 
     const deep = set => ACC.filter(a => { const r = D.runs.find(x => x.set === set.set && x.cost_mult === set.cost && x.scenario === st.sc && x.seed === st.seed && x.account === a); return r && r.m.max_drawdown_pct < -25; }).length;
     $("#tiles").innerHTML = [
-      [A.label, pA ? fmtP(pA.return_pct) : "—", pA ? `drawdown máx. ${pA.max_dd_pct.toFixed(1)}%` : ""],
-      [B.label, pB ? fmtP(pB.return_pct) : "—", pB ? `drawdown máx. ${pB.max_dd_pct.toFixed(1)}%` : ""],
-      ["Subcuentas con DD > 25%", `${deep(A)} → ${deep(B)}`, "de 9 estrategias"],
-      ["BTC en el escenario", any ? fmtP(any.btc) : "—", "comprar y mantener"],
+      [A.label, pA ? fmtP(pA.return_pct) : "—", pA ? `max. drawdown ${pA.max_dd_pct.toFixed(1)}%` : ""],
+      [B.label, pB ? fmtP(pB.return_pct) : "—", pB ? `max. drawdown ${pB.max_dd_pct.toFixed(1)}%` : ""],
+      ["Subaccounts with DD > 25%", `${deep(A)} → ${deep(B)}`, "out of 9 strategies"],
+      ["BTC in the scenario", any ? fmtP(any.btc) : "—", "buy and hold"],
     ].map(([t, v, s]) => `<div class="tile"><span>${t}</span><b>${v}</b><small>${s}</small></div>`).join("");
 
     $("#minis").innerHTML = ACC.map(a => {
       const ra = findRun(A, a), rb = findRun(B, a);
       const ser = [{ label: A.label, color: colA, pts: ra ? ra.curve : [] }, { label: B.label, color: colB, pts: rb ? rb.curve : [] }];
       return `<div class="mini" data-acc="${a}"><header><span>${NAMES[a]}</span><b>${a}</b></header>
-        ${lineChart(ser, { w: 340, h: 130, pl: 34, pb: 6, aria: `Equity de ${a}` })}
+        ${lineChart(ser, { w: 340, h: 130, pl: 34, pb: 6, aria: `${a} equity` })}
         <div class="nums"><span style="color:${colA}">${ra ? fmtP(ra.m.total_return_pct) + " · DD " + ra.m.max_drawdown_pct.toFixed(0) + "%" : "—"}</span>
         <span style="color:${colB}">${rb ? fmtP(rb.m.total_return_pct) + " · DD " + rb.m.max_drawdown_pct.toFixed(0) + "%" : "—"}</span></div></div>`;
     }).join("");
@@ -1066,13 +1076,13 @@ new MutationObserver(drawFlow).observe(document.documentElement, { attributes: t
       const a = box.dataset.acc, ra = findRun(A, a), rb = findRun(B, a);
       const ref = rb || ra;
       const s0 = ref ? new Date(ref.start) : null, step = a === "SUB4" ? 1 : 7;
-      hover(box, [{ label: "antes", color: colA, pts: ra ? ra.curve : [] }, { label: "después", color: colB, pts: rb ? rb.curve : [] }],
+      hover(box, [{ label: "before", color: colA, pts: ra ? ra.curve : [] }, { label: "after", color: colB, pts: rb ? rb.curve : [] }],
         i => s0 ? new Date(s0.getTime() + i * step * 864e5).toISOString().slice(0, 10) : "");
     });
 
     const row = (a, r) => r ? `<td class="${cls(r.m.total_return_pct)}">${fmtP(r.m.total_return_pct)}</td><td>${r.m.max_drawdown_pct.toFixed(1)}%</td><td>${(r.m.sharpe ?? 0).toFixed(2)}</td><td>${r.m.closed_trades}</td>` : "<td>—</td><td>—</td><td>—</td><td>—</td>";
-    $("#table").innerHTML = `<table><thead><tr><th>Estrategia</th><th colspan="4">${A.label}</th><th colspan="4">${B.label}</th></tr>
-      <tr><th></th><th>Retorno</th><th>Máx. DD</th><th>Sharpe</th><th>Ops.</th><th>Retorno</th><th>Máx. DD</th><th>Sharpe</th><th>Ops.</th></tr></thead><tbody>
+    $("#table").innerHTML = `<table><thead><tr><th>Strategy</th><th colspan="4">${A.label}</th><th colspan="4">${B.label}</th></tr>
+      <tr><th></th><th>Return</th><th>Max. DD</th><th>Sharpe</th><th>Trades</th><th>Return</th><th>Max. DD</th><th>Sharpe</th><th>Trades</th></tr></thead><tbody>
       ${ACC.map(a => `<tr><td>${a} · ${NAMES[a]}</td>${row(a, findRun(A, a))}${row(a, findRun(B, a))}</tr>`).join("")}</tbody></table>`;
   }
   render();
