@@ -162,7 +162,7 @@ class ScalpingStrategy(Strategy):
         import ccxt.pro as ccxtpro
 
         ws = ccxtpro.bitget({"options": {"defaultType": "swap"}})
-        if self.ctx.settings.trading_mode == "demo":
+        if self.ctx.settings.mode_for(self.account_id) == "demo":
             ws.set_sandbox_mode(True)
         last_open = None
         try:

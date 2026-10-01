@@ -242,3 +242,51 @@ async def test_max_hold_closes_old_positions(ctx):
         assert await client.positions() == []
     finally:
         clock.set_time(None)
+
+
+def test_account_mode_never_more_real_than_global():
+    from kriptty.config import Settings
+    s = Settings(trading_mode="live", confirm_live_trading="yes", account_modes="SUB4=demo, SUB1=dry_run")
+    assert (s.mode_for("SUB4"), s.mode_for("sub1"), s.mode_for("SUB5")) == ("demo", "dry_run", "live")
+    s = Settings(trading_mode="demo", account_modes="SUB4=live")
+    assert s.mode_for("SUB4") == "demo"  # nunca más real que TRADING_MODE
+    with pytest.raises(ValueError):
+        Settings(account_modes="SUB4=real").mode_for("SUB4")
+
+
+def test_demo_account_uses_sandbox_client(monkeypatch):
+    from kriptty.config import Settings
+    from kriptty.exchange.router import AccountRouter
+    from kriptty.state import StateStore
+    for acc in ("SUB4", "SUB5"):
+        for part in ("API_KEY", "SECRET", "PASSPHRASE"):
+            monkeypatch.setenv(f"BITGET_{acc}_{part}", "x")
+    router = AccountRouter(Settings(trading_mode="live", confirm_live_trading="yes", account_modes="SUB4=demo",
+                                    state_path=":memory:"), StateStore(":memory:"))
+    assert router.client("SUB4").mode == "demo" and router.client("SUB5").mode == "live"
+
+
+def test_margin_limit_per_account(ctx):
+    ctx.settings.max_margin_pct = 0.2
+    ctx.settings.max_margin_by_account = "SUB2=0.1"
+    assert ctx.router.capital_limit("SUB2") == pytest.approx(0.1)
+    assert ctx.router.capital_limit("SUB9") == pytest.approx(0.2)
+
+
+async def test_graduation_flags_demo_account(ctx):
+    from kriptty import clock
+    ctx.settings.trading_mode = "demo"
+    ctx.settings.graduation_days = 90
+    router, client = ctx.router, ctx.router.client("SUB4")
+    try:
+        clock.set_time(1_800_000_000)
+        assert not (await router.track_stage("SUB4"))["ready"]
+        client.usdt["swap"] += 500  # gana un 2,5% sin drawdown
+        clock.set_time(1_800_000_000 + 60 * 86400)
+        assert not (await router.track_stage("SUB4"))["ready"]  # aún no han pasado 90 días
+        clock.set_time(1_800_000_000 + 91 * 86400)
+        assert (await router.track_stage("SUB4"))["ready"]
+        (st,) = router.agents_status(["SUB4"])
+        assert st["mode"] == "demo" and st["ready_to_graduate"] and st["return_pct"] == pytest.approx(2.5)
+    finally:
+        clock.set_time(None)

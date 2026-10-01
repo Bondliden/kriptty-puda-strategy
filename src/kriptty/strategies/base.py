@@ -58,6 +58,7 @@ class Strategy(ABC):
     async def safe_run(self) -> None:
         """Envoltorio para el scheduler: un fallo no tumba el motor."""
         try:
+            await self.ctx.router.track_stage(self.account_id)
             await self.enforce_max_hold()
             await self.run_cycle()
             self.last_error = None

@@ -171,6 +171,16 @@ código que opera en vivo (162 ejecuciones). Mide supervivencia y control del ri
     de estrés se paró en las 9 trayectorias a los 1–13 meses, antes de las caídas que debía cubrir.
     Ahora pausa 7 días y reinicia el máximo; la parada dura del router (−40%) sigue por encima.
 
+### Las 11 subcuentas: modo y límite por agente
+- `ACCOUNT_MODES` (p. ej. `SUB4=demo`): cada subcuenta puede operar en dry_run, demo o real por
+  separado, nunca en un modo más real que `TRADING_MODE`. Las subcuentas en demo usan sus claves de
+  Bitget Demo Trading.
+- `MAX_MARGIN_BY_ACCOUNT` (p. ej. `SUB2=0.1`): límite de capital propio para los satélites.
+- Graduación: el router registra la etapa de cada subcuenta (días en su modo, resultado, drawdown) y
+  avisa una vez cuando una subcuenta en demo cumple `GRADUATION_DAYS` en beneficio y con drawdown
+  ≤ `GRADUATION_MAX_DD`. No cambia de modo por su cuenta. Consulta: `kriptty-engine --status` y la
+  herramienta MCP `get_agents_status`.
+
 ### Apalancamiento de la cuenta short (SUB5)
 `scripts/hedge_short.py` combina SUB5 a 2x, 3x, 5x, 7x y 10x (margen ≤ 20%, riesgo escalado) con las
 demás cuentas. La beta a la baja de las demás (días con BTC < −3%) suma ≈ 0,47 por cuenta

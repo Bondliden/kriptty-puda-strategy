@@ -79,6 +79,19 @@ class Settings(BaseSettings):
     # Apalancamiento por subcuenta, p. ej. "SUB6=3,SUB9=3,SUB10=3". Escala también el riesgo por
     # operación en la misma proporción (como el test de estrés con --scale-risk).
     leverage: str = ""
+    # Modo por subcuenta, p. ej. "SUB1=demo,SUB4=demo,SUB7=demo": las agentes nuevas o dudosas
+    # operan en Bitget Demo mientras el resto opera con dinero real. Una subcuenta nunca puede ir
+    # en un modo más real que TRADING_MODE (dry_run < demo < live): si TRADING_MODE=demo, "SUB4=live"
+    # se queda en demo. Las subcuentas en demo usan sus claves de Demo Trading (BITGET_SUBn_*).
+    account_modes: str = ""
+    # Límite de capital por subcuenta (sustituye a MAX_MARGIN_PCT en esa subcuenta), p. ej.
+    # "SUB2=0.1,SUB11=0.1" para los satélites: como mucho 100.000 $ de una subcuenta de 1 M$.
+    max_margin_by_account: str = ""
+    # Graduación: una subcuenta en demo está lista para dinero real cuando lleva al menos
+    # GRADUATION_DAYS días, gana y su drawdown máximo no pasa de GRADUATION_MAX_DD. El bot solo lo
+    # avisa (log y MCP): el paso a dinero real lo decide una persona cambiando ACCOUNT_MODES.
+    graduation_days: int = 90
+    graduation_max_dd: float = 0.10
     ramp_step_days: int = 30
     ramp_step_back_pct: float = 0.05
     # Cuentas que acumulan en caídas por diseño (DCA) y quedan fuera del corte.
@@ -110,6 +123,27 @@ class Settings(BaseSettings):
     # sesión, así que por defecto el servidor HTTP es stateless (sin sesiones que caduquen).
     mcp_stateless_http: bool = True
     mcp_session_idle_timeout: float = 1800.0
+
+    @staticmethod
+    def _pairs(raw: str) -> dict[str, str]:
+        out = {}
+        for item in raw.split(","):
+            if "=" in item:
+                acc, value = item.split("=", 1)
+                out[acc.strip().upper()] = value.strip()
+        return out
+
+    def mode_for(self, account_id: str) -> str:
+        """Modo de la subcuenta: el de ACCOUNT_MODES, sin pasar nunca de TRADING_MODE."""
+        order = ["dry_run", "demo", "live"]
+        wanted = self._pairs(self.account_modes).get(account_id.upper(), self.trading_mode)
+        if wanted not in order:
+            raise ValueError(f"ACCOUNT_MODES: modo desconocido {wanted!r} para {account_id}")
+        return order[min(order.index(wanted), order.index(self.trading_mode))]
+
+    def margin_limit_for(self, account_id: str) -> float:
+        value = self._pairs(self.max_margin_by_account).get(account_id.upper())
+        return min(1.0, float(value) if value is not None else self.max_margin_pct)
 
     @property
     def leverage_map(self) -> dict[str, int]:

@@ -126,15 +126,38 @@ async def run_once(account_id: str) -> None:
         await ctx.router.close()
 
 
+async def print_status() -> None:
+    ctx = build_context()
+    try:
+        accounts = sorted(ctx.settings.enabled, key=lambda a: int(a[3:]))
+        for acc in accounts:  # actualiza la etapa con el equity actual
+            try:
+                await ctx.router.track_stage(acc)
+            except Exception as e:  # noqa: BLE001 — sin claves o sin conexión: se muestra lo guardado
+                log.warning("[%s] sin datos actuales: %s", acc, e)
+        print(f"{'Agente':7} {'Modo':8} {'Límite':>9} {'Días':>6} {'Resultado':>10} {'DD máx':>8}  Graduación")
+        for r in ctx.router.agents_status(accounts):
+            ret = "—" if r["return_pct"] is None else f"{r['return_pct']:+.1f}%"
+            grad = "lista" if r["ready_to_graduate"] else ("—" if r["mode"] == "live" else "en curso")
+            print(f"{r['account']:7} {r['mode']:8} {r['capital_limit_pct']:>8.1f}% {r['days_in_mode']:>6} "
+                  f"{ret:>10} {r['max_dd_pct']:>7.1f}%  {grad}")
+    finally:
+        await ctx.router.close()
+
+
 def cli() -> None:
     parser = argparse.ArgumentParser(description="Kriptty Puda Strategy — motor de trading")
     parser.add_argument("--once", metavar="SUBx", help="ejecuta un único ciclo de una estrategia")
     parser.add_argument("--only", metavar="SUB1,SUB2", help="limita las estrategias a arrancar")
+    parser.add_argument("--status", action="store_true",
+                        help="muestra el estado de cada agente (modo, límite, etapa, graduación) y sale")
     args = parser.parse_args()
     logging.basicConfig(level=get_settings().log_level,
                         format="%(asctime)s | %(name)-28s | %(levelname)-7s | %(message)s")
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
-    if args.once:
+    if args.status:
+        asyncio.run(print_status())
+    elif args.once:
         asyncio.run(run_once(args.once))
     else:
         only = {s.strip().upper() for s in args.only.split(",")} if args.only else None

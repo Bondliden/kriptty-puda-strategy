@@ -36,7 +36,7 @@ WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=True, open_world_
 mcp = MCPServer(
     "kriptty",
     instructions=(
-        "Sistema de trading Kriptty en Bitget: MAIN + SUB1..SUB9, una estrategia por subcuenta. "
+        "Sistema de trading Kriptty en Bitget: MAIN + SUB1..SUB11, una estrategia (agente) por subcuenta. "
         f"Modo actual: {settings.trading_mode}. Toda orden requiere stop_loss. "
         + ("Servidor en solo lectura." if settings.mcp_read_only else "Escritura habilitada.")
     ),
@@ -52,8 +52,16 @@ def _check_account(account_id: str) -> str:
 
 @mcp.tool(annotations=READ)
 async def list_accounts() -> dict:
-    """Lista las cuentas del sistema y la estrategia asignada a cada una."""
-    return {"mode": settings.trading_mode, "enabled": sorted(settings.enabled), "accounts": ACCOUNT_DESCRIPTIONS}
+    """Lista las cuentas del sistema, la estrategia asignada a cada una y su modo."""
+    return {"mode": settings.trading_mode, "enabled": sorted(settings.enabled), "accounts": ACCOUNT_DESCRIPTIONS,
+            "modes": {acc: settings.mode_for(acc) for acc in ACCOUNT_DESCRIPTIONS}}
+
+
+@mcp.tool(annotations=READ)
+async def get_agents_status() -> list[dict]:
+    """Estado de cada agente (una estrategia por subcuenta): modo (dry_run/demo/live), límite de
+    capital actual con la rampa, días en el modo, resultado, drawdown y si está lista para graduarse."""
+    return ctx.router.agents_status(sorted(settings.enabled, key=lambda a: int(a[3:])))
 
 
 @mcp.tool(annotations=READ)
