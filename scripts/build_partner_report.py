@@ -38,10 +38,10 @@ T = {
         "h1": "Six years of real markets: what each strategy delivered",
         "sub": ("Backtest from October 2020 to August 2026 · 8 subaccounts of $1M with the plan's settings · "
                 "the same code that will trade live"),
-        "kpi": ["portfolio over 6 years ({usd} on $8M)", "worst portfolio drawdown (BTC: {btc})",
+        "kpi": ["portfolio over 6 years ({usd} on $8M); {cagr} a year on average", "worst portfolio drawdown (BTC: {btc})",
                 "worst portfolio year (annual loss cap ≈ 4%)", "during LUNA and Celsius (BTC: {btc_luna})"],
         "h_table": "Each strategy, year by year",
-        "th": ["Strategy", "6 years", "Max. fall", "Decision"],
+        "th": ["Strategy", "6 years", "Per year", "Max. fall", "Decision"],
         "roles": {"SUB2": "Statistical arbitrage", "SUB5": "Downside hedge", "SUB6": "Funding · neutral",
                   "SUB7": "Grid", "SUB8": "Periodic buying (spot)", "SUB9": "Hedged long",
                   "SUB10": "Pairs · neutral", "SUB11": "Trend following"},
@@ -62,7 +62,7 @@ T = {
         "c1": ("Over six years the portfolio never fell more than {dd}, while BTC fell as much as {btc_dd}. Its worst year "
                "was {wy}, within the annual cap. It made money during LUNA and was essentially flat during FTX."),
         "c2h": "The returns are not there yet",
-        "c2": ("In total it made {tot} ({usd}). That is why we are not giving a return target yet: it will be set with the "
+        "c2": ("In total it made {tot} ({usd}), {cagr} a year on average ({usd_y} a year). That is why we are not giving a return target yet: it will be set with the "
                "adjusted agents and 6 months on demo."),
         "c3h": "What works",
         "c3": "{keep}. SUB5 contributes the most: {sub5}, with its best year in 2022, when the market fell hardest.",
@@ -89,10 +89,10 @@ T = {
         "h1": "Seis años de mercado real: qué ha dado cada estrategia",
         "sub": ("Backtest de octubre 2020 a agosto 2026 · 8 subcuentas de 1 M$ con la configuración del plan · "
                 "el mismo código que operará en real"),
-        "kpi": ["cartera en 6 años ({usd} sobre 8 M$)", "peor caída de la cartera (BTC: {btc})",
+        "kpi": ["cartera en 6 años ({usd} sobre 8 M$); de media, {cagr} al año", "peor caída de la cartera (BTC: {btc})",
                 "peor año de la cartera (tope anual de pérdidas ≈ 4%)", "durante LUNA y Celsius (BTC: {btc_luna})"],
         "h_table": "Resultado de cada estrategia, año a año",
-        "th": ["Estrategia", "6 años", "Peor caída", "Decisión"],
+        "th": ["Estrategia", "6 años", "Por año", "Peor caída", "Decisión"],
         "roles": {"SUB2": "Arbitraje estadístico", "SUB5": "Cobertura en caídas", "SUB6": "Funding · neutral",
                   "SUB7": "Grid", "SUB8": "Compra periódica (spot)", "SUB9": "Largo cubierto",
                   "SUB10": "Pares · neutral", "SUB11": "Seguimiento de tendencia"},
@@ -113,7 +113,7 @@ T = {
         "c1": ("En seis años la cartera nunca cayó más de un {dd}, mientras BTC llegó a caer un {btc_dd}. Su peor año fue "
                "un {wy}, dentro del tope anual. En LUNA ganó y en FTX se quedó prácticamente plana."),
         "c2h": "El rendimiento, todavía no",
-        "c2": ("En total suma un {tot} ({usd}). Por eso no damos aún un objetivo de rentabilidad: se fijará con los "
+        "c2": ("En total suma un {tot} ({usd}): de media, un {cagr} al año ({usd_y} al año). Por eso no damos aún un objetivo de rentabilidad: se fijará con los "
                "agentes ajustados y 6 meses en demo."),
         "c3h": "Lo que funciona",
         "c3": "{keep}. SUB5 es la que más aporta: {sub5}, y su mejor año fue 2022, cuando más cayó el mercado.",
@@ -173,18 +173,18 @@ def pages(lang: str, name: str) -> str:
         d = decision(a)
         rows.append(f'<tr><td><b>{a}</b><br><span class="muted" style="font-size:7.6pt">{t["roles"][a]}</span></td>'
                     + "".join(f'<td class="r {cls(yr(y, a))}">{p(yr(y, a))}</td>' for y in YEARS)
-                    + f'<td class="r {cls(R["total"][a])}"><b>{p(R["total"][a])}</b></td>'
+                    + f'<td class="r {cls(R["total"][a])}"><b>{p(R["total"][a])}</b></td><td class="r {cls(R["cagr"][a])}">{p(R["cagr"][a])}</td>'
                     f'<td class="r">{p(R["max_dd"][a])}</td><td class="dec {d}">{t["dec"][d]}</td></tr>')
     rows.append(f'<tr class="tot"><td>{t["port"]}</td>'
                 + "".join(f'<td class="r {cls(yr(y, "PORT"))}">{p(yr(y, "PORT"))}</td>' for y in YEARS)
-                + f'<td class="r {cls(R["total"]["PORT"])}">{p(R["total"]["PORT"])}</td><td class="r">{p(R["max_dd"]["PORT"])}</td><td></td></tr>')
+                + f'<td class="r {cls(R["total"]["PORT"])}">{p(R["total"]["PORT"])}</td><td class="r {cls(R["cagr"]["PORT"])}">{p(R["cagr"]["PORT"])}</td><td class="r">{p(R["max_dd"]["PORT"])}</td><td></td></tr>')
     rows.append(f'<tr class="btc"><td>{t["btc"]}</td>' + "".join(f'<td class="r">{p(yr(y, "BTC"))}</td>' for y in YEARS)
-                + f'<td class="r">{p(R["total"]["BTC"])}</td><td class="r">{p(R["max_dd"]["BTC"])}</td><td></td></tr>')
+                + f'<td class="r">{p(R["total"]["BTC"])}</td><td class="r">{p(R["cagr"]["BTC"])}</td><td class="r">{p(R["max_dd"]["BTC"])}</td><td></td></tr>')
     th = t["th"]
-    table = ('<table class="wide"><colgroup><col style="width:16%">' + '<col style="width:7%">' * len(YEARS)
-             + '<col style="width:8.5%"><col style="width:10%"><col style="width:16.5%"></colgroup>'
-             f'<tr><th>{th[0]}</th>{ycols}<th class="r">{th[1]}</th><th class="r">{th[2]}</th>'
-             f'<th>{th[3]}</th></tr>{"".join(rows)}</table>')
+    table = ('<table class="wide"><colgroup><col style="width:14%">' + '<col style="width:6.7%">' * len(YEARS)
+             + '<col style="width:8%"><col style="width:8%"><col style="width:8.5%"><col style="width:14.6%"></colgroup>'
+             f'<tr><th>{th[0]}</th>{ycols}<th class="r">{th[1]}</th><th class="r">{th[2]}</th><th class="r">{th[3]}</th>'
+             f'<th>{th[4]}</th></tr>{"".join(rows)}</table>')
 
     crow = []
     for key in CRISES:
@@ -207,13 +207,15 @@ def pages(lang: str, name: str) -> str:
                f'<tr><td>{t["usd_row"]}</td>{usd}<td class="r {cls(total_usd)}"><b>{money(total_usd, lang)}</b></td></tr></table>')
 
     kv = [p(R["total"]["PORT"]), p(R["max_dd"]["PORT"]), p(worst_year), p(R["crises"]["luna"]["PORT"])]
-    kf = {"usd": money(total_usd, lang), "btc": p(R["max_dd"]["BTC"]), "btc_luna": p(R["crises"]["luna"]["BTC"])}
+    kf = {"usd": money(total_usd, lang), "btc": p(R["max_dd"]["BTC"]), "btc_luna": p(R["crises"]["luna"]["BTC"]),
+          "cagr": p(R["cagr"]["PORT"])}
     kpis = '<div class="kpis">' + "".join(f'<div class="kpi"><b>{v}</b><span>{lab.format(**kf)}</span></div>'
                                           for v, lab in zip(kv, t["kpi"], strict=True)) + "</div>"
     f = {"dd": absp(R["max_dd"]["PORT"]), "btc_dd": absp(R["max_dd"]["BTC"]), "wy": p(worst_year),
          "tot": p(R["total"]["PORT"]), "usd": money(total_usd, lang), "keep": join(keep, lang),
          "sub5": p(R["total"]["SUB5"]), "review": join(review, lang), "sub10": p(R["total"]["SUB10"]),
-         "a": p(R["total"]["SUB2"]), "b": p(R["restart"]["SUB2"])}
+         "a": p(R["total"]["SUB2"]), "b": p(R["restart"]["SUB2"]), "cagr": p(R["cagr"]["PORT"]),
+         "usd_y": money(R["usd_per_year"], lang)}
     cards = "".join(f'<div class="card"><h3>{t[h]}</h3><p class="muted" style="margin:0">{t[c].format(**f)}</p></div>'
                     for h, c in (("c1h", "c1"), ("c2h", "c2"), ("c3h", "c3"), ("c4h", "c4")))
     p1 = (f'<div class="page"><div class="bar"></div><p class="kicker">{t["kicker"].format(name=name)}</p>'

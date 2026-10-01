@@ -68,7 +68,8 @@ T = {
         "note_crisis": ("Variación de la cartera y de BTC entre el inicio y el final de cada periodo. "
                         "Mientras BTC caía, la cuenta en corto (SUB5) y las estrategias neutrales compensaban a los largos."),
         "h_agents": "Agente por agente: qué aporta y qué se revisa",
-        "th_agents": ["Agente", "Papel", "6 años", "Peor caída", "Mejor año", "Decisión"],
+        "th_agents": ["Agente", "Papel", "6 años", "Por año", "Peor caída", "Mejor año", "Decisión"],
+        "avg": "Media anual",
         "roles": {"SUB2": "Arbitraje estadístico", "SUB5": "Cobertura en caídas", "SUB6": "Funding · neutral",
                   "SUB7": "Grid", "SUB8": "DCA de fondo (spot)", "SUB9": "Largo cubierto",
                   "SUB10": "Pares · neutral", "SUB11": "SuperTrend"},
@@ -137,7 +138,8 @@ T = {
         "note_crisis": ("Change in the portfolio and in BTC from the start to the end of each period. While BTC fell, "
                         "the short account (SUB5) and the neutral strategies offset the long ones."),
         "h_agents": "Agent by agent: what each one adds and what is under review",
-        "th_agents": ["Agent", "Role", "6 years", "Worst drawdown", "Best year", "Decision"],
+        "th_agents": ["Agent", "Role", "6 years", "Per year", "Worst drawdown", "Best year", "Decision"],
+        "avg": "Average per year",
         "roles": {"SUB2": "Statistical arbitrage", "SUB5": "Downside hedge", "SUB6": "Funding · neutral",
                   "SUB7": "Grid", "SUB8": "Long-term DCA (spot)", "SUB9": "Hedged long",
                   "SUB10": "Pairs · neutral", "SUB11": "SuperTrend"},
@@ -211,6 +213,7 @@ def compute(folder: Path, data: Path) -> dict:
     usd = (level.diff().dropna() * len(agents) * CAPITAL)
     usd.index = usd.index.year
     dd = ((eq / eq.cummax()) - 1).min() * 100
+    span = (eq.index[-1] - eq.index[0]).days / 365.25  # años del periodo (2020 y 2026 incompletos)
     crises = {}
     for key, a, b in CRISES:
         s = eq.loc[a:b]
@@ -222,6 +225,9 @@ def compute(folder: Path, data: Path) -> dict:
         "years": {int(y): {k: round(float(v), 2) for k, v in row.items()} for y, row in years.iterrows()},
         "years_usd": {int(y): round(float(v)) for y, v in usd.items()},
         "total": {k: round(float((eq[k].iloc[-1] / eq[k].iloc[0] - 1) * 100), 2) for k in eq.columns},
+        "years_span": round(span, 3),
+        "cagr": {k: round(float(((eq[k].iloc[-1] / eq[k].iloc[0]) ** (1 / span) - 1) * 100), 3) for k in eq.columns},
+        "usd_per_year": round(float(usd.sum() / span)),
         "max_dd": {k: round(float(v), 2) for k, v in dd.items()},
         "crises": {k: {a: round(float(v), 2) for a, v in d.items()} for k, d in crises.items()},
         "trades": {a: int(runs[a]["metrics"].get("closed_trades") or 0) for a in agents},
@@ -274,6 +280,8 @@ def slide_years(r: dict, lang: str) -> str:
     t = T[lang]
     rows = [f'<tr><td><b>{y}</b></td><td>{t["events"][y]}</td>{cell(r["years"][y]["BTC"], lang)}'
             f'{cell(r["years"][y]["PORT"], lang, True)}</tr>' for y in sorted(r["years"])]
+    rows.append(f'<tr style="background:#EFEADC"><td colspan="2"><b>{t["avg"]}</b></td>{cell(r["cagr"]["BTC"], lang, True)}'
+                f'{cell(r["cagr"]["PORT"], lang, True)}</tr>')
     worst_year = min(r["years"].values(), key=lambda d: d["PORT"])["PORT"]
     body = ('<div style="display:flex;gap:40px;align-items:start"><div style="flex:2">'
             + table(t["th_year"], [9, 51, 18, 22], rows, 24)
@@ -315,14 +323,14 @@ def slide_agents(r: dict, lang: str) -> str:
         best = max(r["years"], key=lambda y: r["years"][y][a])
         v = verdict(r, a)
         vc = {"keep": GREEN, "review": "#7A5C0E", "drop": RED}[v]
-        rows.append(f'<tr><td><b>{a}</b></td><td>{t["roles"][a]}</td>{cell(r["total"][a], lang, True)}'
+        rows.append(f'<tr><td><b>{a}</b></td><td>{t["roles"][a]}</td>{cell(r["total"][a], lang, True)}{cell(r["cagr"][a], lang)}'
                     f'<td style="text-align:right">{pct(r["max_dd"][a], lang)}</td>'
                     f'<td style="text-align:right">{(str(best) + " · " + pct(r["years"][best][a], lang)) if r["years"][best][a] > 0.05 else "—"}</td>'
                     f'<td style="color:{vc};font-weight:600">{t["verdict"][v]}</td></tr>')
     rows.append(f'<tr style="background:#EFEADC"><td><b>{"Cartera" if lang == "es" else "Portfolio"}</b></td>'
-                f'<td>{"8 subcuentas" if lang == "es" else "8 subaccounts"}</td>{cell(r["total"]["PORT"], lang, True)}'
+                f'<td>{"8 subcuentas" if lang == "es" else "8 subaccounts"}</td>{cell(r["total"]["PORT"], lang, True)}{cell(r["cagr"]["PORT"], lang, True)}'
                 f'<td style="text-align:right">{pct(r["max_dd"]["PORT"], lang)}</td><td></td><td></td></tr>')
-    body = table(t["th_agents"], [11, 26, 12, 15, 17, 19], rows, 23, right=(2, 3, 4)) + "\n"
+    body = table(t["th_agents"], [10, 23, 11, 11, 13, 15, 17], rows, 23, right=(2, 3, 4, 5)) + "\n"
     return (SECTION.format(id="real-agentes", gap=28) + KICKER.format(t["kicker"]) + H2.format(size=64, text=t["h_agents"])
             + body + NOTE.format(t["note_agents"].format(sub2_restart=pct(r.get("restart", {}).get("SUB2", float("nan")), lang)))
             + FOOT.format(t["footer"]))
@@ -336,6 +344,8 @@ def slide_returns(r: dict, lang: str) -> str:
     tot = r["total"]["PORT"]
     rows.append(f'<tr style="background:#EFEADC"><td><b>{t["ret_total"]}</b></td>{cell(tot, lang, True)}'
                 f'<td style="text-align:right;color:{color(tot)}"><b>{money(sum(r["years_usd"].values()), lang)}</b></td></tr>')
+    rows.append(f'<tr style="background:#EFEADC"><td><b>{t["avg"]}</b></td>{cell(r["cagr"]["PORT"], lang, True)}'
+                f'<td style="text-align:right;color:{color(r["cagr"]["PORT"])}"><b>{money(r["usd_per_year"], lang)}</b></td></tr>')
     card = "".join(f'<p style="font-size:25px;line-height:1.4;color:#4A5568">{p}</p>' for p in t["ret_card"])
     body = (f'<div style="display:flex;gap:48px;align-items:start"><div style="flex:1.3;display:flex;flex-direction:column;gap:16px">'
             f'<p style="font-size:26px;font-weight:700;color:#10172A">{t["ret_table_title"]}</p>'

@@ -127,7 +127,7 @@ L = {
         "s3p": [
             ("El backtest real confirma que el capital está protegido: en el peor año la cartera perdió un {wy}, dentro del "
              "tope anual del ≈ 4%. <b>No respalda todavía un objetivo de rentabilidad:</b> en seis años la cartera suma "
-             "{total} sobre el capital total de las subcuentas. Por eso retiramos el objetivo interno del 3–5% mensual "
+             "{total} sobre el capital total de las subcuentas, un {cagr} al año de media. Por eso retiramos el objetivo interno del 3–5% mensual "
              "hasta tener datos que lo sostengan."),
             ("Antes de usar dinero real se ajustan o retiran los agentes más débiles ({review} están en revisión), se repite el backtest y el sistema pasa 6 meses en el entorno demo de Bitget."),
         ],
@@ -171,7 +171,7 @@ L = {
         "band_kpi": [("peor caída de la cartera (BTC: {btc})", "dd"), ("peor año de la cartera", "wy"),
                      ("durante LUNA y Celsius (BTC: {luna_btc})", "luna"), ("durante FTX (BTC: {ftx_btc})", "ftx")],
         "band_note": ("8 subcuentas con la configuración del plan sobre el histórico real de 104 criptomonedas. El riesgo "
-                      "está probado; la rentabilidad, no: {total} en seis años. El objetivo se fijará tras ajustar los "
+                      "está probado; la rentabilidad, no: {total} en seis años ({cagr} al año de media). El objetivo se fijará tras ajustar los "
                       "agentes y 6 meses en demo."),
         "tok_th": ["Token (61,74 M PUDA)", "%"], "use_th": ["Uso de los fondos", "%"],
         "tok": [("Venta", "15%"), ("Pool de liquidez", "5%"), ("Equipo y promoción (bloqueo de 1 año + liberación en 4)", "5%"),
@@ -232,7 +232,7 @@ L = {
         "s3p": [
             ("The real backtest confirms that the capital is protected: in its worst year the portfolio lost {wy}, within "
              "the ≈ 4% annual cap. <b>It does not yet support a return target:</b> over six years the portfolio made "
-             "{total} on the subaccounts' total capital. We are therefore withdrawing the internal 3–5% monthly target "
+             "{total} on the subaccounts' total capital, {cagr} a year on average. We are therefore withdrawing the internal 3–5% monthly target "
              "until there is data to support it."),
             ("Before any real money is used, the weakest agents are adjusted or retired ({review} are under review), the backtest is run again and the system spends 6 months on Bitget's demo environment."),
         ],
@@ -275,7 +275,7 @@ L = {
         "band_kpi": [("worst portfolio drawdown (BTC: {btc})", "dd"), ("worst portfolio year", "wy"),
                      ("during LUNA and Celsius (BTC: {luna_btc})", "luna"), ("during FTX (BTC: {ftx_btc})", "ftx")],
         "band_note": ("8 subaccounts with the plan's settings on the real history of 104 cryptocurrencies. The risk is "
-                      "proven; the returns are not: {total} over six years. The target will be set after adjusting the "
+                      "proven; the returns are not: {total} over six years ({cagr} a year on average). The target will be set after adjusting the "
                       "agents and 6 months on demo."),
         "tok_th": ["Token (61.74M PUDA)", "%"], "use_th": ["Use of funds", "%"],
         "tok": [("Sale", "15%"), ("Liquidity pool", "5%"), ("Team and promotion (1-year lock + 4-year release)", "5%"),
@@ -315,7 +315,8 @@ def letter(lang: str) -> str:
     review = [a for a in sorted(R["agents"], key=lambda a: R["total"][a])
               if R["total"][a] < 0 or R["max_dd"][a] < -20]
     joined = (", ".join(review[:-1]) + (" y " if lang == "es" else " and ") + review[-1]) if len(review) > 1 else "".join(review)
-    fmt = {"wy": pct(abs(WORST_Y), lang).lstrip("+"), "total": pct(TOTAL, lang), "review": joined}
+    fmt = {"wy": pct(abs(WORST_Y), lang).lstrip("+"), "total": pct(TOTAL, lang), "review": joined,
+           "cagr": pct(R["cagr"]["PORT"], lang)}
     year_tab = (f'<table style="margin-top:2mm"><tr><th>{t["s2tab"]}</th>'
                 + "".join(f'<th class="r">{a}</th>' for a in YEARS) + "</tr>"
                 + f'<tr><td>{t["th"][1]}</td>' + "".join(f'<td class="r {cls(y(a, "PORT"))}">{pct(y(a, "PORT"), lang)}</td>' for a in YEARS) + "</tr>"
@@ -345,7 +346,7 @@ def one_page(lang: str) -> str:
     body = (f'<div class="page one"><div class="bar"></div><p class="kicker">{t["one_kicker"]}</p><h1>{t["one_h1"]}</h1>'
             f'<p class="sub">{t["one_sub"]}</p><div class="grid2">{boxes}</div>'
             f'<h2>{t["band"]}</h2>' + kpis(t, "band_kpi")
-            + f'<p class="small">{t["band_note"].format(total=pct(TOTAL, lang))}</p>'
+            + f'<p class="small">{t["band_note"].format(total=pct(TOTAL, lang), cagr=pct(R["cagr"]["PORT"], lang))}</p>'
             + f'<div class="grid2" style="margin-top:4mm"><table><tr><th>{t["tok_th"][0]}</th><th class="r">{t["tok_th"][1]}</th></tr>{tok}</table>'
             + f'<table><tr><th>{t["use_th"][0]}</th><th class="r">{t["use_th"][1]}</th></tr>{use}</table></div>'
             + f'<table style="margin-top:4mm"><tr><th style="width:18%">{t["time_th"][0]}</th><th>{t["time_th"][1]}</th></tr>{tl}</table>'
