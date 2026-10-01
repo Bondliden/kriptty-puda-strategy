@@ -107,7 +107,7 @@ def main() -> None:
                  .fillna(0).values.tolist()},
     }
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(a.out).write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
+    Path(a.out).write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(json.dumps({k: out[k] for k in ("period", "agents", "portfolio", "btc")}, indent=1, ensure_ascii=False))
     print("Años:", json.dumps({y: v["total"] for y, v in yearly.items()}))
     for c in out["crises"]:
