@@ -507,7 +507,7 @@ MAX_MARGIN_PCT=0.2 kriptty-backtest --strategy SUB9 …</pre>
 <!-- 13 · C3 Estrés -->
 <section class="slide" aria-label="Test de estrés" data-tab="estres">
   <span class="kicker"><span class="tag-c">C · Bot</span> Test de estrés de 3 años · mercados sintéticos</span>
-  <h2>Antes y después de los arreglos</h2>
+  <h2>Tres años de mercados extremos</h2>
   <div class="row grow">
     <div class="col wide">
       <div class="seg" id="seg-sc13" role="group" aria-label="Escenario"></div>
@@ -520,21 +520,6 @@ MAX_MARGIN_PCT=0.2 kriptty-backtest --strategy SUB9 …</pre>
     </div>
   </div>
   <footer><span>C · Bot</span><span>13</span></footer>
-</section>
-
-<!-- 14 · C4 Qué falló -->
-<section class="slide" aria-label="Lo que encontró el test" data-tab="estres">
-  <span class="kicker"><span class="tag-c">C · Bot</span> Lo que encontró el test</span>
-  <h2>Seis fallos que habrían costado dinero real</h2>
-  <div class="grid3">
-    <div class="box"><h3>Apalancamiento oculto</h3><p>SUB2 y SUB11 llegaban a 9× el capital. Ahora el tope cuenta lo abierto.</p></div>
-    <div class="box"><h3>Backtester sin margen</h3><p>Permitía posiciones que el exchange rechazaría. Ahora exige margen.</p></div>
-    <div class="box"><h3>SUB6 en bucle</h3><p>Abría y deshacía pares pagando comisiones. Corregido.</p></div>
-    <div class="box"><h3>SUB7 y SUB4</h3><p>Perdían en todos los escenarios (−95% y −52% en un mes). Desactivadas.</p></div>
-    <div class="box"><h3>Pausas encadenadas</h3><p>Caídas del 25% una tras otra. Nueva parada dura al 40%.</p></div>
-    <div class="box"><h3>Margen sin límite</h3><p>Nuevo límite del 20% del capital por cuenta, aplicado a cada orden.</p></div>
-  </div>
-  <footer><span>C · Bot</span><span>14</span></footer>
 </section>
 
 <!-- E0 · Las 11 subcuentas -->
@@ -606,7 +591,7 @@ MAX_HOLD_HOURS=48</pre>
     </div>
     <div class="col">
       <div class="kpis" id="kpis-hg"></div>
-      <div class="callout"><b>Fallo corregido:</b> tras su primer −5% la SUB5 se paraba para siempre (en el test dejó de operar a los 1–13 meses, antes de las caídas). Ahora pausa 7 días y vuelve.</div>
+      <div class="callout"><b>Cómo cubre:</b> espera en efectivo y entra en corto cuando el macro y el precio giran a la baja; si pierde un 5% hace una pausa de 7 días y vuelve.</div>
     </div>
   </div>
   <footer><span>C · Bot</span><span>15</span></footer>

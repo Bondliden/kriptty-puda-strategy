@@ -92,6 +92,12 @@ class Settings(BaseSettings):
     # avisa (log y MCP): el paso a dinero real lo decide una persona cambiando ACCOUNT_MODES.
     graduation_days: int = 90
     graduation_max_dd: float = 0.10
+    # Presupuesto de pérdidas del sistema (USD por año natural), sumando todas las subcuentas que
+    # operan con dinero real. Al agotarse, ninguna subcuenta abre posiciones hasta el año siguiente
+    # (las abiertas siguen con su stop loss). Pensado para que la reserva que respalda PUDA nunca
+    # pierda capital: el presupuesto se fija igual o por debajo del rendimiento anual de la reserva.
+    # 0 = sin presupuesto global.
+    annual_loss_budget_usd: float = 0.0
     ramp_step_days: int = 30
     ramp_step_back_pct: float = 0.05
     # Cuentas que acumulan en caídas por diseño (DCA) y quedan fuera del corte.

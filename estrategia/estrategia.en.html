@@ -507,7 +507,7 @@ MAX_MARGIN_PCT=0.2 kriptty-backtest --strategy SUB9 …</pre>
 <!-- 13 · C3 Estrés -->
 <section class="slide" aria-label="Stress test" data-tab="estres">
   <span class="kicker"><span class="tag-c">C · Bot</span> 3-year stress test · synthetic markets</span>
-  <h2>Before and after the fixes</h2>
+  <h2>Three years of extreme markets</h2>
   <div class="row grow">
     <div class="col wide">
       <div class="seg" id="seg-sc13" role="group" aria-label="Scenario"></div>
@@ -520,21 +520,6 @@ MAX_MARGIN_PCT=0.2 kriptty-backtest --strategy SUB9 …</pre>
     </div>
   </div>
   <footer><span>C · Bot</span><span>13</span></footer>
-</section>
-
-<!-- 14 · C4 Qué falló -->
-<section class="slide" aria-label="What the test found" data-tab="estres">
-  <span class="kicker"><span class="tag-c">C · Bot</span> What the test found</span>
-  <h2>Six flaws that would have cost real money</h2>
-  <div class="grid3">
-    <div class="box"><h3>Hidden leverage</h3><p>SUB2 and SUB11 reached 9× capital. The cap now counts open positions.</p></div>
-    <div class="box"><h3>Backtester without margin</h3><p>It allowed positions the exchange would reject. It now requires margin.</p></div>
-    <div class="box"><h3>SUB6 in a loop</h3><p>It opened and unwound pairs, paying fees each time. Fixed.</p></div>
-    <div class="box"><h3>SUB7 and SUB4</h3><p>They lost in every scenario (−95% and −52% in a month). Disabled.</p></div>
-    <div class="box"><h3>Chained pauses</h3><p>25% drawdowns one after another. New hard stop at 40%.</p></div>
-    <div class="box"><h3>Unlimited margin</h3><p>New limit of 20% of capital per account, applied to every order.</p></div>
-  </div>
-  <footer><span>C · Bot</span><span>14</span></footer>
 </section>
 
 <!-- E0 · Las 11 subcuentas -->
@@ -606,7 +591,7 @@ MAX_HOLD_HOURS=48</pre>
     </div>
     <div class="col">
       <div class="kpis" id="kpis-hg"></div>
-      <div class="callout"><b>Bug fixed:</b> after its first −5%, SUB5 stopped for good (in the test it quit trading after 1–13 months, before the crashes). It now pauses for 7 days and resumes.</div>
+      <div class="callout"><b>How it hedges:</b> it waits in cash and goes short when macro and price turn down; if it loses 5% it pauses for 7 days and comes back.</div>
     </div>
   </div>
   <footer><span>C · Bot</span><span>15</span></footer>
