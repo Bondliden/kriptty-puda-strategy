@@ -87,6 +87,7 @@ def summary(rows: list[dict]) -> list[dict]:
         out.append({"set": s, "portfolio": p, "paths": len(rs),
                     "median_month": round(float(np.median(months)), 2),
                     "mean_month": round(float(np.mean(months)), 2),
+                    "share_ge_3": round(float(np.mean(months >= 3)) * 100, 1),
                     "share_ge_5": round(float(np.mean(months >= 5)) * 100, 1),
                     "share_le_m10": round(float(np.mean(months <= -10)) * 100, 1),
                     "worst_month": round(float(months.min()), 2),

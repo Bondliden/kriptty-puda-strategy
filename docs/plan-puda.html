@@ -1,0 +1,803 @@
+<title>Plan PUDA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Plan PUDA — Layout: presentación 16:9 (lienzo de 1280×720 escalado a la ventana) con la misma secuencia que
+   «🤖 Sistema de Trading Algorítmico — Presentación y Confirmación de Directrices»: Paso 1 → Paso 5.
+   En pantallas estrechas las diapositivas se apilan en scroll. Look único oscuro de marca PUDA. */
+:root {
+  --bg: hsl(225, 44%, 4%);
+  --slide: hsl(225, 38%, 7%);
+  --panel: hsl(224, 30%, 11%);
+  --line: hsl(224, 26%, 19%);
+  --fg: hsl(220, 30%, 96%);
+  --muted: hsl(220, 14%, 66%);
+  --gold: hsl(45, 93%, 54%);
+  --gold-soft: hsla(45, 93%, 54%, .12);
+  --ink: hsl(225, 44%, 6%);
+  --long: hsl(158, 62%, 52%);
+  --short: hsl(2, 80%, 66%);
+  --blue: hsl(212, 90%, 66%);
+  --violet: hsl(268, 75%, 72%);
+  --amber: hsl(32, 95%, 62%);
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 18px/1.5 var(--body); overflow: hidden; }
+
+/* Escenario */
+.stage { position: fixed; inset: 0; display: grid; place-items: center; }
+.deck { position: relative; width: 1280px; height: 720px; transform-origin: center center; }
+.slide {
+  position: absolute; inset: 0; padding: 56px 72px 64px; display: flex; flex-direction: column; gap: 22px;
+  background: var(--slide); border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+  background-image: radial-gradient(48rem 26rem at 0% 0%, var(--gold-soft), transparent 60%);
+  visibility: hidden; opacity: 0; transition: opacity .25s ease;
+}
+.slide.on { visibility: visible; opacity: 1; }
+.slide > footer {
+  position: absolute; left: 72px; right: 72px; bottom: 22px; display: flex; justify-content: space-between;
+  font: 12px var(--mono); color: var(--muted); letter-spacing: .06em;
+}
+.kicker { font: 500 13px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+h1, h2, h3 { margin: 0; font-family: var(--display); text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: 54px; line-height: 1.06; font-weight: 700; }
+h2 { font-size: 34px; line-height: 1.12; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 500; }
+p { margin: 0; }
+.lead { font-size: 20px; color: var(--muted); max-width: 60ch; }
+.gold { color: var(--gold); }
+.mono { font-family: var(--mono); }
+.row { display: flex; gap: 22px; min-height: 0; }
+.col { display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0; }
+.grow { flex: 1; min-height: 0; }
+
+/* Listas de directrices */
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font-size: 19px; }
+.checks li { display: grid; grid-template-columns: 30px 1fr; align-items: baseline; }
+.checks li::before { content: "✅"; font-size: 17px; }
+.checks.x li::before { content: "✕"; color: var(--short); font-weight: 700; }
+.bul { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 17px; }
+.bul li::marker { color: var(--gold); }
+.bul b { color: var(--fg); }
+
+/* Tablas «Resumen» */
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+td:first-child { color: var(--gold); white-space: nowrap; font-weight: 500; }
+.tbl { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px 8px; }
+.col.tbl { align-self: flex-start; flex: 1.05; }
+.tbl.grow { flex: none; }
+.tbl-title { font: 500 13px var(--mono); color: var(--fg); padding: 8px 12px 2px; }
+
+/* Caja de lógica central (el recuadro ASCII del documento) */
+.logic { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.logic .tag { font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 500 12px/1 var(--mono); padding: 6px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill.on { color: var(--long); border-color: color-mix(in hsl, var(--long) 40%, transparent); }
+.pill.off { color: var(--amber); border-color: color-mix(in hsl, var(--amber) 40%, transparent); }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.prop { font: 700 13px var(--mono); letter-spacing: .08em; }
+.p-a { color: var(--blue); } .p-b { color: var(--violet); } .p-c { color: var(--gold); } .p-d { color: var(--amber); }
+.why { border-left: 3px solid var(--gold); padding: 4px 0 4px 14px; font-size: 16px; color: var(--muted); }
+.why b { color: var(--fg); }
+
+/* Diagrama de arquitectura */
+.arch { align-content: center; display: grid; grid-template-columns: 1fr 60px 1.25fr 60px 0.8fr; align-items: center; gap: 0; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.box.hl { border-color: var(--gold); background: var(--gold-soft); }
+.box h3 { font-size: 15px; }
+.box small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.inner { display: grid; gap: 8px; }
+.inner .box { padding: 9px 12px; }
+.arrow { text-align: center; color: var(--muted); font: 12px var(--mono); }
+.arrow::before { content: "⟷"; display: block; font-size: 24px; color: var(--gold); }
+.arrow.one::before { content: "⟶"; }
+
+/* Mapa de subcuentas */
+.map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.card .id { font: 500 12px var(--mono); color: var(--gold); display: flex; justify-content: space-between; }
+.card b { font-size: 15px; }
+.card span:last-child { font-size: 12.5px; color: var(--muted); }
+.card.off { border-style: dashed; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--long); display: inline-block; }
+.card.off .dot { background: transparent; border: 1.5px solid var(--amber); }
+
+/* Sinergia */
+.syn { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.syn .box h3 { font-size: 16px; }
+.chips { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; }
+.chip { font: 500 12px/1 var(--mono); padding: 6px 8px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
+.stars { color: var(--gold); letter-spacing: 2px; font-family: var(--mono); }
+
+/* Orden de prioridad */
+.order { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; align-items: stretch; }
+.order .box { border-radius: 0; border-right: 0; }
+.order .box:first-child { border-radius: 12px 0 0 12px; }
+.order .box:last-child { border-radius: 0 12px 12px 0; border-right: 1px solid var(--line); }
+.order .n { font: 700 28px var(--display); color: var(--gold); }
+
+/* Portada */
+.cover { justify-content: center; gap: 28px; }
+.cover h1 { font-size: 64px; max-width: 16ch; }
+.cover .emoji { font-size: 64px; line-height: 1; }
+
+/* Controles */
+.nav { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; z-index: 5;
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+.nav button { all: unset; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--panel); border: 1px solid var(--line); color: var(--fg); font-size: 18px; }
+.nav button:hover { border-color: var(--gold); }
+.nav button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.nav .count { font: 500 13px var(--mono); color: var(--muted); min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+.bar { position: fixed; left: 0; top: 0; height: 3px; background: var(--gold); transition: width .25s; z-index: 5; }
+.hint { position: fixed; right: 16px; bottom: 22px; font: 12px var(--mono); color: var(--muted); }
+
+/* Modo lista en pantallas estrechas */
+@media (max-width: 820px), (max-height: 520px) {
+  body { overflow: auto; }
+  .stage { position: static; display: block; padding-inline: 16px; padding-block: 16px 40px; }
+  .deck { width: auto; height: auto; transform: none !important; display: grid; gap: 16px; }
+  .slide { position: relative; inset: auto; visibility: visible; opacity: 1; padding: 28px 20px 48px; gap: 16px; }
+  .slide > footer { left: 20px; right: 20px; bottom: 16px; }
+  .nav, .bar, .hint { display: none; }
+  h1, .cover h1 { font-size: 34px; } h2 { font-size: 24px; }
+  .lead { font-size: 17px; }
+  .row { flex-direction: column; }
+  .arch { grid-template-columns: 1fr; gap: 8px; }
+  .arrow::before { content: "⇅"; }
+  .map, .syn, .order { grid-template-columns: 1fr 1fr; }
+  .order .box { border-radius: 12px !important; border-right: 1px solid var(--line); }
+  .order { gap: 8px; }
+  .tbl { overflow-x: auto; }
+  table { font-size: 14px; }
+  td:first-child { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) { .slide, .bar { transition: none; } }
+
+/* ── Plan: piezas propias ───────────────────────────────────────────── */
+:root { --s1: #d95926; --s2: #3987e5; --s3: #199e70; --c-a: hsl(212, 90%, 66%); --c-b: hsl(268, 75%, 72%); --c-c: hsl(158, 62%, 52%); --c-d: hsl(45, 93%, 54%); }
+.langs { display: flex; gap: 4px; font: 500 12px var(--mono); position: absolute; top: 28px; right: 72px; }
+.langs a, .langs span { padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
+.langs span { color: var(--ink); background: var(--gold); border-color: var(--gold); }
+.langs a:hover { color: var(--fg); border-color: var(--gold); }
+.tag-a, .tag-b, .tag-c, .tag-d { font: 700 12px var(--mono); letter-spacing: .08em; margin-right: 8px; }
+.tag-a { color: var(--c-a); } .tag-b { color: var(--c-b); } .tag-c { color: var(--c-c); } .tag-d { color: var(--c-d); }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.box p { font-size: 14.5px; color: var(--muted); }
+.box h3 { font-size: 16px; }
+.callout { border: 1px solid var(--amber); background: color-mix(in hsl, var(--amber) 12%, transparent); border-radius: 12px; padding: 14px 16px; font-size: 15px; }
+.callout b { color: var(--amber); }
+.note { font-size: 13.5px; color: var(--muted); }
+.col.wide { flex: 1.6; }
+td.ok { color: var(--long); } td.warn { color: var(--amber); } td.bad { color: var(--short); } td.muted { color: var(--muted); }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.code { margin: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font: 13px/1.6 var(--mono); color: var(--fg); overflow-x: auto; }
+/* Gantt */
+.gantt { display: grid; gap: 7px; }
+.gantt .g-row { display: grid; grid-template-columns: 260px 1fr; gap: 12px; align-items: center; font-size: 14px; }
+.gantt .g-track { position: relative; height: 24px; background: var(--panel); border-radius: 6px; }
+.gantt .g-bar { position: absolute; top: 3px; bottom: 3px; border-radius: 5px; }
+.gantt .g-axis { display: grid; grid-template-columns: 260px 1fr; gap: 12px; font: 11.5px var(--mono); color: var(--muted); }
+.gantt .g-ticks { position: relative; height: 16px; }
+.gantt .g-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.gantt .g-name small { display: block; color: var(--muted); font-size: 12px; }
+/* Pasos */
+.steps7 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: s; }
+.steps7 li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.steps7 li::before { content: counter(s); font: 700 20px var(--display); color: var(--c-a); }
+.steps7 b { font-size: 15px; } .steps7 span { font-size: 13.5px; color: var(--muted); }
+.flow { display: grid; grid-template-columns: 1fr 30px 1fr 30px 1fr 30px 1fr; align-items: stretch; }
+.flow .arrow { display: grid; place-items: center; color: var(--gold); font-size: 22px; }
+.flow .n { font: 700 20px var(--display); color: var(--c-a); }
+.ico { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: s; }
+.ico li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.ico li::before { content: counter(s); font: 700 20px var(--display); color: var(--c-b); }
+.ico b { font-size: 15px; } .ico span { font-size: 13.5px; color: var(--muted); } .ico em { font-style: normal; font: 12px var(--mono); color: var(--gold); }
+/* Reparto */
+.alloc { display: flex; height: 34px; gap: 2px; border-radius: 8px; overflow: hidden; }
+.alloc div { display: grid; place-items: center; font: 600 12px var(--mono); color: #fff; }
+.alloc-list { display: grid; gap: 8px; margin-top: 10px; }
+.alloc-list div { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: baseline; font-size: 14.5px; }
+.alloc-list i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.alloc-list small { display: block; color: var(--muted); font-size: 12.5px; }
+.alloc-list b { font-family: var(--mono); color: var(--gold); }
+.funds-bar { display: flex; height: 38px; gap: 2px; border-radius: 8px; overflow: hidden; }
+.funds-bar div { display: grid; place-items: center; font: 600 12px var(--mono); color: #fff; }
+.fund h3 { display: flex; align-items: center; gap: 8px; } .fund i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+/* KPIs */
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+.kpi span { font: 500 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.kpi b { font: 700 24px var(--display); font-variant-numeric: tabular-nums; }
+.kpi small { color: var(--muted); font-size: 12.5px; }
+.kpi.good b { color: var(--long); } .kpi.bad b { color: var(--short); } .kpi.warn b { color: var(--amber); }
+/* Gráficos */
+.chart svg { display: block; width: 100%; height: auto; }
+.chart text { font: 11px var(--mono); fill: var(--muted); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.legend i { display: inline-block; width: 16px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); font: 500 12.5px var(--body); color: var(--muted); background: var(--panel); }
+.seg button[aria-pressed="true"] { color: var(--ink); background: var(--gold); border-color: var(--gold); }
+.seg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* Calculadora */
+.ctl { display: grid; gap: 6px; }
+.ctl label { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--muted); }
+.ctl output { color: var(--fg); font: 500 14px var(--mono); }
+input[type=range] { width: 100%; accent-color: var(--gold); }
+/* Recomendación y pasos */
+.rec { margin: 0; padding-left: 22px; display: grid; gap: 9px; font-size: 15.5px; }
+.rec li::marker { color: var(--gold); font-family: var(--mono); }
+.checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.checks label { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14.5px; cursor: pointer; }
+.checks label small { display: block; color: var(--muted); font-size: 12.5px; }
+.checks input { width: 17px; height: 17px; accent-color: var(--gold); margin: 2px 0 0; }
+.checks label.done { color: var(--muted); }
+.tbl table td, .tbl table th { padding: 7px 10px; }
+@media (max-width: 820px), (max-height: 520px) {
+  .grid4, .grid3, .steps7, .ico, .checks, .kpis { grid-template-columns: 1fr; }
+  .flow { grid-template-columns: 1fr; gap: 8px; } .flow .arrow { transform: rotate(90deg); }
+  .gantt .g-row, .gantt .g-axis { grid-template-columns: 1fr; gap: 4px; }
+  .gantt .g-axis > span:first-child { display: none; }
+  .langs { position: static; }
+}
+</style>
+
+<div class="bar" id="bar"></div>
+<main class="stage" id="stage">
+<div class="deck" id="deck">
+
+<!-- 1 · Portada -->
+<section class="slide cover on" aria-label="Portada">
+  <nav class="langs" aria-label="Idioma"><span aria-current="true">ES</span><a href="plan-puda.en.html" hreflang="en" lang="en" data-alt="">EN</a></nav>
+  <span class="kicker">PeludaCoin (PUDA) · plan completo · 1 de octubre de 2026</span>
+  <h1>De la sociedad a la ICO, con el bot <span class="gold">puesto a prueba</span></h1>
+  <p class="lead">Los pasos para constituir la sociedad en El Salvador, lanzar la oferta tal como la describe peludacoin.com, y lo que dicen el backtest y el test de estrés de 3 años sobre la rentabilidad mensual que buscáis: un 3–5% al mes con riesgo muy asumible, usando como mucho el 20% de cada cuenta.</p>
+  <div class="pills"><span class="pill">A · Sociedad</span><span class="pill">B · ICO</span><span class="pill">C · Bot y pruebas</span><span class="pill">D · Rentabilidad</span></div>
+  <footer><span>No es asesoramiento legal, fiscal ni financiero</span><span>← → para avanzar</span></footer>
+</section>
+
+<!-- 2 · Resumen -->
+<section class="slide" aria-label="Resumen">
+  <span class="kicker">Resumen</span>
+  <h2>El plan en una diapositiva</h2>
+  <div class="grid4">
+    <div class="box"><span class="tag-a">A · Sociedad</span><h3>S.A. de C.V. en El Salvador</h3><p>Emisor domiciliado allí, registrado en la UIF y en el Registro de Emisores de la CNAD.</p></div>
+    <div class="box"><span class="tag-b">B · ICO</span><h3>Oferta registrada, no preventa</h3><p>15% del suministro (9,26 M PUDA) vendido a través de PSAD con KYC, solo tras auditoría y registro.</p></div>
+    <div class="box"><span class="tag-c">C · Bot</span><h3>Solo lo que superó el estrés</h3><p>De 11 estrategias, 4 forman el núcleo de bajo riesgo. Margen máximo: 20% de cada cuenta.</p></div>
+    <div class="box hl"><span class="tag-d">D · Rentabilidad</span><h3 id="sum-ret">3–5% mensual: aún sin evidencia</h3><p id="sum-ret-p">El estrés mide el riesgo, no el beneficio. El objetivo se valida con histórico real y demo antes de prometer nada.</p></div>
+  </div>
+  <footer><span>Resumen</span><span>02</span></footer>
+</section>
+
+<!-- 3 · Calendario -->
+<section class="slide" aria-label="Calendario completo">
+  <span class="kicker">Calendario completo · fechas orientativas</span>
+  <h2>De octubre de 2026 a la oferta registrada</h2>
+  <div class="gantt" id="gantt"></div>
+  <p class="note">Cada fase empieza solo cuando se cumple la condición de la anterior. Coincide con la hoja de ruta publicada en peludacoin.com.</p>
+  <footer><span>Calendario</span><span>03</span></footer>
+</section>
+
+<!-- 4 · A1 Decisiones previas -->
+<section class="slide" aria-label="Decisiones previas">
+  <span class="kicker"><span class="tag-a">A · Sociedad</span> Paso 1 — Decisiones previas</span>
+  <h2>Lo que hay que decidir antes de ir al notario</h2>
+  <div class="row grow">
+    <div class="col">
+      <ul class="bul">
+        <li><b>Quién emite:</b> una sociedad domiciliada en El Salvador (S.A. de C.V.). La LEAD exige emisor salvadoreño o plataforma domiciliada allí.</li>
+        <li><b>Socios y capital:</b> quiénes son los accionistas, cuánto aporta cada uno y el reparto de los 3,09 M PUDA del equipo (5%, con 1 año sin liberar y 4 de liberación).</li>
+        <li><b>Dónde se dirige:</b> si la sociedad se gestiona desde España puede tener residencia fiscal española por «sede de dirección efectiva» y perder las ventajas de la LEAD.</li>
+        <li><b>Una o dos sociedades:</b> separar el emisor del token de la operativa del bot reduce riesgos y aclara las cuentas.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="callout"><b>Antes de nada:</b> abogado salvadoreño (estructura y LEAD) y asesor fiscal español (residencia y tributación de los socios). Son la primera contratación junto con el auditor.</div>
+      <div class="tbl"><table><thead><tr><th>Decisión</th><th>Quién la valida</th></tr></thead><tbody>
+        <tr><td>Tipo de sociedad y domicilio</td><td>Abogado SV</td></tr>
+        <tr><td>Residencia fiscal de la dirección</td><td>Asesor fiscal ES</td></tr>
+        <tr><td>Token: utilidad o participación</td><td>Abogado SV + ES</td></tr>
+        <tr><td>Pacto de socios y vesting</td><td>Abogado SV</td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+  <footer><span>A · Sociedad</span><span>04</span></footer>
+</section>
+
+<!-- 5 · A2 Constitución -->
+<section class="slide" aria-label="Constitución">
+  <span class="kicker"><span class="tag-a">A · Sociedad</span> Paso 2 — Constitución de la S.A. de C.V.</span>
+  <h2>Siete trámites hasta tener sociedad operativa</h2>
+  <ol class="steps7" id="steps7"></ol>
+  <p class="note">Trámites habituales en El Salvador; plazos, capital mínimo y requisitos deben confirmarse con el abogado salvadoreño. Plazo orientativo total: 3–6 semanas.</p>
+  <footer><span>A · Sociedad</span><span>05</span></footer>
+</section>
+
+<!-- 6 · A3 Formación -->
+<section class="slide" aria-label="Formación de la sociedad">
+  <span class="kicker"><span class="tag-a">A · Sociedad</span> Paso 3 — Formación: equipo y gobierno</span>
+  <h2>Quién hace qué desde el primer día</h2>
+  <div class="grid3">
+    <div class="box"><h3>Administración</h3><p>Administrador único o junta directiva y representante legal en El Salvador.</p></div>
+    <div class="box"><h3>Oficial de cumplimiento</h3><p>Obligatorio para la UIF: KYC, límites, reporte de operaciones sospechosas y Travel Rule con los PSAD.</p></div>
+    <div class="box"><h3>Responsable del bot</h3><p>Opera el sistema, publica los resultados mensuales y aplica los límites de riesgo (20% de margen, parada dura).</p></div>
+    <div class="box"><h3>Finanzas y contabilidad</h3><p>Estados financieros auditables desde el inicio: el DIR los exige auditados.</p></div>
+    <div class="box"><h3>Tesorería multifirma</h3><p>Fondos de la venta en una wallet 2 de 3 pública. Ningún socio mueve fondos solo.</p></div>
+    <div class="box"><h3>Pacto de socios</h3><p>Vesting del equipo, conflictos de interés, salida de socios y prohibición de vender tokens propios fuera del calendario.</p></div>
+  </div>
+  <footer><span>A · Sociedad</span><span>06</span></footer>
+</section>
+
+<!-- 7 · A4 Registros -->
+<section class="slide" aria-label="Registros regulatorios">
+  <span class="kicker"><span class="tag-a">A · Sociedad</span> Paso 4 — Registros regulatorios</span>
+  <h2>De sociedad a emisor autorizado</h2>
+  <div class="flow">
+    <div class="box"><span class="n">1</span><h3>UIF</h3><p>Registro como sujeto obligado en 15 días hábiles, beneficiarios finales y manual de prevención de blanqueo.</p></div>
+    <div class="arrow">→</div>
+    <div class="box"><span class="n">2</span><h3>Registro de Emisores (CNAD)</h3><p>Datos de la sociedad, web, jurisdicciones y ofertas de los 3 años anteriores.</p></div>
+    <div class="arrow">→</div>
+    <div class="box"><span class="n">3</span><h3>Estructurador</h3><p>Redacta el DIR: token, uso de fondos, riesgos, gobierno, auditoría y estados financieros.</p></div>
+    <div class="arrow">→</div>
+    <div class="box"><span class="n">4</span><h3>Certificador</h3><p>Registrado en la CNAD e independiente del estructurador. Informa a la CNAD.</p></div>
+  </div>
+  <p class="note">Coste total de una emisión según la prensa salvadoreña: 2–4% de lo captado. Tasas de la CNAD citadas por fuentes secundarias (sin verificar): ~6.270 USD de solicitud y ~4.050 USD al año.</p>
+  <footer><span>A · Sociedad</span><span>07</span></footer>
+</section>
+
+<!-- 8 · B1 Estructura ICO -->
+<section class="slide" aria-label="Estructura de la ICO">
+  <span class="kicker"><span class="tag-b">B · ICO</span> Estructura, tal como está en peludacoin.com</span>
+  <h2>61,74 M PUDA y un reparto que suma 100%</h2>
+  <div class="row grow">
+    <div class="col">
+      <div class="alloc" id="alloc" role="img" aria-label="Reparto de tokens"></div>
+      <div class="alloc-list" id="alloc-list"></div>
+    </div>
+    <div class="col">
+      <div class="tbl"><table><thead><tr><th>Condición de la oferta</th></tr></thead><tbody>
+        <tr><td>Informe de auditoría del smart contract publicado</td></tr>
+        <tr><td>Oferta registrada por la CNAD</td></tr>
+        <tr><td>Venta solo a través de PSAD con licencia y con KYC</td></tr>
+        <tr><td>Sin descuentos ni bonos: mismo precio para todos</td></tr>
+        <tr><td>Límites de compra por wallet</td></tr>
+        <tr><td>No disponible en la UE ni en EE. UU. hasta cumplir</td></tr>
+      </tbody></table></div>
+      <p class="note">Precio de emisión: pendiente, se fija en el DIR. La web ya no muestra precio, volumen ni capitalización.</p>
+    </div>
+  </div>
+  <footer><span>B · ICO</span><span>08</span></footer>
+</section>
+
+<!-- 9 · B2 Proceso ICO -->
+<section class="slide" aria-label="Proceso de la ICO">
+  <span class="kicker"><span class="tag-b">B · ICO</span> Del auditor a la cotización</span>
+  <h2>Ocho pasos, en este orden</h2>
+  <ol class="ico" id="ico"></ol>
+  <footer><span>B · ICO</span><span>09</span></footer>
+</section>
+
+<!-- 10 · B3 Fondos -->
+<section class="slide" aria-label="Uso de los fondos">
+  <span class="kicker"><span class="tag-b">B · ICO</span> Uso de lo recaudado (ejemplo para el DIR)</span>
+  <h2>Ninguna partida sin dueño ni límite</h2>
+  <div class="funds-bar" id="funds-bar" role="img" aria-label="Reparto de fondos"></div>
+  <div class="grid3" id="funds-list"></div>
+  <footer><span>B · ICO</span><span>10</span></footer>
+</section>
+
+<!-- 11 · C1 Sistema -->
+<section class="slide" aria-label="El sistema de trading">
+  <span class="kicker"><span class="tag-c">C · Bot</span> El sistema</span>
+  <h2>12 cuentas, un guardián y límites que no se saltan</h2>
+  <div class="row grow">
+    <div class="col">
+      <ul class="bul">
+        <li><b>1 cuenta principal + 11 subcuentas</b> en Bitget, una estrategia por subcuenta.</li>
+        <li><b>Stop Loss obligatorio</b> en cada orden; el guardián rechaza las que no lo llevan o lo ponen a más del 25%.</li>
+        <li><b>Margen máximo del 20%</b> de cada cuenta (nuevo, <span class="mono">MAX_MARGIN_PCT</span>): con 7x, la exposición nunca pasa de 1,4× el capital.</li>
+        <li><b>Pausa al 25%</b> de caída y <b>parada dura al 40%</b> desde el máximo histórico.</li>
+        <li>El mismo código en backtest, demo y real; consultable desde Antigravity por MCP.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="tbl"><table><thead><tr><th>Estrategia</th><th>Estado</th></tr></thead><tbody>
+        <tr><td>SUB5 Macro-shorting · SUB6 Funding arb · SUB9 Collar · SUB10 Pairs</td><td class="ok">Núcleo</td></tr>
+        <tr><td>SUB2 Stat Arb · SUB11 SuperTrend</td><td class="warn">Satélite, capital pequeño</td></tr>
+        <tr><td>SUB8 DCA spot</td><td class="warn">Aparte, sin apalancamiento</td></tr>
+        <tr><td>SUB1 Noticias · SUB3 Copy</td><td class="muted">Sin backtest posible</td></tr>
+        <tr><td>SUB4 Scalping · SUB7 Grid</td><td class="bad">Desactivadas</td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+  <footer><span>C · Bot</span><span>11</span></footer>
+</section>
+
+<!-- 12 · C2 Backtest -->
+<section class="slide" aria-label="Backtest">
+  <span class="kicker"><span class="tag-c">C · Bot</span> Backtest con histórico real</span>
+  <h2>La herramienta está lista; falta el acceso a los datos</h2>
+  <div class="row grow">
+    <div class="col">
+      <ul class="bul">
+        <li><span class="mono">kriptty-backtest</span> descarga el histórico de Bitget (velas y funding) y ejecuta el mismo código de las estrategias con su calendario real.</li>
+        <li>Ejecución conservadora: si una vela toca SL y TP se asume el SL, gaps a la apertura, comisiones 0,06%/0,02%, slippage, funding y margen como el exchange.</li>
+        <li><b>Bloqueado:</b> el entorno de trabajo no puede acceder a <span class="mono">api.bitget.com</span>. Se habilita en la configuración de red del entorno.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="callout"><b>Es el paso que decide la rentabilidad.</b> Solo el histórico real (12–24 meses) y 6 meses en demo pueden decir si el 3–5% mensual es alcanzable. El test de estrés no puede.</div>
+      <pre class="code">kriptty-backtest --strategy SUB6 --start 2024-10-01
+kriptty-backtest --strategy SUB10 --start 2024-10-01
+MAX_MARGIN_PCT=0.2 kriptty-backtest --strategy SUB9 …</pre>
+    </div>
+  </div>
+  <footer><span>C · Bot</span><span>12</span></footer>
+</section>
+
+<!-- 13 · C3 Estrés -->
+<section class="slide" aria-label="Test de estrés">
+  <span class="kicker"><span class="tag-c">C · Bot</span> Test de estrés de 3 años · mercados sintéticos</span>
+  <h2>Antes y después de los arreglos</h2>
+  <div class="row grow">
+    <div class="col wide">
+      <div class="seg" id="seg-sc13" role="group" aria-label="Escenario"></div>
+      <div class="chart" id="chart13"></div>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Antes</span><span><i style="background:var(--s2)"></i>Después</span><span>Cartera de 8 subcuentas, base 100</span></div>
+    </div>
+    <div class="col">
+      <div class="kpis" id="kpis13"></div>
+      <p class="note">162 ejecuciones: 3 escenarios (ciclo con crashes tipo LUNA/FTX, bear prolongado, lateral) × 3 trayectorias, más costes ×2. Mide supervivencia y control del riesgo.</p>
+    </div>
+  </div>
+  <footer><span>C · Bot</span><span>13</span></footer>
+</section>
+
+<!-- 14 · C4 Qué falló -->
+<section class="slide" aria-label="Lo que encontró el test">
+  <span class="kicker"><span class="tag-c">C · Bot</span> Lo que encontró el test</span>
+  <h2>Seis fallos que habrían costado dinero real</h2>
+  <div class="grid3">
+    <div class="box"><h3>Apalancamiento oculto</h3><p>SUB2 y SUB11 llegaban a 9× el capital. Ahora el tope cuenta lo abierto.</p></div>
+    <div class="box"><h3>Backtester sin margen</h3><p>Permitía posiciones que el exchange rechazaría. Ahora exige margen.</p></div>
+    <div class="box"><h3>SUB6 en bucle</h3><p>Abría y deshacía pares pagando comisiones. Corregido.</p></div>
+    <div class="box"><h3>SUB7 y SUB4</h3><p>Perdían en todos los escenarios (−95% y −52% en un mes). Desactivadas.</p></div>
+    <div class="box"><h3>Pausas encadenadas</h3><p>Caídas del 25% una tras otra. Nueva parada dura al 40%.</p></div>
+    <div class="box"><h3>Margen sin límite</h3><p>Nuevo límite del 20% del capital por cuenta, aplicado a cada orden.</p></div>
+  </div>
+  <footer><span>C · Bot</span><span>14</span></footer>
+</section>
+
+<!-- 15 · D1 Objetivo -->
+<section class="slide" aria-label="El objetivo">
+  <span class="kicker"><span class="tag-d">D · Rentabilidad</span> Lo que buscáis</span>
+  <h2>3–5% al mes con el 20% de cada cuenta a 7x</h2>
+  <div class="grid4">
+    <div class="kpi"><span>Exposición máxima</span><b>1,4×</b><small>20% de margen × 7x</small></div>
+    <div class="kpi"><span>Rentabilidad anual equivalente</span><b>43–80%</b><small>3–5% mensual compuesto</small></div>
+    <div class="kpi"><span>Necesario sobre lo invertido</span><b>2,1–3,6%</b><small>al mes, sobre el nocional</small></div>
+    <div class="kpi"><span>Movimiento que liquida</span><b>≈ −14%</b><small>en contra, a 7x</small></div>
+  </div>
+  <p class="lead">Con exposición de 1,4×, cada punto de rentabilidad mensual de la cuenta exige 0,7 puntos sobre lo invertido. 3–5% al mes de forma sostenida es un ritmo que muy pocas estrategias mantienen; por eso hay que medirlo con datos reales antes de comprometerse.</p>
+  <footer><span>D · Rentabilidad</span><span>15</span></footer>
+</section>
+
+<!-- 16 · D2 Datos -->
+<section class="slide" aria-label="Lo que dicen los datos">
+  <span class="kicker"><span class="tag-d">D · Rentabilidad</span> Lo que dice el test de estrés</span>
+  <h2>Rentabilidad mensual por configuración</h2>
+  <div class="row grow">
+    <div class="col wide">
+      <div class="seg" id="seg-pf" role="group" aria-label="Cartera"></div>
+      <div class="chart" id="chart16"></div>
+      <div class="legend" id="legend16"></div>
+    </div>
+    <div class="col">
+      <div class="tbl" id="tbl16"></div>
+    </div>
+  </div>
+  <p class="note" id="note16"></p>
+  <footer><span>D · Rentabilidad</span><span>16</span></footer>
+</section>
+
+<!-- 17 · D3 Calculadora -->
+<section class="slide" aria-label="Calculadora">
+  <span class="kicker"><span class="tag-d">D · Rentabilidad</span> Calculadora</span>
+  <h2>Qué significa cada combinación para una cuenta</h2>
+  <div class="row grow">
+    <div class="col">
+      <div class="ctl"><label for="k-cap">Capital de la cuenta (USDT)<output id="o-cap"></output></label><input type="range" id="k-cap" min="1000" max="100000" step="1000" value="10000"></div>
+      <div class="ctl"><label for="k-mar">Margen máximo usado<output id="o-mar"></output></label><input type="range" id="k-mar" min="5" max="100" step="5" value="20"></div>
+      <div class="ctl"><label for="k-lev">Apalancamiento<output id="o-lev"></output></label><input type="range" id="k-lev" min="1" max="10" step="1" value="7"></div>
+      <div class="ctl"><label for="k-ret">Rentabilidad mensual sobre lo invertido<output id="o-ret"></output></label><input type="range" id="k-ret" min="0" max="5" step="0.1" value="1"></div>
+      <div class="ctl"><label for="k-crash">Caída de mercado a simular<output id="o-crash"></output></label><input type="range" id="k-crash" min="5" max="40" step="1" value="25"></div>
+    </div>
+    <div class="col">
+      <div class="kpis" id="kpis17"></div>
+      <p class="note" id="note17"></p>
+    </div>
+  </div>
+  <footer><span>D · Rentabilidad</span><span>17</span></footer>
+</section>
+
+<!-- 18 · D4 Recomendación -->
+<section class="slide" aria-label="Recomendación">
+  <span class="kicker"><span class="tag-d">D · Rentabilidad</span> Mi recomendación</span>
+  <h2 id="rec-title">Riesgo pequeño primero, rentabilidad demostrada después</h2>
+  <div class="row grow">
+    <div class="col">
+      <ol class="rec" id="rec-list"></ol>
+    </div>
+    <div class="col">
+      <div class="callout"><b>Nunca en la web ni en el DIR:</b> un objetivo de rentabilidad (3–5% al mes) no puede publicarse ni usarse para vender el token. Es un objetivo interno de gestión, y solo después de verificarlo con datos reales.</div>
+      <div class="tbl" id="rec-tbl"></div>
+    </div>
+  </div>
+  <footer><span>D · Rentabilidad</span><span>18</span></footer>
+</section>
+
+<!-- 19 · Riesgos -->
+<section class="slide" aria-label="Riesgos">
+  <span class="kicker">Riesgos y condiciones</span>
+  <h2>Lo que puede parar el plan</h2>
+  <div class="grid3">
+    <div class="box"><h3>MiCA y Bitget</h3><p>Bitget no tenía licencia MiCA en septiembre de 2026 y la CNMV trata los perpetuos como CFD para minoristas: confirmar desde dónde y con qué entidad se opera.</p></div>
+    <div class="box"><h3>Clasificación del token</h3><p>Si los tenedores ganan con el bot, puede ser un valor: fuera de MiCA en la UE y con requisitos de folleto.</p></div>
+    <div class="box"><h3>Rentabilidad no demostrada</h3><p>Sin histórico real ni demo, cualquier cifra es una hipótesis. Con 7x, un error cuesta el triple que con 2x.</p></div>
+    <div class="box"><h3>Residencia fiscal</h3><p>Dirigir la sociedad desde España puede anular el régimen fiscal salvadoreño.</p></div>
+    <div class="box"><h3>Riesgo de plataforma</h3><p>Dependencia de un solo exchange: plan B y límites de saldo por plataforma.</p></div>
+    <div class="box"><h3>Ejecución</h3><p>El calendario depende de terceros: auditor, certificador, CNAD y PSAD.</p></div>
+  </div>
+  <footer><span>Riesgos</span><span>19</span></footer>
+</section>
+
+<!-- 20 · Próximos pasos -->
+<section class="slide" aria-label="Próximos pasos">
+  <span class="kicker">Próximos pasos</span>
+  <h2>Lo que se puede hacer esta semana</h2>
+  <div class="checks" id="next-steps"></div>
+  <p class="note" id="next-status"></p>
+  <footer><span>Próximos pasos</span><span>20</span></footer>
+</section>
+
+<!-- 21 · Cierre -->
+<section class="slide cover" aria-label="Cierre">
+  <span class="kicker">Resumen final</span>
+  <h1>Primero <span class="gold">registrar</span>, después vender; primero <span class="gold">medir</span>, después prometer</h1>
+  <p class="lead">La sociedad y la ICO tienen un camino claro en El Salvador. El bot ya tiene límites que lo hacen sobrevivir a los peores escenarios. La rentabilidad mensual es lo único que aún no está demostrado, y se puede medir en semanas en cuanto haya acceso al histórico de Bitget.</p>
+  <footer><span>Software experimental · no es una oferta ni asesoramiento</span><span>21</span></footer>
+</section>
+
+</div>
+</main>
+
+<nav class="nav" aria-label="Navegación de diapositivas">
+  <button type="button" id="prev" aria-label="Diapositiva anterior">←</button>
+  <span class="count" id="count" aria-live="polite">1 / 21</span>
+  <button type="button" id="next" aria-label="Diapositiva siguiente">→</button>
+</nav>
+<span class="hint">← → · espacio · F pantalla completa</span>
+<script id="plan-data">window.PLAN = null;</script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const P = window.PLAN || {};
+  const fmtP = (v, d = 1) => v == null ? "—" : `${v > 0 ? "+" : ""}${(+v).toFixed(d)}%`;
+  const nf = v => Math.round(v).toLocaleString("es-ES");
+
+  /* ── Navegación (igual que la presentación de estrategias) ─────────── */
+  const slides = [...document.querySelectorAll(".slide")];
+  const deck = $("#deck"), count = $("#count"), bar = $("#bar");
+  const listMode = () => matchMedia("(max-width: 820px), (max-height: 520px)").matches;
+  let i = 0;
+  function fit() { if (listMode()) { deck.style.transform = ""; return; } deck.style.transform = `scale(${Math.min(innerWidth / 1320, (innerHeight - 70) / 740)})`; }
+  function go(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle("on", k === i));
+    count.textContent = `${i + 1} / ${slides.length}`;
+    bar.style.width = `${(i + 1) / slides.length * 100}%`;
+    try { history.replaceState(null, "", "#" + (i + 1)); } catch (_) {}
+  }
+  $("#prev").addEventListener("click", () => go(i - 1));
+  $("#next").addEventListener("click", () => go(i + 1));
+  addEventListener("keydown", e => {
+    if (listMode() || e.target.closest("input, select, textarea, button, a, label")) return;
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); go(i + 1); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); go(i - 1); }
+    else if (e.key === "Home") go(0);
+    else if (e.key === "End") go(slides.length - 1);
+    else if (e.key === "f" || e.key === "F") { const d = document.documentElement; (document.fullscreenElement ? document.exitFullscreen() : d.requestFullscreen?.())?.catch?.(() => {}); }
+  });
+  let x0 = null;
+  addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+  addEventListener("touchend", e => { if (x0 == null || listMode() || e.target.closest("input")) { x0 = null; return; } const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 50) go(i + (dx < 0 ? 1 : -1)); });
+  addEventListener("resize", fit);
+  if (!/^file:/.test(location.href)) document.querySelectorAll(".langs a[data-alt]").forEach(a => { if (a.dataset.alt) a.href = a.dataset.alt; });
+
+  /* ── 3 · Calendario ─────────────────────────────────────────────── */
+  const M0 = new Date("2026-10-01"), M1 = new Date("2028-07-01");
+  const pos = d => (new Date(d) - M0) / (M1 - M0) * 100;
+  const GANTT = [
+    ["Limpieza web y estructura", "hecho: web sin captación", "2026-10-01", "2026-11-15", "var(--c-d)"],
+    ["Abogados SV/ES y decisiones", "Paso A1", "2026-10-15", "2026-12-01", "var(--c-a)"],
+    ["Constitución S.A. de C.V.", "Paso A2–A3", "2026-12-01", "2027-01-31", "var(--c-a)"],
+    ["Auditoría del smart contract", "único proveedor inicial", "2026-11-15", "2027-02-15", "var(--c-b)"],
+    ["Backtest real + bot en demo", "6 meses de resultados", "2026-10-15", "2027-05-15", "var(--c-c)"],
+    ["UIF, emisor CNAD y DIR", "Paso A4", "2027-02-01", "2027-05-15", "var(--c-a)"],
+    ["Certificador y registro CNAD", "condición para vender", "2027-04-15", "2027-06-30", "var(--c-b)"],
+    ["Oferta vía PSAD con KYC", "la ICO", "2027-06-15", "2027-08-31", "var(--c-b)"],
+    ["Liquidez, informes, DAO", "tras la venta", "2027-08-15", "2028-06-30", "var(--c-d)"],
+  ];
+  const ticks = ["2026-10-01", "2027-01-01", "2027-04-01", "2027-07-01", "2027-10-01", "2028-01-01", "2028-04-01"];
+  const tickLabel = d => { const x = new Date(d); return `${["ene", "abr", "jul", "oct"][x.getMonth() / 3]} ${String(x.getFullYear()).slice(2)}`; };
+  $("#gantt").innerHTML = `<div class="g-axis"><span></span><div class="g-ticks">${ticks.map(t => `<span style="left:${pos(t)}%">${tickLabel(t)}</span>`).join("")}</div></div>` +
+    GANTT.map(([n, s, a, b, c]) => `<div class="g-row"><span class="g-name">${n}<small>${s}</small></span><div class="g-track"><div class="g-bar" style="left:${pos(a)}%;width:${pos(b) - pos(a)}%;background:${c}" title="${a} → ${b}"></div></div></div>`).join("");
+
+  /* ── 5 · Constitución ───────────────────────────────────────────── */
+  const STEPS7 = [
+    ["Nombre de la sociedad", "Comprobación y reserva de la denominación en el Registro de Comercio (CNR)."],
+    ["Escritura de constitución", "Ante notario salvadoreño: socios, capital, objeto social, administración. Habitualmente mínimo 2 accionistas."],
+    ["Inscripción en el CNR", "Registro de Comercio: la sociedad adquiere personalidad jurídica."],
+    ["NIT y NRC (Hacienda)", "Número de identificación tributaria y registro de contribuyente del IVA."],
+    ["Matrícula y alcaldía", "Matrícula de empresa y registro municipal del domicilio."],
+    ["Cuenta bancaria", "Cuenta corporativa para el capital y los pagos a proveedores (auditor, abogados)."],
+    ["Representante legal", "Nombramiento inscrito; firma ante la UIF, la CNAD y los PSAD."],
+  ];
+  $("#steps7").innerHTML = STEPS7.map(([a, b]) => `<li><b>${a}</b><span>${b}</span></li>`).join("");
+
+  /* ── 8 · Reparto ────────────────────────────────────────────────── */
+  const ALLOC = [["Venta registrada", 15, "9.261.000 PUDA · vía PSAD con KYC", "var(--c-b)"], ["Pool de liquidez", 5, "3.087.000 · LP bloqueada 24 meses", "var(--c-a)"],
+    ["Equipo y promoción", 5, "3.087.000 · 1 año sin liberar + 4 de liberación", "var(--c-c)"], ["Tesorería", 75, "46.305.000 · tramos solo con nuevo registro, máx. 5%/año", "var(--panel-2, #3a4256)"]];
+  $("#alloc").innerHTML = ALLOC.map(([n, v, , c]) => `<div style="flex:${v};background:${c}" title="${n}: ${v}%">${v}%</div>`).join("");
+  $("#alloc-list").innerHTML = ALLOC.map(([n, v, d, c]) => `<div><i style="background:${c}"></i><span>${n}<small>${d}</small></span><b>${v}%</b></div>`).join("");
+
+  /* ── 9 · Proceso ICO ────────────────────────────────────────────── */
+  const ICO = [
+    ["Auditor del smart contract", "Único proveedor del prelanzamiento. Contrato con topes por wallet, vesting y bloqueo de LP.", "Q4 2026 – Q1 2027"],
+    ["Informe publicado", "Requisito de la web antes de cualquier venta.", "Q1 2027"],
+    ["Estructurador y DIR", "Documento de la oferta con tokenomics, riesgos y uso de fondos.", "Q1–Q2 2027"],
+    ["Certificador CNAD", "Revisa el DIR e informa a la CNAD.", "Q2 2027"],
+    ["Registro de la CNAD", "Sin registro no hay venta ni promoción.", "Q2 2027"],
+    ["Venta vía PSAD", "KYC, límites por inversor y bloqueo de la UE y EE. UU.", "Q2–Q3 2027"],
+    ["Tesorería y liquidez", "Fondos a multifirma; pool DEX con LP bloqueada 24 meses.", "Q3 2027"],
+    ["Informes trimestrales", "NAV del bot, tesorería y custodia del oro.", "desde Q3 2027"],
+  ];
+  $("#ico").innerHTML = ICO.map(([a, b, c]) => `<li><b>${a}</b><span>${b}</span><em>${c}</em></li>`).join("");
+
+  /* ── 10 · Fondos ────────────────────────────────────────────────── */
+  const FUNDS = [["Liquidez bloqueada", 30, "Pool DEX, LP bloqueada por contrato 24 meses.", "#3987e5"], ["Capital del bot", 25, "Con tope; margen ≤ 20% por cuenta y parada dura al 40%.", "#d95926"],
+    ["Tesorería y reserva (oro)", 20, "Multifirma pública; oro con certificado de custodia.", "#199e70"], ["Legal, auditorías y registro", 10, "Auditor, certificador, estructurador, CNAD, UIF, abogados.", "#c98500"],
+    ["Desarrollo y operaciones", 10, "Web, infraestructura del bot, seguridad.", "#d55181"], ["Contingencia", 5, "Su uso se publica en el informe trimestral.", "#9085e9"]];
+  $("#funds-bar").innerHTML = FUNDS.map(([n, v, , c]) => `<div style="flex:${v};background:${c}" title="${n}: ${v}%">${v}%</div>`).join("");
+  $("#funds-list").innerHTML = FUNDS.map(([n, v, d, c]) => `<div class="box fund"><h3><i style="background:${c}"></i>${n} · ${v}%</h3><p>${d}</p></div>`).join("");
+
+  /* ── Gráficos de líneas ─────────────────────────────────────────── */
+  function lines(series, { w = 760, h = 300, bands = [] } = {}) {
+    const L = 46, R = 10, T = 18, B = 22, all = series.flatMap(s => s.pts);
+    if (!all.length) return `<p class="note">Datos pendientes.</p>`;
+    let lo = Math.min(...all, 100), hi = Math.max(...all, 100);
+    const log = hi / Math.max(lo, 1) > 6, f = v => log ? Math.log(Math.max(v, .5)) : v;
+    const pad = (f(hi) - f(lo)) * .08 || 1, y0 = f(lo) - pad, y1 = f(hi) + pad;
+    const n = Math.max(...series.map(s => s.pts.length));
+    const X = k => L + k / Math.max(n - 1, 1) * (w - L - R), Y = v => T + (y1 - f(v)) / (y1 - y0) * (h - T - B);
+    let g = "";
+    bands.forEach((b, k) => { if (k % 2) g += `<rect x="${X(b[0] * (n - 1))}" y="${T}" width="${X(b[1] * (n - 1)) - X(b[0] * (n - 1))}" height="${h - T - B}" fill="var(--panel)"/>`; if (X(b[1] * (n - 1)) - X(b[0] * (n - 1)) > 70) g += `<text x="${X(b[0] * (n - 1)) + 4}" y="${T + 11}">${b[2]}</text>`; });
+    const tk = log ? [10, 30, 100, 300, 1000, 3000].filter(v => f(v) >= y0 && f(v) <= y1) : [lo, 100, hi].map(v => Math.round(v / 10) * 10).filter((v, k, a) => a.indexOf(v) === k);
+    tk.forEach(v => { g += `<line x1="${L}" x2="${w - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" ${v === 100 ? "" : 'stroke-dasharray="2 4"'}/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`; });
+    series.forEach(s => { if (!s.pts.length) return; g += `<path d="${s.pts.map((v, k) => `${k ? "L" : "M"}${X(k).toFixed(1)},${Y(v).toFixed(1)}`).join("")}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round"/>`; const k = s.pts.length - 1; g += `<circle cx="${X(k)}" cy="${Y(s.pts[k])}" r="4" fill="${s.c}" stroke="var(--slide)" stroke-width="2"/>`; });
+    if (log) g += `<text x="${(L + w - R) / 2}" y="${h - 5}" text-anchor="middle">escala log</text>`;
+    return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Evolución del capital">${g}</svg>`;
+  }
+
+  /* ── 13 · Estrés antes/después ──────────────────────────────────── */
+  const S = P.stress || { portfolio: [], scenarios: {} };
+  let sc13 = Object.keys(S.scenarios || {})[0];
+  const seg13 = $("#seg-sc13");
+  seg13.innerHTML = Object.entries(S.scenarios || {}).map(([k, v]) => `<button type="button" data-k="${k}" aria-pressed="${k === sc13}">${v.title}</button>`).join("");
+  seg13.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { sc13 = b.dataset.k; r13(); } });
+  function r13() {
+    seg13.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === sc13));
+    const pick = set => (S.portfolio || []).find(p => p.set === set && p.cost_mult === 1 && p.scenario === sc13 && p.seed === 0);
+    const a = pick("antes"), d = pick("despues"), sc = (S.scenarios || {})[sc13];
+    let acc = 0; const tot = sc ? sc.phases.reduce((x, p) => x + p[1], 0) : 1;
+    const bands = sc ? sc.phases.map(p => { const b = [acc / tot, (acc + p[1]) / tot, p[0]]; acc += p[1]; return b; }) : [];
+    $("#chart13").innerHTML = lines([{ c: "var(--s1)", pts: a ? a.curve : [] }, { c: "var(--s2)", pts: d ? d.curve : [] }], { bands });
+    const all = set => (S.portfolio || []).filter(p => p.set === set && p.cost_mult === 1);
+    const ddr = set => { const v = all(set).map(p => p.max_dd_pct); return v.length ? `${Math.min(...v).toFixed(0)}% a ${Math.max(...v).toFixed(0)}%` : "—"; };
+    $("#kpis13").innerHTML = [
+      ["Drawdown antes", ddr("antes"), "todas las trayectorias", "bad"], ["Drawdown después", ddr("despues"), "todas las trayectorias", "good"],
+      ["Esta trayectoria, antes", a ? fmtP(a.return_pct, 0) : "—", a ? `DD ${a.max_dd_pct.toFixed(0)}%` : "", ""], ["Esta trayectoria, después", d ? fmtP(d.return_pct, 0) : "—", d ? `DD ${d.max_dd_pct.toFixed(0)}%` : "", ""],
+    ].map(([t, v, s, c]) => `<div class="kpi ${c}"><span>${t}</span><b>${v}</b><small>${s}</small></div>`).join("");
+  }
+  r13();
+
+  /* ── 16 · Rentabilidad mensual por configuración ────────────────── */
+  const MR = P.monthly || { summary: [], paths: [] };
+  const CFG = [["nativo", "Apalancamiento actual (2–3x)", "var(--s3)"], ["x7", "7x sin límite de margen", "var(--s1)"], ["x7m20", "7x con margen ≤ 20%", "var(--s2)"]];
+  let pf = "nucleo";
+  const segpf = $("#seg-pf");
+  segpf.innerHTML = [["nucleo", "Núcleo (SUB5, 6, 9, 10)"], ["completa", "Completa (+ SUB2, SUB11)"]].map(([k, t]) => `<button type="button" data-k="${k}" aria-pressed="${k === pf}">${t}</button>`).join("");
+  segpf.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { pf = b.dataset.k; r16(); } });
+  function r16() {
+    segpf.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === pf));
+    const cfgs = CFG.filter(([k]) => MR.summary.some(s => s.set === k && s.portfolio === pf));
+    const w = 760, rowH = 62, h = 40 + rowH * Math.max(cfgs.length, 1), L = 10, R = 10, lo = -20, hi = 20;
+    const X = v => L + (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (w - L - R);
+    let g = "";
+    [-20, -10, 0, 3, 5, 10, 20].forEach(v => { const strong = v === 3 || v === 5; g += `<line x1="${X(v)}" x2="${X(v)}" y1="14" y2="${h - 20}" stroke="${strong ? "var(--gold)" : "var(--line)"}" ${v === 0 || strong ? "" : 'stroke-dasharray="2 4"'}/><text x="${X(v)}" y="${h - 6}" text-anchor="middle" ${strong ? 'style="fill:var(--gold)"' : ""}>${v > 0 ? "+" : ""}${v}%</text>`; });
+    g += `<rect x="${X(3)}" y="14" width="${X(5) - X(3)}" height="${h - 34}" fill="var(--gold)" opacity=".10"/><text x="${(X(3) + X(5)) / 2}" y="11" text-anchor="middle" style="fill:var(--gold)">objetivo</text>`;
+    cfgs.forEach(([k, , c], r) => {
+      const months = MR.paths.filter(p => p.set === k && p.portfolio === pf).flatMap(p => p.monthly);
+      const yc = 34 + r * rowH + rowH / 2 - 10;
+      months.forEach((m, j) => { const jit = ((j * 9301 + 49297) % 233280) / 233280 - .5; g += `<circle cx="${X(m).toFixed(1)}" cy="${(yc + jit * 30).toFixed(1)}" r="2.6" fill="${c}" opacity=".55"><title>${m.toFixed(1)}%</title></circle>`; });
+      const s = MR.summary.find(s => s.set === k && s.portfolio === pf);
+      if (s) g += `<line x1="${X(s.median_month)}" x2="${X(s.median_month)}" y1="${yc - 20}" y2="${yc + 20}" stroke="var(--fg)" stroke-width="2.5"/>`;
+    });
+    $("#chart16").innerHTML = cfgs.length ? `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Rentabilidad mensual por configuración">${g}</svg>` : `<p class="note">Resultados de 7x pendientes.</p>`;
+    $("#legend16").innerHTML = cfgs.map(([, t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join("") + `<span><i style="background:var(--fg)"></i>mediana</span><span>Cada punto es un mes (3 escenarios × 3 trayectorias)</span>`;
+    const row = k => MR.summary.find(s => s.set === k && s.portfolio === pf);
+    $("#tbl16").innerHTML = `<table><thead><tr><th></th>${cfgs.map(([, t]) => `<th class="num">${t.split(" ")[0] === "Apalancamiento" ? "actual" : t.replace("7x ", "7x · ").replace("sin límite de margen", "sin límite").replace("con margen ≤ 20%", "margen 20%")}</th>`).join("")}</tr></thead><tbody>
+      ${[["Mes mediano", s => fmtP(s.median_month, 2)], ["Mes medio", s => fmtP(s.mean_month, 2)], ["Meses ≥ 3%", s => `${s.share_ge_3}%`], ["Meses ≥ 5%", s => `${s.share_ge_5}%`], ["Peor mes", s => fmtP(s.worst_month)], ["Peor drawdown", s => `${s.worst_dd.toFixed(0)}%`], ["Trayectorias en pérdidas", s => `${s.paths_losing} de ${s.paths}`], ["Con parada dura del 40%", s => `${s.paths_with_hard_stop} de ${s.paths}`]]
+        .map(([n, fn]) => `<tr><td>${n}</td>${cfgs.map(([k]) => `<td class="num">${row(k) ? fn(row(k)) : "—"}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    $("#note16").textContent = "Los mercados sintéticos no tienen ventaja explotable por diseño: la rentabilidad cercana a 0 es lo esperado y no predice la real. Lo que sí es válido es el riesgo: cuánto se pierde en los peores meses y cuántas veces salta la parada dura.";
+  }
+  r16();
+
+  /* ── 17 · Calculadora ───────────────────────────────────────────── */
+  const K = { cap: 10000, mar: 20, lev: 7, ret: 1, crash: 25 };
+  const fmtK = { cap: v => `${nf(v)} USDT`, mar: v => `${v}%`, lev: v => `${v}x`, ret: v => `${(+v).toFixed(1)}%`, crash: v => `−${v}%` };
+  Object.keys(K).forEach(k => { const el = $("#k-" + k); el.value = K[k]; $("#o-" + k).textContent = fmtK[k](K[k]); el.addEventListener("input", () => { K[k] = +el.value; $("#o-" + k).textContent = fmtK[k](K[k]); r17(); }); });
+  function r17() {
+    const exp = K.mar / 100 * K.lev, notional = K.cap * exp;
+    const month = exp * K.ret, year = (Math.pow(1 + month / 100, 12) - 1) * 100;
+    const liq = 100 / K.lev, crashLoss = Math.min(K.crash, liq) / 100 * notional;
+    const crashPct = crashLoss / K.cap * 100;
+    $("#kpis17").innerHTML = [
+      ["Exposición", `${exp.toFixed(2)}×`, `${nf(notional)} USDT invertidos`, exp > 2 ? "bad" : exp > 1.4 ? "warn" : "good"],
+      ["Rentabilidad mensual de la cuenta", fmtP(month, 2), `${fmtP(year, 0)} al año compuesto`, month >= 3 ? "good" : ""],
+      ["Movimiento que liquida", `−${liq.toFixed(1)}%`, "en contra de una posición", liq < 15 ? "bad" : ""],
+      ["Pérdida en el crash simulado", `−${crashPct.toFixed(1)}%`, `de la cuenta (${nf(crashLoss)} USDT) sin stop`, crashPct > 25 ? "bad" : crashPct > 10 ? "warn" : "good"],
+    ].map(([t, v, s, c]) => `<div class="kpi ${c}"><span>${t}</span><b>${v}</b><small>${s}</small></div>`).join("");
+    const need = 3 / exp, need5 = 5 / exp;
+    $("#note17").textContent = `Para un 3–5% mensual con esta exposición, lo invertido debe rendir entre ${need.toFixed(1)}% y ${need5.toFixed(1)}% al mes de forma sostenida. Los stops reducen la pérdida del crash, pero con 7x un hueco de precio puede saltarlos.`;
+  }
+  r17();
+
+  /* ── 18 · Recomendación ─────────────────────────────────────────── */
+  const REC = P.rec || { items: [], table: [] };
+  if (REC.title) $("#rec-title").textContent = REC.title;
+  $("#rec-list").innerHTML = (REC.items || []).map(t => `<li>${t}</li>`).join("");
+  $("#rec-tbl").innerHTML = (REC.table || []).length ? `<table><thead><tr><th>Parámetro</th><th class="num">Recomendado</th></tr></thead><tbody>${REC.table.map(([a, b]) => `<tr><td>${a}</td><td class="num">${b}</td></tr>`).join("")}</tbody></table>` : "";
+  if (REC.summary) { $("#sum-ret").textContent = REC.summary[0]; $("#sum-ret-p").textContent = REC.summary[1]; }
+
+  /* ── 20 · Próximos pasos ────────────────────────────────────────── */
+  const NEXT = [
+    ["Permitir api.bitget.com en el entorno", "desbloquea el backtest con histórico real"], ["Contratar abogado salvadoreño", "estructura de la sociedad y del token"],
+    ["Asesor fiscal en España", "residencia fiscal de la dirección"], ["Pedir presupuesto a 2–3 auditores", "smart contract (CertiK u otros)"],
+    ["Bot en Bitget Demo con el núcleo", "SUB5, SUB6, SUB9, SUB10 con margen ≤ 20%"], ["Configurar DATABASE_URL en Railway", "activa la lista de interés de la web"],
+    ["Decidir socios, capital y vesting", "base del pacto de socios"], ["Definir contacto de privacidad", "para borrar datos de la lista de interés"],
+  ];
+  const KEY = "puda-plan-next";
+  let done = new Set(); try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (_) {}
+  function rNext() {
+    $("#next-steps").innerHTML = NEXT.map(([a, b], k) => `<label class="${done.has(k) ? "done" : ""}"><input type="checkbox" data-k="${k}" ${done.has(k) ? "checked" : ""}><span>${a}<small>${b}</small></span></label>`).join("");
+    $("#next-status").textContent = `${done.size} de ${NEXT.length} hechos. Se guarda solo en este navegador.`;
+  }
+  $("#next-steps").addEventListener("change", e => { const k = +e.target.dataset.k; e.target.checked ? done.add(k) : done.delete(k); try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (_) {} rNext(); });
+  rNext();
+
+  const start = parseInt((location.hash || "").slice(1), 10);
+  go(Number.isFinite(start) ? start - 1 : 0);
+  fit();
+})();
+</script>
