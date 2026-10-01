@@ -177,7 +177,7 @@ demás cuentas. La beta a la baja de las demás (días con BTC < −3%) suma ≈
 (SUB2 0,21 · SUB8 0,19 · SUB9 0,11 · SUB11 −0,04 · SUB6 y SUB10 ≈ 0); peor caso ≈ 0,95. Con margen
 del 20%, el apalancamiento que la cubre es 0,47 / 0,20 ≈ 2,4 → **3x** (5x como máximo para el peor
 caso). Por encima, el short no cubre más (entra tarde: la señal macro va con 30 días de retraso) y solo
-aumenta su propio drawdown: −26% a 3x, −32% a 5x, −36% a 7x, −40% a 10x.
+aumenta su propio drawdown: −28% a 3x, −37% a 5x, −46% a 7x (riesgo escalado en ambos niveles de convicción).
 
 ### Novedades del ecosistema aplicadas
 - ccxt ≥ 4.5.84 (ledger de la cuenta unificada UTA v3).
