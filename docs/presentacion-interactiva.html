@@ -1,0 +1,1083 @@
+<title>Presentación interactiva PUDA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cabecera con el flujo de órdenes → explorador (lista de subcuentas | panel con simulador) → laboratorio del guardián → camino a real.
+   Marca PUDA (PeludaRemake): oro sobre azul noche. Diseño dark-first con variante clara. */
+:root {
+  --bg: hsl(225, 44%, 5%);
+  --surface: hsl(225, 36%, 8%);
+  --surface-2: hsl(224, 30%, 12%);
+  --line: hsl(224, 26%, 18%);
+  --fg: hsl(220, 30%, 96%);
+  --muted: hsl(220, 14%, 64%);
+  --gold: hsl(45, 93%, 52%);
+  --gold-ink: hsl(225, 44%, 6%);
+  --gold-soft: hsla(45, 93%, 52%, .13);
+  --long: hsl(158, 62%, 50%);
+  --short: hsl(2, 80%, 64%);
+  --warn: hsl(32, 95%, 60%);
+  --long-soft: hsla(158, 62%, 50%, .14);
+  --short-soft: hsla(2, 80%, 64%, .14);
+  --warn-soft: hsla(32, 95%, 60%, .14);
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: hsl(42, 33%, 97%); --surface: hsl(0, 0%, 100%); --surface-2: hsl(40, 30%, 93%);
+    --line: hsl(35, 18%, 84%); --fg: hsl(225, 40%, 12%); --muted: hsl(222, 12%, 40%);
+    --gold: hsl(40, 92%, 36%); --gold-ink: hsl(0, 0%, 100%); --gold-soft: hsla(40, 92%, 40%, .12);
+    --long: hsl(160, 70%, 30%); --short: hsl(2, 68%, 46%); --warn: hsl(28, 90%, 40%);
+    --long-soft: hsla(160, 70%, 30%, .1); --short-soft: hsla(2, 68%, 46%, .1); --warn-soft: hsla(28, 90%, 40%, .1);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: hsl(42, 33%, 97%); --surface: hsl(0, 0%, 100%); --surface-2: hsl(40, 30%, 93%);
+  --line: hsl(35, 18%, 84%); --fg: hsl(225, 40%, 12%); --muted: hsl(222, 12%, 40%);
+  --gold: hsl(40, 92%, 36%); --gold-ink: hsl(0, 0%, 100%); --gold-soft: hsla(40, 92%, 40%, .12);
+  --long: hsl(160, 70%, 30%); --short: hsl(2, 68%, 46%); --warn: hsl(28, 90%, 40%);
+  --long-soft: hsla(160, 70%, 30%, .1); --short-soft: hsla(2, 68%, 46%, .1); --warn-soft: hsla(28, 90%, 40%, .1);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  background-image: radial-gradient(60rem 30rem at 10% -8%, var(--gold-soft), transparent 60%);
+  background-repeat: no-repeat;
+  color: var(--fg); font: 15px/1.55 var(--body); margin: 0;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 64px; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(30px, 5vw, 52px); line-height: 1.05; }
+h1 em { font-style: normal; color: var(--gold); }
+h2 { font-size: clamp(20px, 2.6vw, 28px); }
+h3 { font-size: 18px; font-weight: 500; }
+p { margin: 0; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.lead { color: var(--muted); max-width: 64ch; font-size: 17px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+section { display: grid; gap: 20px; }
+.sec-head { display: grid; gap: 8px; }
+
+/* Hero */
+.hero { display: grid; gap: 18px; }
+.hero-stats { display: flex; flex-wrap: wrap; gap: 10px 28px; color: var(--muted); font-size: 14px; }
+.hero-stats b { color: var(--fg); font: 600 15px var(--mono); margin-right: 6px; }
+
+/* Flujo */
+.flow-box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; overflow-x: auto; }
+.flow-box svg { display: block; min-width: 760px; width: 100%; height: auto; }
+.flow-box text { font-family: var(--body); }
+.node-sub { cursor: pointer; }
+.node-sub rect { fill: var(--surface-2); stroke: var(--line); transition: fill .15s, stroke .15s; }
+.node-sub:hover rect, .node-sub:focus rect { stroke: var(--gold); }
+.node-sub.active rect { fill: var(--gold-soft); stroke: var(--gold); }
+.node-sub.off text.t2 { fill: var(--muted); }
+.node-sub:focus { outline: none; }
+.flow-note { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+/* Explorador */
+.explorer { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
+.list { display: grid; gap: 6px; align-content: start; align-self: start; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+.list button {
+  all: unset; cursor: pointer; display: grid; grid-template-columns: 54px 1fr auto; align-items: center; gap: 8px;
+  padding: 9px 12px; border-radius: 10px; border: 1px solid transparent; color: var(--fg); font-size: 14px;
+}
+.list button:hover { background: var(--surface-2); }
+.list button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.list button[aria-selected="true"] { background: var(--surface); border-color: var(--gold); }
+.list .id { font: 500 12px var(--mono); color: var(--gold); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--long); }
+.dot.off { background: transparent; border: 1.5px solid var(--muted); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(16px, 3vw, 28px); display: grid; gap: 22px; min-width: 0; }
+.panel-head { display: grid; gap: 10px; }
+.panel-head .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.chip { font: 500 12px/1 var(--mono); padding: 6px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.chip.on { background: var(--long-soft); color: var(--long); }
+.chip.off { background: var(--warn-soft); color: var(--warn); }
+.idea { color: var(--muted); max-width: 70ch; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px 24px; }
+.facts div { display: grid; gap: 4px; min-width: 0; }
+.facts dt { font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font-size: 14px; }
+.sim { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 24px; border-top: 1px solid var(--line); padding-top: 22px; }
+.controls { display: grid; gap: 16px; align-content: start; }
+.controls h3 { font-size: 15px; }
+.ctl { display: grid; gap: 6px; }
+.ctl label { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); }
+.ctl label output { color: var(--fg); font: 500 13px var(--mono); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--gold); }
+select, input[type=number] {
+  width: 100%; background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px; font: 14px var(--body);
+}
+select:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.result { display: grid; gap: 14px; min-width: 0; align-content: start; }
+.verdict { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); }
+.verdict .tag { font: 700 13px/1 var(--display); padding: 8px 10px; border-radius: 8px; white-space: nowrap; }
+.verdict .why { font-size: 14px; }
+.t-long .tag { background: var(--long); color: var(--gold-ink); }
+.t-short .tag { background: var(--short); color: var(--gold-ink); }
+.t-none .tag { background: var(--line); color: var(--fg); }
+.t-warn .tag { background: var(--warn); color: var(--gold-ink); }
+.t-ok .tag { background: var(--gold); color: var(--gold-ink); }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.checks li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; align-items: baseline; }
+.checks li::before { content: "✓"; color: var(--long); font-weight: 700; }
+.checks li.bad::before { content: "✕"; color: var(--short); }
+.checks li.info::before { content: "•"; color: var(--muted); }
+.chart { width: 100%; height: auto; display: block; background: var(--bg); border-radius: 12px; border: 1px solid var(--line); }
+.chart text { font: 11px var(--mono); }
+.bars { display: grid; gap: 12px; }
+.bar { display: grid; gap: 5px; font-size: 13px; }
+.bar .top { display: flex; justify-content: space-between; gap: 10px; }
+.bar .top span:last-child { font-family: var(--mono); }
+.bar .track { position: relative; height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; border-radius: 5px; background: var(--gold); transition: width .2s; }
+.bar .fill.good { background: var(--long); } .bar .fill.bad { background: var(--short); }
+.bar .mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--fg); }
+.note { font-size: 12.5px; color: var(--muted); }
+
+/* Laboratorio */
+.lab { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.out { font: 500 14px/1.5 var(--mono); background: var(--surface-2); border-radius: 10px; padding: 12px; overflow-wrap: anywhere; }
+.out.ok { background: var(--long-soft); color: var(--long); }
+.out.bad { background: var(--short-soft); color: var(--short); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* Camino a real */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; counter-reset: s; }
+.steps li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.steps li::before { content: "Paso " counter(s); font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.steps b { font-family: var(--mono); font-size: 15px; }
+.steps p { color: var(--muted); font-size: 14px; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 18px; max-width: 80ch; }
+
+@media (max-width: 860px) {
+  .explorer { grid-template-columns: 1fr; }
+  .list { position: static; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .list button { grid-template-columns: 46px 1fr auto; }
+  .sim { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ── Presentación: navegación por pasos ─────────────────────────────── */
+.stepnav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; background: color-mix(in hsl, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.stepnav ol { list-style: none; margin: 0 auto; max-width: 1180px; padding-inline: 20px; padding-block: 0; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.stepnav a { display: block; padding: 12px 12px; font: 500 12.5px var(--mono); color: var(--muted); text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; }
+.stepnav a:hover { color: var(--fg); }
+.stepnav a.on { color: var(--gold); border-bottom-color: var(--gold); }
+.stepnav a:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+section { scroll-margin-top: 64px; }
+.checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 80ch; }
+.checklist li { display: grid; grid-template-columns: 28px 1fr; gap: 6px; align-items: baseline; font-size: 16px; }
+.checklist li::before { content: "✅"; }
+
+/* ── Sinergia ───────────────────────────────────────────────────────── */
+.regimes { display: flex; flex-wrap: wrap; gap: 8px; }
+.regimes button, .seg button { all: unset; cursor: pointer; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); font: 500 13px var(--body); color: var(--muted); background: var(--surface); }
+.regimes button[aria-pressed="true"], .seg button[aria-pressed="true"] { color: var(--gold-ink); background: var(--gold); border-color: var(--gold); }
+.regimes button:focus-visible, .seg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.syn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.syn-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; transition: opacity .2s, border-color .2s; }
+.syn-card .id { font: 500 12px var(--mono); color: var(--gold); }
+.syn-card small { color: var(--muted); font-size: 13px; }
+.syn-card.dim { opacity: .35; }
+.syn-card.hit { border-color: var(--gold); }
+
+/* ── Test de estrés ─────────────────────────────────────────────────── */
+.viz { --s-before: #eb6834; --s-after: #2a78d6; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .viz { --s-before: #d95926; --s-after: #3987e5; } }
+:root[data-theme="dark"] .viz { --s-before: #d95926; --s-after: #3987e5; }
+.controls-row { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.seg { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.seg-label { font: 500 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; }
+.tile span { font: 500 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.tile b { font: 700 24px var(--display); font-variant-numeric: tabular-nums; }
+.tile small { color: var(--muted); font-size: 12.5px; }
+.chartbox { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 8px; position: relative; min-width: 0; }
+.chartbox h3 { font-size: 15px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.big-chart svg, .mini svg { display: block; width: 100%; height: auto; }
+.big-chart text, .mini text { font: 11px var(--mono); fill: var(--muted); }
+.minis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 4px; min-width: 0; }
+.mini header { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.mini header b { font-family: var(--mono); color: var(--gold); font-weight: 500; }
+.mini .nums { display: flex; justify-content: space-between; gap: 8px; font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.tip { position: absolute; pointer-events: none; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 12px var(--mono); color: var(--fg); white-space: nowrap; box-shadow: 0 6px 20px rgb(0 0 0 / .25); }
+.data-table { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.data-table table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+.data-table th, .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.data-table th:first-child, .data-table td:first-child { text-align: left; }
+.data-table th { font: 500 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.data-table tr:last-child td { border-bottom: 0; }
+.pos { color: var(--long); } .neg { color: var(--short); }
+.findings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.finding { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--short); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; }
+.finding.fixed { border-left-color: var(--long); }
+.finding p { font-size: 14px; color: var(--muted); }
+.finding p b { color: var(--fg); }
+.status { font: 500 11px/1 var(--mono); padding: 5px 8px; border-radius: 999px; justify-self: start; }
+.status.ok { background: var(--long-soft); color: var(--long); }
+.status.warn { background: var(--warn-soft); color: var(--warn); }
+.status.bad { background: var(--short-soft); color: var(--short); }
+.news td:nth-child(3) { white-space: nowrap; }
+.callout { border: 1px solid var(--warn); background: var(--warn-soft); border-radius: 12px; padding: 14px 16px; font-size: 14.5px; }
+.callout b { color: var(--warn); }
+@media (max-width: 860px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .minis { grid-template-columns: 1fr 1fr; }
+  .findings { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) { .minis { grid-template-columns: 1fr; } }
+</style>
+<nav class="stepnav" aria-label="Pasos de la presentación"><ol>
+  <li><a href="#directrices">Directrices</a></li><li><a href="#paso1">Paso 1 · Arquitectura</a></li>
+  <li><a href="#paso2">Paso 2 · Guardián</a></li><li><a href="#explorador">Pasos 3–5 · Estrategias</a></li>
+  <li><a href="#sinergia">Sinergia</a></li><li><a href="#estres">Estrés 3 años</a></li>
+  <li><a href="#novedades">Novedades oct. 2026</a></li><li><a href="#real">Camino a real</a></li></ol></nav>
+<div class="wrap">
+  <header class="hero" id="portada">
+    <span class="eyebrow">🤖 Sistema de Trading Algorítmico — Arquitectura MCP + Bitget</span>
+    <h1>Presentación interactiva del bot de <em>PUDA</em></h1>
+    <p class="lead">La presentación original, «Presentación y Confirmación de Directrices», convertida en una página que se puede manejar: cada estrategia tiene su simulador, hay un test de estrés de 3 años y las novedades a 1 de octubre de 2026 ya están aplicadas al código.</p>
+    <div class="hero-stats">
+      <span><b>12</b>cuentas (1 + 11)</span>
+      <span><b>100%</b>de las órdenes con SL</span>
+      <span><b>3 años</b>de estrés por estrategia</span>
+      <span><b>4</b>fallos encontrados y corregidos</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="dir-h" id="directrices">
+    <div class="sec-head">
+      <span class="eyebrow">Presentación y confirmación de directrices</span>
+      <h2 id="dir-h">Lo que el sistema garantiza</h2>
+    </div>
+    <ul class="checklist">
+      <li><span><b>12 cuentas</b> (1 principal + 11 subcuentas), cada una con una estrategia independiente.</span></li>
+      <li><span><b>Regla inquebrantable:</b> cero órdenes sin Stop Loss; el guardián rechaza la orden antes de enviarla.</span></li>
+      <li><span><b>Exposición total limitada:</b> como mucho equity × apalancamiento por subcuenta, contando lo que ya está abierto (nuevo).</span></li>
+      <li><span><b>Corte por drawdown:</b> una subcuenta que cae más de un 25% desde su máximo deja de abrir durante 14 días (nuevo).</span></li>
+      <li><span><b>MCP sobre Antigravity</b> con el SDK oficial 2.2, en modo HTTP sin estado.</span></li>
+      <li><span><b>El mismo código en todas las fases:</b> backtest → dry_run → demo → live.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="flujo-h" id="paso1">
+    <div class="sec-head">
+      <span class="eyebrow">Paso 1 — Arquitectura MCP + Docker</span>
+      <h2 id="flujo-h">El recorrido de una orden</h2>
+    </div>
+    <div class="flow-box">
+      <svg id="flow" viewBox="0 50 960 200" role="img" aria-label="Diagrama: cuenta principal, 11 subcuentas, guardián de riesgo y Bitget"></svg>
+    </div>
+    <p class="flow-note">Pulsa una subcuenta del diagrama para abrir su estrategia. El motor (APScheduler) lanza cada estrategia con su propio calendario; SUB4 funciona por WebSocket en cada vela de 1 minuto.</p>
+  </section>
+
+  <section aria-labelledby="lab-h" id="paso2">
+    <div class="sec-head">
+      <span class="eyebrow">Paso 2 — Account router y guardián</span>
+      <h2 id="lab-h">Laboratorio del guardián</h2>
+      <p class="lead">Las mismas reglas que aplica <span class="mono">risk/guard.py</span> a toda orden (motor y servidor MCP) y el cálculo de tamaño de <span class="mono">risk/sizing.py</span>.</p>
+    </div>
+    <div class="lab">
+      <div class="card">
+        <h3>¿Pasaría esta orden?</h3>
+        <div class="grid2">
+          <div class="ctl"><label for="g-side">Lado</label>
+            <select id="g-side"><option value="buy">Compra (LONG)</option><option value="sell">Venta (SHORT)</option></select></div>
+          <div class="ctl"><label for="g-price">Precio</label><input id="g-price" type="number" value="64000" step="any"></div>
+          <div class="ctl"><label for="g-sl">Stop Loss (vacío = sin SL)</label><input id="g-sl" type="number" value="61500" step="any"></div>
+          <div class="ctl"><label for="g-tp">Take Profit (opcional)</label><input id="g-tp" type="number" value="69000" step="any"></div>
+        </div>
+        <div class="out" id="g-out" aria-live="polite"></div>
+        <p class="note">Las órdenes que reducen o cierran posición, y las ventas spot, no necesitan SL. La pata spot de SUB6 está exenta de forma explícita porque es la cobertura.</p>
+      </div>
+      <div class="card">
+        <h3>Tamaño por riesgo</h3>
+        <div class="grid2">
+          <div class="ctl"><label for="s-eq">Equity de la subcuenta (USDT)</label><input id="s-eq" type="number" value="2000" step="any"></div>
+          <div class="ctl"><label for="s-risk">Riesgo por operación (%)</label><input id="s-risk" type="number" value="1.5" step="0.1"></div>
+          <div class="ctl"><label for="s-entry">Entrada</label><input id="s-entry" type="number" value="64000" step="any"></div>
+          <div class="ctl"><label for="s-sl">Stop Loss</label><input id="s-sl" type="number" value="61500" step="any"></div>
+        </div>
+        <dl class="kv" id="s-out"></dl>
+        <p class="note">Cantidad = equity × riesgo ÷ |entrada − SL|. Si la cantidad queda por debajo del mínimo del mercado, la orden no se envía. Desde octubre de 2026 el tope de nocional también descuenta lo que ya está abierto. El diseño original la redondeaba hacia arriba a 0.01 BTC y multiplicaba el riesgo hasta 2,5×.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="exp-h" id="explorador">
+    <div class="sec-head">
+      <span class="eyebrow">Pasos 3, 4 y 5 — Estrategias</span>
+      <h2 id="exp-h">Las 11 estrategias, una a una</h2>
+      <p class="lead">Los valores de los controles son un escenario de ejemplo. Los precios se normalizan a 100 para que los niveles se lean como porcentajes.</p>
+    </div>
+    <div class="explorer">
+      <nav class="list" id="list" role="tablist" aria-label="Estrategias"></nav>
+      <article class="panel" id="panel" role="tabpanel"></article>
+    </div>
+  </section>
+
+  <!--SINERGIA-->
+  <section aria-labelledby="syn-h" id="sinergia">
+    <div class="sec-head">
+      <span class="eyebrow">Paso 4 — Sinergia del portafolio</span>
+      <h2 id="syn-h">¿Qué subcuentas trabajan en cada mercado?</h2>
+      <p class="lead">Elige un tipo de mercado para ver qué estrategias están pensadas para él. Es la tabla de sinergia de la presentación original, actualizada con SUB10, SUB11 y los cambios de la revisión.</p>
+    </div>
+    <div class="regimes" id="regimes" role="group" aria-label="Tipo de mercado"></div>
+    <div class="syn-grid" id="syn-grid"></div>
+  </section>
+
+  <!--ESTRES-->
+  <section aria-labelledby="stress-h" id="estres" class="viz">
+    <div class="sec-head">
+      <span class="eyebrow">Test de estrés · 3 años · mismo código que en real</span>
+      <h2 id="stress-h">Qué pasa con 3 años de crashes, bear market y rangos</h2>
+      <p class="lead">Cada estrategia se ejecutó con su calendario real y el guardián de riesgo sobre mercados sintéticos de 3 años: <span id="stress-meta"></span>. Hay dos versiones: <b>antes</b>, el código tal como estaba, y <b>después</b>, con los arreglos que reveló el propio test.</p>
+    </div>
+    <div class="callout"><b>Datos sintéticos, no históricos.</b> Desde este entorno el acceso a la API de Bitget estaba bloqueado, así que el test usa mercados generados con regímenes y crashes realistas (velas de 1H, colas gruesas, crashes correlacionados, funding ligado al régimen, macro con 30 días de retraso). Sirve para medir <b>supervivencia y control del riesgo</b>, no para predecir rentabilidad. Con acceso a Bitget, <span class="mono">kriptty-backtest</span> repite la prueba con histórico real.</div>
+    <div class="controls-row">
+      <div><span class="seg-label">Escenario</span><span class="seg" id="seg-sc" role="group" aria-label="Escenario"></span></div>
+      <div><span class="seg-label">Trayectoria</span><span class="seg" id="seg-seed" role="group" aria-label="Trayectoria Monte Carlo"></span></div>
+      <div><span class="seg-label">Costes</span><span class="seg" id="seg-cost" role="group" aria-label="Costes"></span></div>
+    </div>
+    <p class="note" id="sc-desc"></p>
+    <div class="tiles" id="tiles"></div>
+    <div class="chartbox big-chart">
+      <h3>Cartera combinada (8 subcuentas de 3 años, base 100)</h3>
+      <div class="legend"><span><i style="background:var(--s-before)"></i>Antes de los arreglos</span><span><i style="background:var(--s-after)"></i>Después de los arreglos</span><span>Bandas = fases del escenario</span></div>
+      <div id="big"></div>
+    </div>
+    <div class="minis" id="minis"></div>
+    <details>
+      <summary class="note" style="cursor:pointer">Ver la tabla con todas las métricas</summary>
+      <div class="data-table" id="table" style="margin-top:10px"></div>
+    </details>
+    <div class="sec-head" style="margin-top:8px"><h3>Lo que encontró el test y cómo se ha corregido</h3></div>
+    <div class="findings">
+      <div class="finding fixed"><span class="status ok">corregido</span><h3>Apalancamiento oculto en SUB2 y SUB11</h3><p>El tope de tamaño se aplicaba <b>por posición</b>: con 3 posiciones a la vez la exposición llegaba a <b>9× el equity</b> en vez de 3×. Ahora el tope cuenta lo que ya está abierto, y el backtester exige margen como el exchange.</p></div>
+      <div class="finding fixed"><span class="status ok">corregido</span><h3>SUB7 encadenaba pérdidas del 4% en bear market</h3><p>El grid se reconstruía cada día y cada ruptura costaba hasta un 4%: <b>−94%</b> en el ciclo completo. Ahora no se monta si la EMA20 diaria cae más de un 3% en 5 días.</p></div>
+      <div class="finding fixed"><span class="status ok">corregido</span><h3>SUB6 abría y deshacía pares en bucle</h3><p>Con el kill-switch diario activo en una cartera, abría la pata permitida, se rechazaba la otra y la deshacía, pagando comisiones en cada escaneo. Ahora comprueba las dos carteras antes de abrir.</p></div>
+      <div class="finding fixed"><span class="status ok">nuevo</span><h3>Corte por drawdown en todas las subcuentas</h3><p>Si una subcuenta cae más de un <b>25% desde su máximo</b>, no abre posiciones durante 14 días (configurable). SUB8, el DCA, queda fuera porque acumula en caídas por diseño.</p></div>
+    </div>
+  </section>
+
+  <!--NOVEDADES-->
+  <section aria-labelledby="news-h" id="novedades">
+    <div class="sec-head">
+      <span class="eyebrow">Novedades a 1 de octubre de 2026</span>
+      <h2 id="news-h">Qué ha cambiado y qué se ha hecho</h2>
+    </div>
+    <div class="callout"><b>Lo más importante: MiCA.</b> Según varias fuentes, Bitget no tenía licencia MiCA a mediados de septiembre de 2026 y no daría servicio a residentes del EEE hasta obtenerla; además, la CNMV trata los perpetuos como CFD para clientes minoristas. Comprueba que tu cuenta puede operar perpetuos desde España <b>antes de pasar a live</b>: afecta a SUB2–SUB7 y SUB9–SUB11.</div>
+    <div class="data-table news">
+      <table>
+        <thead><tr><th>Novedad</th><th>Impacto</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td>ccxt 4.5.84 (24/09): ledger de la cuenta unificada UTA v3 en <span class="mono">fetchLedger</span></td><td>Necesario para leer funding y PnL en modo UTA</td><td><span class="status ok">implementado: ccxt ≥ 4.5.84</span></td></tr>
+          <tr><td>SDK MCP 2.2 (07/09): las sesiones HTTP se cierran tras 30 min sin actividad (404)</td><td>Antigravity o Claude perdían la conexión</td><td><span class="status ok">implementado: HTTP sin estado</span></td></tr>
+          <tr><td>Bitget lista perpetuos de acciones, metales e índices con formato cripto</td><td>Entraban en los universos de SUB2 y SUB6</td><td><span class="status ok">implementado: filtro</span></td></tr>
+          <tr><td>Freqtrade 2026.9: aviso de desfase del reloj con el exchange</td><td>Firmas rechazadas y velas mal cortadas</td><td><span class="status ok">implementado al arrancar</span></td></tr>
+          <tr><td>Migración automática de cuentas clásicas a UTA (desde el 15/09); una key UTA no usa endpoints clásicos</td><td><span class="mono">BITGET_UTA</span> tiene que coincidir con el tipo real de cada subcuenta</td><td><span class="status warn">revisar en tu cuenta</span></td></tr>
+          <tr><td>API de seguidores de copy trading «temporalmente» no disponible</td><td>SUB3 podría no funcionar aunque los campos estén bien</td><td><span class="status warn">SUB3 sigue desactivada</span></td></tr>
+          <tr><td>El canal <span class="mono">books50</span> de UTA pasa a incremental el 05/11/2026</td><td>SUB4 usa velas y no libro de órdenes: riesgo bajo</td><td><span class="status warn">probar en demo</span></td></tr>
+          <tr><td>Intervalos de funding por par cambiados en septiembre (1H ↔ 4H)</td><td>El sistema ya lee el intervalo real de cada par</td><td><span class="status ok">ya cubierto</span></td></tr>
+          <tr><td>Comisiones VIP0 sin cambios: futuros 0.02% / 0.06%, spot 0.1%</td><td>El backtester usa estas cifras</td><td><span class="status ok">ya cubierto</span></td></tr>
+          <tr><td>MiCA: Bitget sin licencia y la CNMV trata los perpetuos como CFD</td><td>Puede impedir operar futuros desde España</td><td><span class="status bad">acción tuya</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Fuentes: PyPI (ccxt, mcp), GitHub (ccxt, MCP python-sdk v2.2.0, Freqtrade 2026.9, BitgetLimited/agent_hub), registro UTA de Bitget y avisos de soporte (resúmenes de buscador), crypto.news y casptracker.eu (MiCA). Varias webs de Bitget no se pudieron abrir directamente.</p>
+  </section>
+
+  <section aria-labelledby="real-h" id="real">
+    <div class="sec-head">
+      <span class="eyebrow">Puesta en producción</span>
+      <h2 id="real-h">Camino recomendado hacia real</h2>
+    </div>
+    <ol class="steps">
+      <li><b>backtest</b><p>De 12 a 24 meses por estrategia, con comisiones (0,06% taker), slippage y funding históricos. Ejecuta el mismo código que en real.</p></li>
+      <li><b>dry_run</b><p>Precios reales y órdenes simuladas. Se revisan los logs y el diario de órdenes.</p></li>
+      <li><b>demo</b><p>API keys de Demo Trading de Bitget en cada subcuenta, de 2 a 4 semanas por estrategia.</p></li>
+      <li><b>live</b><p>Requiere <span class="mono">CONFIRM_LIVE_TRADING=yes</span>. Keys sin permiso de retiro y con lista blanca de IP. Se empieza con pocas estrategias y poco capital.</p></li>
+    </ol>
+    <p class="note">Para lanzar el token PUDA en El Salvador hay una hoja de ruta aparte: <span class="mono">docs/lanzamiento-el-salvador.html</span>.</p>
+  </section>
+
+  <footer>Software experimental. Ninguna cifra de esta página es una previsión de rentabilidad: los simuladores y el test de estrés usan escenarios sintéticos y los rendimientos solo pueden estimarse con el backtester y con semanas en demo. Fuente: repositorio <span class="mono">kriptty-puda-strategy</span> (estrategias SUB1–SUB11).</footer>
+</div>
+
+<script id="stress-data">window.STRESS = null;</script>
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s);
+const P = 100;
+const f1 = v => (+v).toFixed(1), f2 = v => (+v).toFixed(2), pct = (v, d = 1) => `${(+v).toFixed(d)}%`;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+/* ── Definición de estrategias (parámetros reales del código) ─────────── */
+const S = [
+{
+  id: "SUB1", name: "News Sentiment", on: true, freq: "cada 2H", lev: "3x",
+  idea: "Lee noticias por RSS (CoinDesk, Cointelegraph, Decrypt, The Block), puntúa el sentimiento con VADER o FinBERT y lo pondera por fuente y frescura (vida media de 3 horas).",
+  facts: { "Activos": "BTC, ETH, SOL, BNB", "Entrada": "score > 0.65 LONG · < 0.35 SHORT (mín. 3 noticias en 6H)", "Stop Loss": "1.5 × ATR(14, 4H), trailing solo a favor", "Take Profit": "2.5 × ATR (R:R 1.67)", "Riesgo": "1.5% por operación, máx. 2 posiciones" },
+  inputs: [
+    { id: "score", label: "Score de sentimiento", min: 0, max: 1, step: .01, v: .72, fmt: f2 },
+    { id: "atr", label: "ATR 4H (% del precio)", min: .5, max: 6, step: .1, v: 2.2, fmt: v => pct(v) },
+  ],
+  run(x) {
+    const a = x.atr;
+    const checks = [[`Score ${f2(x.score)} fuera de la zona neutra 0.35–0.65`, x.score > .65 || x.score < .35]];
+    if (x.score > .65) return { tone: "long", tag: "LONG", why: "Noticias claramente positivas.", checks,
+      levels: [{ y: P - 1.5 * a, k: "sl", t: "SL" }, { y: P + 2.5 * a, k: "tp", t: "TP" }] };
+    if (x.score < .35) return { tone: "short", tag: "SHORT", why: "Noticias claramente negativas.", checks,
+      levels: [{ y: P + 1.5 * a, k: "sl", t: "SL" }, { y: P - 2.5 * a, k: "tp", t: "TP" }] };
+    return { tone: "none", tag: "ESPERA", why: "El sentimiento está en la zona neutra: no se opera.", checks,
+      levels: [{ y: P - 1.5 * a, k: "ghost", t: "SL si LONG" }, { y: P + 1.5 * a, k: "ghost", t: "SL si SHORT" }] };
+  }
+},
+{
+  id: "SUB2", name: "Stat Arb · vasos comunicantes", on: true, freq: "cada 4H", lev: "3x",
+  idea: "Cuando las 5 criptos líderes suben con fuerza, busca altcoins muy correlacionadas que aún no han seguido el movimiento y compra la rezagada esperando que lo alcance.",
+  facts: { "Universo": "Perpetuos USDT-M con volumen 24H ≥ 5M USDT", "Entrada": "líderes ≥ +4%, rezago ≥ 4%, correlación 30D ≥ 0.65", "Stop Loss": "mínimo de 48H − 0.5% (máx. 12%)", "Take Profit": "máximo de 48H, mínimo +6%; R:R ≥ 1.5", "Salida por tiempo": "48 horas", "Riesgo": "2% por operación, máx. 3 posiciones", "Nuevo (oct. 2026)": "la exposición total de las 3 posiciones ≤ equity × 3; sin acciones ni metales en el universo" },
+  inputs: [
+    { id: "lead", label: "Subida de los líderes 24H", min: 0, max: 15, step: .1, v: 6.5, fmt: v => pct(v) },
+    { id: "lag", label: "Rezago de la altcoin", min: 0, max: 10, step: .1, v: 5.2, fmt: v => pct(v) },
+    { id: "corr", label: "Correlación 30D con los líderes", min: 0, max: 1, step: .01, v: .78, fmt: f2 },
+    { id: "low", label: "Mínimo 48H bajo el precio", min: 1, max: 15, step: .1, v: 3.5, fmt: v => pct(v) },
+    { id: "high", label: "Máximo 48H sobre el precio", min: 0, max: 20, step: .1, v: 8, fmt: v => pct(v) },
+  ],
+  run(x) {
+    const sl = P * (1 - x.low / 100) * (1 - .005), tp = Math.max(P * (1 + x.high / 100), P * 1.06);
+    const slPct = (P - sl), rr = (tp - P) / (P - sl);
+    const checks = [
+      [`Líderes suben ${pct(x.lead)} (mín. 4%)`, x.lead >= 4],
+      [`Rezago ${pct(x.lag)} (mín. 4%)`, x.lag >= 4],
+      [`Correlación ${f2(x.corr)} (mín. 0.65)`, x.corr >= .65],
+      [`SL a ${pct(slPct)} (máx. 12%)`, slPct <= 12],
+      [`R:R ${f2(rr)} (mín. 1.5)`, rr >= 1.5],
+    ];
+    const ok = checks.every(c => c[1]);
+    return { tone: ok ? "long" : "none", tag: ok ? "LONG" : "DESCARTA", why: ok ? "Rezagada válida: compra y espera a que alcance a los líderes." : "Alguna condición no se cumple.", checks,
+      levels: [{ y: sl, k: ok ? "sl" : "ghost", t: "SL" }, { y: tp, k: ok ? "tp" : "ghost", t: "TP" }] };
+  }
+},
+{
+  id: "SUB3", name: "Copy trading + guardián", on: false, freq: "cada 60 s", lev: "la del trader",
+  idea: "Se copian traders desde la web de Bitget (win rate > 55%, PF > 1.5, DD < 25%). El bot no elige operaciones: revisa cada orden copiada y le impone su propio SL si el del trader es más arriesgado.",
+  facts: { "Regla LONG": "SL = max(SL del trader, entrada − 1.5·ATR 1H)", "Regla SHORT": "SL = min(SL del trader, entrada + 1.5·ATR 1H)", "Take Profit": "el del trader o ± 3.75·ATR", "Corte diario": "si la pérdida del día supera el límite, cierra todo", "Estado": "Desactivada: hay que validar los campos de la API en Demo" },
+  inputs: [
+    { id: "side", label: "Operación copiada", type: "select", opts: [["long", "LONG"], ["short", "SHORT"]], v: "long" },
+    { id: "tsl", label: "SL del trader (0 = sin SL)", min: 0, max: 12, step: .1, v: 6, fmt: v => +v ? pct(v) : "sin SL" },
+    { id: "atr", label: "ATR 1H (% del precio)", min: .3, max: 4, step: .1, v: 1.6, fmt: v => pct(v) },
+  ],
+  run(x) {
+    const d = x.side === "long" ? -1 : 1, ours = 1.5 * x.atr, t = +x.tsl;
+    const final = t ? Math.min(t, ours) : ours, mine = !t || ours < t;
+    const checks = [
+      [t ? `SL del trader a ${pct(t)}` : "El trader no puso SL", !!t && !mine],
+      [`SL del guardián a ${pct(ours)} (1.5 × ATR)`, mine],
+      ["Se aplica el más conservador de los dos", true],
+    ];
+    return { tone: "ok", tag: mine ? "SL PROPIO" : "SL TRADER", why: mine ? "El guardián ajusta el SL de la orden copiada." : "El SL del trader ya es más prudente: se respeta.", checks,
+      levels: [
+        ...(t ? [{ y: P + d * t, k: "ghost", t: "SL trader" }] : []),
+        { y: P + d * final, k: "sl", t: "SL final" }, { y: P - d * 3.75 * x.atr, k: "tp", t: "TP" }] };
+  }
+},
+{
+  id: "SUB4", name: "Scalping 1m (WebSocket)", on: true, freq: "cada vela de 1m", lev: "5x",
+  idea: "Busca patrones de vela en 1 minuto a favor de la tendencia de 5 minutos, con pico de volumen. Antes de entrar comprueba que el beneficio objetivo cubre de sobra las comisiones.",
+  facts: { "Activos": "BTC, ETH, SOL", "Filtros": "patrón + EMA9/21 en 5m + volumen > 1.5× + RSI no extremo + spread < 0.05%", "Filtro de costes": "TP (2·ATR) ≥ 3 × comisión ida y vuelta (0.12%)", "Stop Loss": "1.2 × ATR, breakeven en +1 ATR, trailing desde +2 ATR", "Límites": "2 posiciones, 10 trades/día por símbolo, pausa si DD diario > 3%, nada de 23:00 a 00:00 UTC" },
+  inputs: [
+    { id: "pat", label: "Patrón de vela 1m", type: "select", opts: [["up", "Alcista (hammer, engulfing…)"], ["down", "Bajista (shooting star…)"], ["none", "Ninguno"]], v: "up" },
+    { id: "trend", label: "Tendencia 5m (EMA9 vs EMA21)", type: "select", opts: [["up", "Alcista"], ["down", "Bajista"]], v: "up" },
+    { id: "vol", label: "Volumen / media 20 velas", min: .5, max: 4, step: .1, v: 2.1, fmt: v => `${f1(v)}×` },
+    { id: "rsi", label: "RSI 1m", min: 0, max: 100, step: 1, v: 58, fmt: v => v },
+    { id: "atr", label: "ATR 1m (% del precio)", min: .02, max: .4, step: .01, v: .21, fmt: v => pct(v, 2) },
+    { id: "spr", label: "Spread", min: 0, max: .1, step: .005, v: .02, fmt: v => pct(v, 3) },
+  ],
+  run(x) {
+    const dir = x.pat === "none" ? 0 : (x.pat === "up" ? 1 : -1);
+    const tr = x.trend === "up" ? 1 : -1;
+    const checks = [
+      ["Hay patrón de vela", dir !== 0],
+      ["El patrón va a favor de la tendencia de 5m", dir !== 0 && dir === tr],
+      [`Volumen ${f1(x.vol)}× (mín. 1.5×)`, x.vol > 1.5],
+      [dir >= 0 ? `RSI ${x.rsi} < 75` : `RSI ${x.rsi} > 25`, dir >= 0 ? x.rsi < 75 : x.rsi > 25],
+      [`Spread ${pct(x.spr, 3)} < 0.05%`, x.spr < .05],
+      [`TP ${pct(2 * x.atr, 2)} ≥ 0.36% (3 × comisiones)`, 2 * x.atr >= .36],
+    ];
+    const ok = checks.every(c => c[1]);
+    const d = dir || 1, s = P * x.atr / 100;
+    return { tone: ok ? (d > 0 ? "long" : "short") : "none", tag: ok ? (d > 0 ? "LONG" : "SHORT") : "ESPERA",
+      why: ok ? "Todas las condiciones se cumplen en el cierre de la vela." : "Falta alguna condición: no se opera en esta vela.", checks,
+      levels: [{ y: P - d * 1.2 * x.atr, k: ok ? "sl" : "ghost", t: "SL" }, { y: P + d * 1 * x.atr, k: "ghost", t: "breakeven" }, { y: P + d * 2 * x.atr, k: ok ? "tp" : "ghost", t: "TP" }],
+      span: s };
+  }
+},
+{
+  id: "SUB5", name: "Macro-shorting", on: true, freq: "cada 6H", lev: "2x",
+  idea: "Solo abre cortos en BTC y ETH cuando el panel macro (tipos de la Fed, CPI interanual, S&P 500, Nasdaq, VIX, dólar y Fear & Greed) es claramente bajista y el gráfico diario lo confirma.",
+  facts: { "Activación": "score macro ≤ −3 (≤ −5 = convicción alta)", "Confirmación diaria": "precio ≤ EMA200·1.02, 30 ≤ RSI ≤ 55, ≥ 2 de 3 velas bajistas", "Stop Loss": "máximo de 7 días + 0.3%", "Take Profit": "escalonado −4% (33%), −8% (33%), −15% (34%)", "Riesgo": "1.5% (2% con convicción alta); pausa si DD > 5%", "Salida extra": "si el régimen pasa a STRONG_BULL, cierra" },
+  inputs: [
+    { id: "macro", label: "Score macro (−10 a +10)", min: -10, max: 10, step: .5, v: -4, fmt: v => (v > 0 ? "+" : "") + f1(v) },
+    { id: "ema", label: "Precio vs EMA200 diaria", min: -20, max: 20, step: .5, v: -3, fmt: v => (v > 0 ? "+" : "") + pct(v) },
+    { id: "rsi", label: "RSI diario", min: 0, max: 100, step: 1, v: 44, fmt: v => v },
+    { id: "bear", label: "Velas bajistas (de las 3 últimas)", min: 0, max: 3, step: 1, v: 2, fmt: v => v },
+    { id: "hi", label: "Máximo de 7D sobre el precio", min: 1, max: 15, step: .1, v: 5, fmt: v => pct(v) },
+  ],
+  run(x) {
+    const checks = [
+      [`Score macro ${f1(x.macro)} ≤ −3`, x.macro <= -3],
+      [`Precio ${pct(x.ema)} vs EMA200 (≤ +2%)`, x.ema <= 2],
+      [`RSI ${x.rsi} entre 30 y 55`, x.rsi >= 30 && x.rsi <= 55],
+      [`${x.bear} de 3 velas bajistas (mín. 2)`, x.bear >= 2],
+    ];
+    const ok = checks.every(c => c[1]);
+    if (ok) checks.push([`Riesgo ${x.macro <= -5 ? "2%" : "1.5%"} (${x.macro <= -5 ? "convicción alta" : "convicción normal"})`, true]);
+    const sl = Math.max(P * (1 + x.hi / 100) * 1.003, P * 1.005);
+    const k = ok ? "tp" : "ghost";
+    return { tone: ok ? "short" : "none", tag: ok ? "SHORT" : "ESPERA", why: ok ? "Régimen bajista confirmado por el gráfico diario." : "Sin régimen bajista confirmado no se abren cortos.", checks,
+      levels: [{ y: sl, k: ok ? "sl" : "ghost", t: "SL" }, { y: 96, k, t: "TP1 33%" }, { y: 92, k, t: "TP2 33%" }, { y: 85, k, t: "TP3 34%" }] };
+  }
+},
+{
+  id: "SUB6", name: "Funding rate arbitrage", on: true, freq: "cada 5 min (escaneo cada 30 min)", lev: "2x",
+  idea: "Cuando los largos pagan funding alto, compra el activo en spot y vende la misma cantidad en perpetuo. El precio se neutraliza y la cuenta cobra el funding.",
+  facts: { "Posición": "SHORT perpetuo + LONG spot (delta-neutral)", "Entrada": "funding positivo, APY ≥ 20%, basis ≤ 0.15%, funding de 7D ≥ 1.5 × comisiones (~0.32%)", "Salida": "basis > 1.5%, funding < 0 o APY < 8%", "Stop Loss": "emergencia +10% en el perpetuo; si salta, se vende el spot", "Capital": "20% por par, máx. 3 pares; ≈ 2/3 en spot y 1/3 en futuros" },
+  inputs: [
+    { id: "rate", label: "Funding por intervalo", min: -.05, max: .15, step: .001, v: .03, fmt: v => pct(v, 3) },
+    { id: "int", label: "Intervalo de funding del par", type: "select", opts: [["1", "1 hora"], ["4", "4 horas"], ["8", "8 horas"]], v: "8" },
+    { id: "basis", label: "Basis (perp vs spot)", min: 0, max: 2, step: .01, v: .08, fmt: v => pct(v, 2) },
+  ],
+  run(x) {
+    const per = 24 / +x.int, apy = x.rate * per * 365, exp7 = x.rate * per * 7;
+    const checks = [
+      ["Funding positivo", x.rate > 0],
+      [`APY ${pct(apy)} ≥ 20%`, apy >= 20],
+      [`Basis ${pct(x.basis, 2)} ≤ 0.15%`, x.basis <= .15],
+      [`Funding esperado 7D ${pct(exp7, 2)} ≥ 0.48%`, exp7 >= .48],
+    ];
+    const ok = checks.every(c => c[1]);
+    const exit = x.rate < 0 || apy < 8 || x.basis > 1.5;
+    return { tone: ok ? "ok" : (exit ? "warn" : "none"), tag: ok ? "ABRE PAR" : (exit ? "CIERRA" : "ESPERA"),
+      why: ok ? "Compra spot y vende perpetuo por el mismo importe." : (exit ? "Si hubiera un par abierto, se cerrarían las dos patas." : "No compensa: el par se mantiene, pero no se abre uno nuevo."), checks,
+      bars: [
+        { label: "APY anualizado", v: apy, max: 80, mark: 20, fmt: pct(apy), good: apy >= 20 },
+        { label: "Funding esperado en 7 días", v: exp7, max: 2, mark: .48, fmt: pct(exp7, 2), good: exp7 >= .48 },
+        { label: "Basis (salida > 1.5%)", v: x.basis, max: 2, mark: 1.5, fmt: pct(x.basis, 2), good: x.basis <= .15 },
+      ] };
+  }
+},
+{
+  id: "SUB7", name: "Grid adaptativo", on: true, freq: "cada 5 min (se reconstruye cada 24H)", lev: "3x",
+  idea: "Coloca una rejilla de compras dentro de las Bandas de Bollinger de 4H. Cada compra ejecutada pone una venta un nivel más arriba; cada venta repone la compra.",
+  facts: { "Activo": "BTC, solo largo", "Rango": "Bollinger(20, 2σ) en 4H", "Celda": "0.5 × ATR(14) diario; entre 4 y 20 niveles", "Stop Loss": "en cada compra: banda inferior − ½ celda", "Límites": "pérdida máx. del grid 4% del equity; 3 reinicios en 24H → pausa", "Nuevo (oct. 2026)": "no se monta el grid si la EMA20 diaria cae > 3% en 5 días" },
+  inputs: [
+    { id: "w", label: "Ancho de las bandas", min: 2, max: 20, step: .1, v: 9, fmt: v => pct(v) },
+    { id: "atr", label: "ATR diario (% del precio)", min: 1, max: 6, step: .1, v: 2.4, fmt: v => pct(v) },
+    { id: "pos", label: "Posición del precio en la banda", min: 0, max: 1, step: .01, v: .55, fmt: v => `${Math.round(v * 100)}%` },
+    { id: "trend", label: "EMA20 diaria, cambio en 5 días", min: -10, max: 6, step: .1, v: -1, fmt: v => (v > 0 ? "+" : "") + pct(v) },
+  ],
+  run(x) {
+    const L = P - x.w * x.pos, U = L + x.w, cell = .5 * x.atr;
+    const n = clamp(Math.floor(x.w / cell), 4, 20), step = x.w / n;
+    const lv = Array.from({ length: n + 1 }, (_, i) => L + i * step);
+    const buys = lv.filter(v => v < P * .999), sells = lv.filter(v => v >= P * .999);
+    const sl = L - .5 * step;
+    if (x.trend < -3) return { tone: "none", tag: "SIN GRID", why: "Tendencia bajista: el filtro añadido tras el test de estrés no monta la rejilla.",
+      checks: [[`EMA20 ${pct(x.trend)} en 5 días (mín. −3%)`, false]], levels: [{ y: L, k: "ghost", t: "BB inf." }, { y: U, k: "ghost", t: "BB sup." }] };
+    return { tone: "ok", tag: `${n} NIVELES`, why: `${buys.length} compras límite bajo el precio, cada una con su SL en el exchange.`,
+      checks: [[`Celda objetivo ${pct(cell, 2)}; real ${pct(step, 2)}`, true, "info"], [`SL de las compras en ${f2(sl)} (${pct(P - sl)} bajo el precio)`, true, "info"], [`Fuera de [${f2(L - step / 2)}, ${f2(U + step / 2)}] se cancela todo y se reconstruye`, true, "info"]],
+      levels: [...buys.map(y => ({ y, k: "buy", t: "" })), ...sells.map(y => ({ y, k: "grid", t: "" })), { y: L, k: "ghost", t: "BB inf." }, { y: U, k: "ghost", t: "BB sup." }, { y: sl, k: "sl", t: "SL" }] };
+  }
+},
+{
+  id: "SUB8", name: "DCA inteligente spot", on: true, freq: "diario, compra cada 48H", lev: "spot (1x)",
+  idea: "Acumula BTC (60%) y ETH (40%) en spot. Compra más cuando el RSI está bajo y nada si el mercado está caro o por debajo de su tendencia de largo plazo.",
+  facts: { "Filtro": "precio > EMA200 semanal (si no, no compra)", "Tamaño": "4% de la asignación × multiplicador por RSI", "Stop Loss": "venta de todo el saldo en max(medio − 20%, precio − 24%)", "Take Profit": "RSI > 70 y PnL > 8% → 25% · RSI > 80 y PnL > 15% → 50% más", "Límite": "10 entradas por activo" },
+  inputs: [
+    { id: "ema", label: "Precio vs EMA200 semanal", min: -30, max: 80, step: 1, v: 35, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
+    { id: "rsi", label: "RSI diario", min: 0, max: 100, step: 1, v: 36, fmt: v => v },
+    { id: "pnl", label: "PnL sobre el precio medio", min: -20, max: 60, step: 1, v: 6, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
+  ],
+  run(x) {
+    const mult = x.rsi > 60 ? 0 : x.rsi >= 40 ? 1 : x.rsi >= 30 ? 1.5 : 2;
+    const avg = P / (1 + x.pnl / 100), sl = Math.max(avg * .8, P * .76);
+    const tp2 = x.rsi > 80 && x.pnl > 15, tp1 = x.rsi > 70 && x.pnl > 8;
+    const above = x.ema > 0;
+    const checks = [
+      [`Precio ${above ? "por encima" : "por debajo"} de la EMA200 semanal`, above],
+      [`RSI ${x.rsi} → multiplicador ×${mult}`, mult > 0],
+    ];
+    let tone = "none", tag = "NO COMPRA", why = above ? "RSI por encima de 60: el mercado está caro." : "Bajo la tendencia de largo plazo no se acumula.";
+    if (tp2) { tone = "warn"; tag = "VENDE 50%"; why = "Segundo escalón de toma de beneficios."; }
+    else if (tp1) { tone = "warn"; tag = "VENDE 25%"; why = "Primer escalón de toma de beneficios."; }
+    else if (above && mult) { tone = "long"; tag = `COMPRA ×${mult}`; why = `Compra ${pct(4 * mult, 0)} de la asignación del activo.`; }
+    return { tone, tag, why, checks, levels: [{ y: avg, k: "ghost", t: "precio medio" }, { y: sl, k: "sl", t: "SL (todo el saldo)" }] };
+  }
+},
+{
+  id: "SUB9", name: "Collar dinámico", on: true, freq: "cada 15 min, rebalanceo 6H", lev: "2x",
+  idea: "Mantiene una exposición larga en BTC o ETH (el de más momentum a 30 días) que se reduce cuando el panel macro empeora. Por debajo de la EMA200 diaria la exposición es cero.",
+  facts: { "Exposición": "80% del equity × (1 − ratio de cobertura)", "Ratios": "STRONG_BULL 0.30 · NEUTRAL 0.50 · BEAR 0.70 · CRISIS 0.90 · sin datos 0.70", "Stop Loss": "EMA200 diaria − 1%, como mucho 15% bajo el precio", "Circuit breaker": "pérdida > 3% del capital asignado → cierra y pausa 24H", "Rebalanceo": "si el ratio se desvía más de 0.05" },
+  inputs: [
+    { id: "macro", label: "Score macro (−10 a +10)", min: -10, max: 10, step: .5, v: 1, fmt: v => (v > 0 ? "+" : "") + f1(v) },
+    { id: "ema", label: "Precio vs EMA200 diaria", min: -20, max: 60, step: 1, v: 14, fmt: v => (v > 0 ? "+" : "") + pct(v, 0) },
+  ],
+  run(x) {
+    const reg = x.macro <= -5 ? "CRISIS" : x.macro <= -3 ? "BEAR" : x.macro >= 3 ? "STRONG_BULL" : "NEUTRAL";
+    const ratio = { STRONG_BULL: .3, NEUTRAL: .5, BEAR: .7, CRISIS: .9 }[reg];
+    const ema = P / (1 + x.ema / 100), floor = ema * .99, below = P < floor;
+    const exp = below ? 0 : 80 * (1 - ratio);
+    const sl = Math.max(floor, P * .85);
+    return { tone: below ? "none" : "long", tag: below ? "SIN EXPOSICIÓN" : `LONG ${pct(exp, 0)}`,
+      why: below ? "El precio está bajo la EMA200 diaria − 1%: se cierra la exposición." : `Régimen ${reg}: cobertura del ${Math.round(ratio * 100)}%.`,
+      checks: [[`Régimen macro: ${reg}`, true, "info"], [`SL en ${f2(sl)} (${pct(P - sl)} bajo el precio${sl > floor ? ", limitado al 15%" : ""})`, !below, below ? "info" : ""]],
+      bars: [
+        { label: "Exposición larga (% del equity)", v: exp, max: 80, fmt: pct(exp, 0), good: exp > 0 },
+        { label: "Ratio de cobertura", v: ratio * 100, max: 100, fmt: pct(ratio * 100, 0) },
+        { label: "Distancia al SL", v: below ? 0 : P - sl, max: 20, mark: 15, fmt: below ? "—" : pct(P - sl) },
+      ] };
+  }
+},
+{
+  id: "SUB10", name: "Pairs trading (cointegración)", on: false, freq: "cada 1H", lev: "2x",
+  idea: "Busca pares que se mueven juntos (BTC/ETH, ETH/SOL, SOL/AVAX, LINK/DOT). Cuando el diferencial se aleja de lo normal, vende la cara y compra la barata, y espera a que vuelvan a juntarse.",
+  facts: { "Modelo": "log(A) = α + β·log(B) + spread, 240 velas de 1H", "Calidad": "β > 0, ADF < −3.34, vida media 2–72 h", "Entrada": "|z| ≥ 2; nocional de B = β × nocional de A", "Salida": "|z| ≤ 0.5, |z| ≥ 4 (ruptura), pérdida del par > 3%, 5 días", "Stop Loss": "±10% en cada pata", "Estado": "Nueva y desactivada (inspirada en stat_arb de Hummingbot)" },
+  inputs: [
+    { id: "z", label: "z-score del spread", min: -5, max: 5, step: .05, v: 2.3, fmt: v => (v > 0 ? "+" : "") + f2(v) },
+    { id: "adf", label: "Estadístico ADF", min: -6, max: -1, step: .05, v: -3.8, fmt: f2 },
+    { id: "hl", label: "Vida media de reversión (horas)", min: 0, max: 100, step: 1, v: 18, fmt: v => `${v} h` },
+    { id: "beta", label: "β (cobertura)", min: -.5, max: 2, step: .05, v: .9, fmt: f2 },
+  ],
+  run(x) {
+    const q = [[`β ${f2(x.beta)} > 0`, x.beta > 0], [`ADF ${f2(x.adf)} < −3.34`, x.adf < -3.34], [`Vida media ${x.hl} h entre 2 y 72`, x.hl >= 2 && x.hl <= 72]];
+    const good = q.every(c => c[1]), az = Math.abs(x.z);
+    let tone = "none", tag = "ESPERA", why = "El spread está en zona normal.";
+    if (!good) { tag = "PAR NO VÁLIDO"; why = "El par no está cointegrado: no se opera."; }
+    else if (az >= 4) { tone = "warn"; tag = "RUPTURA"; why = "La relación se ha roto: se cierran las dos patas."; }
+    else if (az >= 2) { tone = "ok"; tag = x.z > 0 ? "SHORT A · LONG B" : "LONG A · SHORT B"; why = `Por cada 1 USDT en A, ${f2(x.beta)} USDT en B.`; }
+    else if (az <= .5) { tag = "SALIDA"; why = "El spread ha vuelto a la media: se recoge el beneficio."; }
+    return { tone, tag, why, checks: q, unit: "z", domain: [-5, 5], last: x.z,
+      levels: [{ y: 4, k: "sl", t: "+4 ruptura" }, { y: 2, k: "grid", t: "+2 entrada" }, { y: .5, k: "tp", t: "+0.5 salida" }, { y: -.5, k: "tp", t: "−0.5 salida" }, { y: -2, k: "grid", t: "−2 entrada" }, { y: -4, k: "sl", t: "−4 ruptura" }] };
+  }
+},
+{
+  id: "SUB11", name: "SuperTrend 4H", on: false, freq: "cada 4H", lev: "3x",
+  idea: "Sigue la tendencia con el indicador SuperTrend(20, 4.0) en velas de 4H. Siempre en el lado de la tendencia: cuando la línea cambia de lado, cierra y abre en sentido contrario.",
+  facts: { "Activos": "BTC, ETH, SOL", "Entrada": "a ≤ 5 ATR de la línea (filtro anti-persecución)", "Stop Loss": "línea SuperTrend ∓ 0.2%, se mueve con ella solo a favor", "Take Profit": "ninguno: sale al cambiar la tendencia", "Riesgo": "1% por operación, máx. 3 posiciones", "Estado": "Nueva y desactivada (inspirada en supertrend_v1 de Hummingbot)" },
+  inputs: [
+    { id: "dir", label: "Dirección del SuperTrend", type: "select", opts: [["1", "+1 alcista"], ["-1", "−1 bajista"]], v: "1" },
+    { id: "dist", label: "Distancia del precio a la línea", min: 0, max: 10, step: .1, v: 2.8, fmt: v => `${f1(v)} ATR` },
+    { id: "atr", label: "ATR 4H (% del precio)", min: .5, max: 6, step: .1, v: 2.2, fmt: v => pct(v) },
+  ],
+  run(x) {
+    const d = +x.dir, line = P - d * x.dist * x.atr, sl = line * (1 - .002 * d), ok = x.dist <= 5;
+    return { tone: ok ? (d > 0 ? "long" : "short") : "none", tag: ok ? (d > 0 ? "LONG" : "SHORT") : "NO PERSIGUE",
+      why: ok ? "Entra a favor de la tendencia; el SL sigue a la línea." : "El precio está demasiado lejos de la línea: no se persigue.",
+      checks: [[`Distancia ${f1(x.dist)} ATR ≤ 5`, ok], [`SL a ${pct(Math.abs(P - sl))} del precio`, ok, ok ? "" : "info"]],
+      levels: [{ y: line, k: "ghost", t: "SuperTrend" }, { y: sl, k: ok ? "sl" : "ghost", t: "SL" }] };
+  }
+},
+];
+
+/* ── Diagrama de flujo ─────────────────────────────────────────────── */
+const flow = $("#flow"), NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs = {}, parent = flow, text) => {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  parent.appendChild(n); return n;
+};
+function drawFlow() {
+  flow.innerHTML = "";
+  const cs = getComputedStyle(document.documentElement), c = n => cs.getPropertyValue(n).trim();
+  const defs = el("defs");
+  const m = el("marker", { id: "arr", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto" }, defs);
+  el("path", { d: "M0,0 L10,5 L0,10 z", fill: c("--muted") }, m);
+  const box = (x, y, w, h, t1, t2, hl) => {
+    el("rect", { x, y, width: w, height: h, rx: 12, fill: hl ? c("--gold-soft") : c("--surface-2"), stroke: hl ? c("--gold") : c("--line") });
+    el("text", { x: x + w / 2, y: y + h / 2 - 4, "text-anchor": "middle", fill: c("--fg"), "font-size": 14, "font-weight": 600 }, flow, t1);
+    el("text", { x: x + w / 2, y: y + h / 2 + 14, "text-anchor": "middle", fill: c("--muted"), "font-size": 11.5 }, flow, t2);
+  };
+  box(10, 112, 150, 76, "Cuenta principal", "Bitget · capital");
+  const cols = 4, w = 112, h = 44, gx = 12, gy = 10, x0 = 210, y0 = 74;
+  S.forEach((s, i) => {
+    const r = Math.floor(i / cols), cI = i % cols, x = x0 + cI * (w + gx), y = y0 + r * (h + gy);
+    const g = el("g", { class: `node-sub${s.on ? "" : " off"}${s.id === cur ? " active" : ""}`, tabindex: 0, role: "button", "aria-label": `${s.id} ${s.name}` });
+    el("rect", { x, y, width: w, height: h, rx: 9 }, g);
+    el("text", { x: x + 10, y: y + 18, fill: c("--gold"), "font-size": 11, style: "font-family: var(--mono)" }, g, s.id + (s.on ? "" : " · off"));
+    el("text", { class: "t2", x: x + 10, y: y + 34, fill: c("--fg"), "font-size": 11.5 }, g, s.name.length > 17 ? s.name.slice(0, 16) + "…" : s.name);
+    const go = () => select(s.id, true);
+    g.addEventListener("click", go);
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+  });
+  el("line", { x1: 160, y1: 150, x2: 202, y2: 150, stroke: c("--muted"), "stroke-width": 1.5, "marker-end": "url(#arr)" });
+  const xr = x0 + cols * (w + gx) - gx;
+  el("line", { x1: xr + 6, y1: 150, x2: 716, y2: 150, stroke: c("--muted"), "stroke-width": 1.5, "marker-end": "url(#arr)" });
+  el("text", { x: (xr + 716) / 2 + 3, y: 140, "text-anchor": "middle", fill: c("--muted"), "font-size": 11 }, flow, "orden");
+  box(720, 100, 146, 100, "Guardián SL", "SL obligatorio · ≤ 25%", true);
+  el("text", { x: 793, y: 222, "text-anchor": "middle", fill: c("--short"), "font-size": 11 }, flow, "sin SL → rechazada");
+  el("line", { x1: 866, y1: 150, x2: 878, y2: 150, stroke: c("--muted"), "stroke-width": 1.5, "marker-end": "url(#arr)" });
+  box(880, 112, 72, 76, "Bitget", "ccxt");
+}
+
+/* ── Explorador ───────────────────────────────────────────────────── */
+let cur = "SUB1";
+const state = {};
+S.forEach(s => { state[s.id] = Object.fromEntries(s.inputs.map(i => [i.id, i.v])); });
+
+const list = $("#list"), panel = $("#panel");
+list.innerHTML = S.map(s => `<button role="tab" id="tab-${s.id}" aria-controls="panel" aria-selected="false" data-id="${s.id}">
+  <span class="id">${s.id}</span><span>${s.name}</span><span class="dot${s.on ? "" : " off"}" title="${s.on ? "activa por defecto" : "desactivada por defecto"}"></span></button>`).join("");
+list.addEventListener("click", e => { const b = e.target.closest("button"); if (b) select(b.dataset.id); });
+list.addEventListener("keydown", e => {
+  if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(e.key)) return;
+  e.preventDefault();
+  const i = S.findIndex(s => s.id === cur), d = (e.key === "ArrowDown" || e.key === "ArrowRight") ? 1 : -1;
+  const n = S[(i + d + S.length) % S.length]; select(n.id); $(`#tab-${n.id}`).focus();
+});
+
+function select(id, scroll) {
+  cur = id;
+  list.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", b.dataset.id === id));
+  panel.setAttribute("aria-labelledby", `tab-${id}`);
+  renderPanel();
+  drawFlow();
+  if (scroll) $("#explorador").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  try { history.replaceState(null, "", "#" + id.toLowerCase()); } catch (_) {}
+}
+
+function renderPanel() {
+  const s = S.find(x => x.id === cur), v = state[cur];
+  const ctl = s.inputs.map(i => {
+    const fid = `in-${s.id}-${i.id}`;
+    if (i.type === "select") return `<div class="ctl"><label for="${fid}">${i.label}</label><select id="${fid}" data-k="${i.id}">${i.opts.map(([val, t]) => `<option value="${val}"${String(v[i.id]) === val ? " selected" : ""}>${t}</option>`).join("")}</select></div>`;
+    return `<div class="ctl"><label for="${fid}">${i.label}<output id="o-${fid}">${i.fmt(v[i.id])}</output></label><input id="${fid}" data-k="${i.id}" type="range" min="${i.min}" max="${i.max}" step="${i.step}" value="${v[i.id]}"></div>`;
+  }).join("");
+  panel.innerHTML = `
+    <div class="panel-head">
+      <div class="row"><span class="eyebrow">${s.id}</span>
+        <span class="chip ${s.on ? "on" : "off"}">${s.on ? "activa por defecto" : "desactivada por defecto"}</span>
+        <span class="chip">${s.freq}</span><span class="chip">apalancamiento ${s.lev}</span></div>
+      <h2>${s.name}</h2>
+      <p class="idea">${s.idea}</p>
+    </div>
+    <dl class="facts">${Object.entries(s.facts).map(([k, val]) => `<div><dt>${k}</dt><dd>${val}</dd></div>`).join("")}</dl>
+    <div class="sim">
+      <div class="controls"><h3>Simula un escenario</h3>${ctl}
+        <button type="button" class="chip" id="reset" style="justify-self:start;cursor:pointer;border:0">Restablecer ejemplo</button></div>
+      <div class="result" id="result" aria-live="polite"></div>
+    </div>`;
+  panel.querySelectorAll("[data-k]").forEach(inp => inp.addEventListener("input", () => {
+    const def = s.inputs.find(i => i.id === inp.dataset.k);
+    state[cur][def.id] = def.type === "select" ? inp.value : +inp.value;
+    if (def.fmt) $(`#o-${inp.id}`).textContent = def.fmt(inp.value);
+    renderResult();
+  }));
+  $("#reset").addEventListener("click", () => { state[cur] = Object.fromEntries(s.inputs.map(i => [i.id, i.v])); renderPanel(); });
+  renderResult();
+}
+
+function renderResult() {
+  const s = S.find(x => x.id === cur), r = s.run({ ...state[cur] });
+  const checks = (r.checks || []).map(([t, ok, cls]) => `<li class="${cls || (ok ? "" : "bad")}">${t}</li>`).join("");
+  const vis = r.bars ? barsHTML(r.bars) : chartSVG(r);
+  $("#result").innerHTML = `
+    <div class="verdict t-${r.tone}"><span class="tag">${r.tag}</span><span class="why">${r.why}</span></div>
+    ${vis}
+    <ul class="checks">${checks}</ul>`;
+}
+
+function barsHTML(bars) {
+  return `<div class="bars">${bars.map(b => {
+    const w = clamp(b.v / b.max * 100, 0, 100), m = b.mark != null ? clamp(b.mark / b.max * 100, 0, 100) : null;
+    const cls = b.good === true ? "good" : b.good === false ? "bad" : "";
+    return `<div class="bar"><div class="top"><span>${b.label}</span><span>${b.fmt}</span></div>
+      <div class="track"><div class="fill ${cls}" style="width:${w}%"></div>${m != null ? `<div class="mark" style="left:calc(${m}% - 1px)" title="umbral"></div>` : ""}</div></div>`;
+  }).join("")}</div><p class="note">La línea vertical marca el umbral de la regla.</p>`;
+}
+
+/* Serie sintética determinista que termina en el valor actual */
+function path(seed, n) {
+  let x = seed * 9301 + 49297, out = [], v = 0;
+  for (let i = 0; i < n; i++) { x = (x * 9301 + 49297) % 233280; v += (x / 233280 - .5); out.push(v); }
+  const last = out[n - 1], mx = Math.max(...out.map(o => Math.abs(o - last))) || 1;
+  return out.map(o => (o - last) / mx);
+}
+
+function chartSVG(r) {
+  const W = 640, H = 270, padL = 12, padR = 112, padT = 16, padB = 16;
+  const last = r.last ?? P;
+  const ys = r.levels.map(l => l.y).concat(last);
+  let lo, hi;
+  if (r.domain) [lo, hi] = r.domain;
+  else { lo = Math.min(...ys); hi = Math.max(...ys); const pad = Math.max((hi - lo) * .12, .4); lo -= pad; hi += pad; }
+  const Y = v => padT + (hi - v) / (hi - lo) * (H - padT - padB);
+  const plotW = W - padL - padR, n = 70;
+  const seed = cur.charCodeAt(cur.length - 1) + cur.length;
+  const amp = r.domain ? 2.2 : (hi - lo) * .28;
+  const pts = path(seed, n).map((d, i) => {
+    const v = r.domain ? clamp(last + d * amp, lo + .1, hi - .1) : last + d * amp;
+    return `${(padL + i / (n - 1) * plotW).toFixed(1)},${Y(v).toFixed(1)}`;
+  });
+  const color = { sl: "var(--short)", tp: "var(--long)", buy: "var(--long)", grid: "var(--gold)", ghost: "var(--muted)" };
+  // Etiquetas sin solaparse
+  const labs = r.levels.filter(l => l.t).map(l => ({ ...l, py: Y(l.y) })).sort((a, b) => a.py - b.py);
+  for (let i = 1; i < labs.length; i++) if (labs[i].py - labs[i - 1].py < 13) labs[i].py = labs[i - 1].py + 13;
+  const lines = r.levels.map(l => {
+    const dash = l.k === "ghost" ? ' stroke-dasharray="4 4"' : l.k === "buy" || l.k === "grid" ? ' stroke-dasharray="2 3"' : "";
+    return `<line x1="${padL}" x2="${W - padR + 6}" y1="${Y(l.y).toFixed(1)}" y2="${Y(l.y).toFixed(1)}" stroke="${color[l.k]}" stroke-width="${l.k === "sl" || l.k === "tp" ? 1.6 : 1}"${dash} />`;
+  }).join("");
+  const texts = labs.map(l => `<text x="${W - padR + 10}" y="${(l.py + 4).toFixed(1)}" fill="${color[l.k]}">${l.t} ${r.unit === "z" ? "" : f1(l.y)}</text>`).join("");
+  const ly = Y(last);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico con el precio y los niveles de la estrategia">
+    ${r.unit === "z" ? `<line x1="${padL}" x2="${W - padR + 6}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)" />` : ""}
+    ${lines}
+    <polyline points="${pts.join(" ")}" fill="none" stroke="var(--fg)" stroke-width="1.8" stroke-linejoin="round" />
+    <circle cx="${padL + plotW}" cy="${ly.toFixed(1)}" r="4.5" fill="var(--gold)" />
+    <text x="${padL + plotW - 8}" y="${(ly - 9).toFixed(1)}" text-anchor="end" fill="var(--gold)">${r.unit === "z" ? "z " + f2(last) : "precio 100"}</text>
+    ${texts}
+  </svg>`;
+}
+
+/* ── Laboratorio del guardián ─────────────────────────────────────── */
+function guard() {
+  const side = $("#g-side").value, p = parseFloat($("#g-price").value), slRaw = $("#g-sl").value.trim(), tpRaw = $("#g-tp").value.trim();
+  const out = $("#g-out"), res = (ok, m) => { out.className = "out " + (ok ? "ok" : "bad"); out.textContent = m; };
+  if (!(p > 0)) return res(false, "Precio de referencia inválido.");
+  if (slRaw === "") return res(false, "🚫 ORDEN RECHAZADA: stop_loss es OBLIGATORIO.");
+  const sl = parseFloat(slRaw), long = side === "buy";
+  if (!(sl > 0)) return res(false, `stop_loss inválido: ${slRaw}`);
+  if (long && sl >= p) return res(false, `El SL de un LONG debe estar por debajo del precio (${sl} ≥ ${p}).`);
+  if (!long && sl <= p) return res(false, `El SL de un SHORT debe estar por encima del precio (${sl} ≤ ${p}).`);
+  const d = Math.abs(sl - p) / p;
+  if (d > .25) return res(false, `SL a ${(d * 100).toFixed(1)}% del precio (máximo 25%). Revisa el cálculo.`);
+  if (tpRaw !== "") {
+    const tp = parseFloat(tpRaw);
+    if ((long && tp <= p) || (!long && tp >= p)) return res(false, `TP en el lado equivocado del precio: ${tp} vs ${p}.`);
+  }
+  res(true, `✓ Orden aceptada. SL a ${(d * 100).toFixed(2)}% del precio.`);
+}
+function sizing() {
+  const eq = +$("#s-eq").value, r = +$("#s-risk").value / 100, e = +$("#s-entry").value, sl = +$("#s-sl").value;
+  const dist = Math.abs(e - sl), amt = eq > 0 && r > 0 && dist > 0 && e > 0 ? eq * r / dist : 0;
+  const fmt = (v, d = 2) => Number.isFinite(v) ? v.toLocaleString("es-ES", { maximumFractionDigits: d, minimumFractionDigits: d }) : "—";
+  $("#s-out").innerHTML = `
+    <dt>Pérdida si salta el SL</dt><dd>${fmt(eq * r)} USDT</dd>
+    <dt>Distancia al SL</dt><dd>${e > 0 ? fmt(dist / e * 100) : "—"} %</dd>
+    <dt>Cantidad</dt><dd>${fmt(amt, 5)}</dd>
+    <dt>Nocional</dt><dd>${fmt(amt * e)} USDT</dd>
+    <dt>Apalancamiento implícito</dt><dd>${eq > 0 ? fmt(amt * e / eq) : "—"}×</dd>`;
+}
+["#g-side", "#g-price", "#g-sl", "#g-tp"].forEach(s => $(s).addEventListener("input", guard));
+["#s-eq", "#s-risk", "#s-entry", "#s-sl"].forEach(s => $(s).addEventListener("input", sizing));
+guard(); sizing();
+
+/* Arranque: #sub5 en el enlace abre esa estrategia */
+const h = (location.hash || "").slice(1).toUpperCase();
+select(S.some(s => s.id === h) ? h : "SUB1");
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", drawFlow);
+new MutationObserver(drawFlow).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+
+/* ── Sinergia ─────────────────────────────────────────────────────── */
+(() => {
+  const REG = {
+    alcista: { label: "📈 Alcista fuerte", ids: { SUB1: "sentimiento positivo", SUB2: "rotación hacia altcoins", SUB6: "funding alto", SUB8: "acumula sobre la EMA200", SUB9: "cobertura 30%", SUB11: "sigue la tendencia" } },
+    lateral: { label: "↔️ Lateral", ids: { SUB7: "grid en su mercado ideal", SUB10: "spreads que revierten", SUB3: "copy trading neutral", SUB9: "cobertura 50%", SUB6: "funding moderado" } },
+    bajista: { label: "📉 Bajista", ids: { SUB5: "cortos con macro bajista", SUB9: "cobertura 70–90%", SUB11: "tendencia corta", SUB8: "deja de comprar", SUB6: "cierra pares si el funding es negativo", SUB7: "no monta grid (filtro nuevo)" } },
+    volatil: { label: "⚡ Alta volatilidad", ids: { SUB4: "scalping con más ATR", SUB7: "rejilla más ancha", SUB6: "el funding sube", SUB10: "más entradas con |z| ≥ 2" } },
+  };
+  const NAMES = { SUB1: "News Sentiment", SUB2: "Stat Arb", SUB3: "Copy + guardián", SUB4: "Scalping 1m", SUB5: "Macro-shorting", SUB6: "Funding arb", SUB7: "Grid adaptativo", SUB8: "DCA inteligente", SUB9: "Collar dinámico", SUB10: "Pairs trading", SUB11: "SuperTrend 4H" };
+  const wrap = document.getElementById("regimes"), grid = document.getElementById("syn-grid");
+  let cur = "alcista";
+  wrap.innerHTML = Object.entries(REG).map(([k, r]) => `<button type="button" data-k="${k}" aria-pressed="${k === cur}">${r.label}</button>`).join("");
+  function render() {
+    wrap.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === cur));
+    const ids = REG[cur].ids;
+    grid.innerHTML = Object.entries(NAMES).map(([id, n]) => `<div class="syn-card ${ids[id] ? "hit" : "dim"}"><span class="id">${id}</span><b>${n}</b><small>${ids[id] || "no es su mercado"}</small></div>`).join("");
+  }
+  wrap.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { cur = b.dataset.k; render(); } });
+  render();
+})();
+
+/* ── Test de estrés ───────────────────────────────────────────────── */
+(() => {
+  const D = window.STRESS;
+  if (!D) return;
+  const $ = s => document.querySelector(s);
+  const ACC = ["SUB2", "SUB5", "SUB6", "SUB7", "SUB8", "SUB9", "SUB10", "SUB11", "SUB4"];
+  const NAMES = { SUB2: "Stat Arb", SUB4: "Scalping 1m (30 días)", SUB5: "Macro-shorting", SUB6: "Funding arb", SUB7: "Grid adaptativo", SUB8: "DCA inteligente", SUB9: "Collar dinámico", SUB10: "Pairs trading", SUB11: "SuperTrend 4H" };
+  const scs = Object.keys(D.scenarios);
+  const seeds = [...new Set(D.runs.map(r => r.seed))].sort((a, b) => a - b);
+  const st = { sc: scs[0], seed: seeds[0], cost: 1 };
+  const fmtP = v => v == null ? "—" : `${v > 0 ? "+" : ""}${v.toFixed(1)}%`;
+  const cls = v => v == null ? "" : v >= 0 ? "pos" : "neg";
+
+  function seg(el, items, key) {
+    el.innerHTML = items.map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${String(st[key]) === String(v)}">${t}</button>`).join("");
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      st[key] = isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v; render();
+    });
+  }
+  seg($("#seg-sc"), scs.map(k => [k, D.scenarios[k].title]), "sc");
+  seg($("#seg-seed"), seeds.map(s => [s, `#${s + 1}`]), "seed");
+  seg($("#seg-cost"), [[1, "reales"], [2, "×2"]], "cost");
+  const nSeeds = seeds.length;
+  $("#stress-meta").textContent = `${scs.length} escenarios × ${nSeeds} trayectorias Monte Carlo, ${ACC.length} estrategias`;
+
+  // Las dos series que se comparan dependen de los costes elegidos.
+  const pair = () => st.cost === 1
+    ? [{ set: "antes", cost: 1, label: "Antes de los arreglos" }, { set: "despues", cost: 1, label: "Después de los arreglos" }]
+    : [{ set: "despues", cost: 1, label: "Después, costes reales" }, { set: "despues", cost: 2, label: "Después, comisiones y slippage ×2" }];
+  const findRun = (p, acc) => D.runs.find(r => r.set === p.set && r.cost_mult === p.cost && r.scenario === st.sc && r.seed === st.seed && r.account === acc);
+  const findPort = p => D.portfolio.find(r => r.set === p.set && r.cost_mult === p.cost && r.scenario === st.sc && r.seed === st.seed);
+
+  function lineChart(series, opts) {
+    const W = opts.w, H = opts.h, L = opts.pl ?? 44, R = 10, T = 10, B = opts.pb ?? 22;
+    const all = series.flatMap(s => s.pts);
+    if (!all.length) return `<p class="note">Sin datos para esta combinación.</p>`;
+    let lo = Math.min(...all, 100), hi = Math.max(...all, 100);
+    const log = hi / Math.max(lo, 1) > 6;  // escala logarítmica si el rango es enorme
+    const f = v => log ? Math.log(Math.max(v, 0.5)) : v;
+    const pad = (f(hi) - f(lo)) * .08 || 1;
+    const y0 = f(lo) - pad, y1 = f(hi) + pad;
+    const n = Math.max(...series.map(s => s.pts.length));
+    const X = i => L + i / Math.max(n - 1, 1) * (W - L - R);
+    const Y = v => T + (y1 - f(v)) / (y1 - y0) * (H - T - B);
+    const ticks = log ? [10, 30, 100, 300, 1000, 3000, 10000].filter(v => f(v) >= y0 && f(v) <= y1)
+      : niceTicks(lo, hi, 4);
+    let g = "";
+    (opts.bands || []).forEach((b, i) => {
+      if (i % 2) g += `<rect x="${X(b[0] * (n - 1))}" y="${T}" width="${X(b[1] * (n - 1)) - X(b[0] * (n - 1))}" height="${H - T - B}" fill="var(--surface-2)" />`;
+      if (opts.bandLabels) g += `<text x="${X(b[0] * (n - 1)) + 4}" y="${T + 12}">${b[2]}</text>`;
+    });
+    ticks.forEach(v => { g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1" ${v === 100 ? "" : 'stroke-dasharray="2 4"'} /><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`; });
+    series.forEach(s => {
+      if (!s.pts.length) return;
+      const d = s.pts.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join("");
+      g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />`;
+      const i = s.pts.length - 1;
+      g += `<circle cx="${X(i)}" cy="${Y(s.pts[i])}" r="4" fill="${s.color}" stroke="var(--surface)" stroke-width="2" />`;
+    });
+    if (opts.xlabels) g += `<text x="${L}" y="${H - 4}">${opts.xlabels[0]}</text><text x="${W - R}" y="${H - 4}" text-anchor="end">${opts.xlabels[1]}</text>`;
+    if (log) g += `<text x="${W - R}" y="${T + 12}" text-anchor="end">escala log</text>`;
+    g += `<line class="xh" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-width="1" visibility="hidden" />`;
+    g += `<rect class="hit" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent" />`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.aria}" data-n="${n}" data-l="${L}" data-r="${R}" data-w="${W}">${g}</svg>`;
+  }
+  function niceTicks(lo, hi, k) {
+    const span = hi - lo || 1, step = Math.pow(10, Math.floor(Math.log10(span / k)));
+    const m = [1, 2, 5, 10].find(m => span / (m * step) <= k) * step;
+    const out = []; for (let v = Math.ceil(lo / m) * m; v <= hi; v += m) out.push(Math.round(v));
+    if (!out.includes(100)) out.push(100);
+    return out;
+  }
+  function hover(box, series, dates) {
+    const svg = box.querySelector("svg"); if (!svg) return;
+    let tip = box.querySelector(".tip"); if (!tip) { tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; box.appendChild(tip); }
+    const n = +svg.dataset.n, L = +svg.dataset.l, R = +svg.dataset.r, W = +svg.dataset.w, xh = svg.querySelector(".xh");
+    const move = e => {
+      const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * W;
+      const i = Math.max(0, Math.min(n - 1, Math.round((x - L) / (W - L - R) * (n - 1))));
+      const px = L + i / (n - 1) * (W - L - R);
+      xh.setAttribute("x1", px); xh.setAttribute("x2", px); xh.setAttribute("visibility", "visible");
+      tip.hidden = false;
+      tip.innerHTML = `${dates(i)}<br>` + series.map(s => s.pts[i] != null ? `<span style="color:${s.color}">●</span> ${s.label}: ${s.pts[i].toFixed(1)}` : "").filter(Boolean).join("<br>");
+      const bx = box.getBoundingClientRect();
+      tip.style.left = Math.min(e.clientX - bx.left + 12, bx.width - tip.offsetWidth - 8) + "px";
+      tip.style.top = (e.clientY - bx.top + 12) + "px";
+    };
+    svg.addEventListener("pointermove", move);
+    svg.addEventListener("pointerleave", () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); });
+  }
+
+  function render() {
+    ["#seg-sc", "#seg-seed", "#seg-cost"].forEach((s, k) => {
+      const key = ["sc", "seed", "cost"][k];
+      document.querySelectorAll(`${s} button`).forEach(b => b.setAttribute("aria-pressed", String(st[key]) === b.dataset.v));
+    });
+    const sc = D.scenarios[st.sc];
+    $("#sc-desc").textContent = `${sc.title}: ${sc.description}`;
+    const [A, B] = pair();
+    const colA = "var(--s-before)", colB = "var(--s-after)";
+    const pA = findPort(A), pB = findPort(B);
+    const total = sc.phases.reduce((a, p) => a + p[1], 0);
+    let acc = 0;
+    const bands = sc.phases.map(p => { const b = [acc / total, (acc + p[1]) / total, p[0]]; acc += p[1]; return b; });
+    const any = D.runs.find(r => r.scenario === st.sc && r.account !== "SUB4" && r.seed === st.seed);
+    const start = any ? new Date(any.start) : null;
+    const dateAt = i => start ? new Date(start.getTime() + i * 7 * 864e5).toISOString().slice(0, 10) : "";
+    const seriesBig = [
+      { label: A.label, color: colA, pts: pA ? pA.curve : [] },
+      { label: B.label, color: colB, pts: pB ? pB.curve : [] },
+    ];
+    const big = $("#big");
+    big.innerHTML = lineChart(seriesBig, { w: 1000, h: 300, bands, bandLabels: true, aria: "Equity de la cartera combinada", xlabels: any ? [any.start, any.end] : null });
+    hover(big.closest(".chartbox"), seriesBig, dateAt);
+    document.querySelector(".big-chart .legend").innerHTML =
+      `<span><i style="background:${colA}"></i>${A.label}</span><span><i style="background:${colB}"></i>${B.label}</span><span>Bandas = fases del escenario</span>`;
+
+    const deep = set => ACC.filter(a => { const r = D.runs.find(x => x.set === set.set && x.cost_mult === set.cost && x.scenario === st.sc && x.seed === st.seed && x.account === a); return r && r.m.max_drawdown_pct < -25; }).length;
+    $("#tiles").innerHTML = [
+      [A.label, pA ? fmtP(pA.return_pct) : "—", pA ? `drawdown máx. ${pA.max_dd_pct.toFixed(1)}%` : ""],
+      [B.label, pB ? fmtP(pB.return_pct) : "—", pB ? `drawdown máx. ${pB.max_dd_pct.toFixed(1)}%` : ""],
+      ["Subcuentas con DD > 25%", `${deep(A)} → ${deep(B)}`, "de 9 estrategias"],
+      ["BTC en el escenario", any ? fmtP(any.btc) : "—", "comprar y mantener"],
+    ].map(([t, v, s]) => `<div class="tile"><span>${t}</span><b>${v}</b><small>${s}</small></div>`).join("");
+
+    $("#minis").innerHTML = ACC.map(a => {
+      const ra = findRun(A, a), rb = findRun(B, a);
+      const ser = [{ label: A.label, color: colA, pts: ra ? ra.curve : [] }, { label: B.label, color: colB, pts: rb ? rb.curve : [] }];
+      return `<div class="mini" data-acc="${a}"><header><span>${NAMES[a]}</span><b>${a}</b></header>
+        ${lineChart(ser, { w: 340, h: 130, pl: 34, pb: 6, aria: `Equity de ${a}` })}
+        <div class="nums"><span style="color:${colA}">${ra ? fmtP(ra.m.total_return_pct) + " · DD " + ra.m.max_drawdown_pct.toFixed(0) + "%" : "—"}</span>
+        <span style="color:${colB}">${rb ? fmtP(rb.m.total_return_pct) + " · DD " + rb.m.max_drawdown_pct.toFixed(0) + "%" : "—"}</span></div></div>`;
+    }).join("");
+    document.querySelectorAll("#minis .mini").forEach(box => {
+      const a = box.dataset.acc, ra = findRun(A, a), rb = findRun(B, a);
+      const ref = rb || ra;
+      const s0 = ref ? new Date(ref.start) : null, step = a === "SUB4" ? 1 : 7;
+      hover(box, [{ label: "antes", color: colA, pts: ra ? ra.curve : [] }, { label: "después", color: colB, pts: rb ? rb.curve : [] }],
+        i => s0 ? new Date(s0.getTime() + i * step * 864e5).toISOString().slice(0, 10) : "");
+    });
+
+    const row = (a, r) => r ? `<td class="${cls(r.m.total_return_pct)}">${fmtP(r.m.total_return_pct)}</td><td>${r.m.max_drawdown_pct.toFixed(1)}%</td><td>${(r.m.sharpe ?? 0).toFixed(2)}</td><td>${r.m.closed_trades}</td>` : "<td>—</td><td>—</td><td>—</td><td>—</td>";
+    $("#table").innerHTML = `<table><thead><tr><th>Estrategia</th><th colspan="4">${A.label}</th><th colspan="4">${B.label}</th></tr>
+      <tr><th></th><th>Retorno</th><th>Máx. DD</th><th>Sharpe</th><th>Ops.</th><th>Retorno</th><th>Máx. DD</th><th>Sharpe</th><th>Ops.</th></tr></thead><tbody>
+      ${ACC.map(a => `<tr><td>${a} · ${NAMES[a]}</td>${row(a, findRun(A, a))}${row(a, findRun(B, a))}</tr>`).join("")}</tbody></table>`;
+  }
+  render();
+})();
+
+/* ── Navegación por pasos ─────────────────────────────────────────── */
+(() => {
+  const links = [...document.querySelectorAll(".stepnav a")];
+  const secs = links.map(l => document.querySelector(l.getAttribute("href")));
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(l => l.classList.toggle("on", l.getAttribute("href") === "#" + e.target.id));
+  }), { rootMargin: "-30% 0px -60% 0px" });
+  secs.forEach(s => s && io.observe(s));
+})();
+</script>
