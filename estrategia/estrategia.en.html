@@ -325,7 +325,7 @@ body { overflow: auto; }
   <div class="grid4">
     <div class="box"><span class="tag-a">A · Company</span><h3>S.A. de C.V. in El Salvador</h3><p>Issuer domiciled there, registered with the UIF and on the CNAD Issuer Registry.</p></div>
     <div class="box"><span class="tag-b">B · ICO</span><h3>Registered offering, not a presale</h3><p>15% of supply (9.26 M PUDA) sold through PSAD with KYC, only after audit and registration.</p></div>
-    <div class="box"><span class="tag-c">C · Bot</span><h3>Only what passed the stress test</h3><p>Of 11 strategies, 4 form the low-risk core. Maximum margin: 20% of each account.</p></div>
+    <div class="box"><span class="tag-c">C · Bot</span><h3>Only what passed the stress test</h3><p>Of 11 strategies, 5 agents: one per strategy, each in its own $1M subaccount with at most $200,000 at play, deployed in tranches.</p></div>
     <div class="box hl"><span class="tag-d">D · Returns</span><h3 id="sum-ret">3–5% a month: no evidence yet</h3><p id="sum-ret-p">The stress test measures risk, not profit. The target is validated with real historical data and demo trading before promising anything.</p></div>
   </div>
   <footer><span>Summary</span><span>02</span></footer>
@@ -732,7 +732,8 @@ python scripts/export_runs.py …</pre>
 (() => {
   const $ = s => document.querySelector(s);
   const P = window.PLAN || {};
-  const fmtP = (v, d = 1) => v == null ? "—" : `${v > 0 ? "+" : ""}${(+v).toFixed(d)}%`;
+  const fx = (v, d = 1) => (+v).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const fmtP = (v, d = 1) => v == null ? "—" : `${v > 0 ? "+" : v < 0 ? "−" : ""}${fx(Math.abs(v), d)}%`;
   const nf = v => Math.round(v).toLocaleString("en-US");
 
   /* ── Pestañas ───────────────────────────────────────────────────── */
@@ -853,10 +854,10 @@ python scripts/export_runs.py …</pre>
     const bands = sc ? sc.phases.map(p => { const b = [acc / tot, (acc + p[1]) / tot, p[0]]; acc += p[1]; return b; }) : [];
     $("#chart13").innerHTML = lines([{ c: "var(--s1)", pts: a ? a.curve : [] }, { c: "var(--s2)", pts: d ? d.curve : [] }], { bands });
     const all = set => (S.portfolio || []).filter(p => p.set === set && p.cost_mult === 1);
-    const ddr = set => { const v = all(set).map(p => p.max_dd_pct); return v.length ? `${Math.min(...v).toFixed(0)}% to ${Math.max(...v).toFixed(0)}%` : "—"; };
+    const ddr = set => { const v = all(set).map(p => p.max_dd_pct); return v.length ? `${fx(Math.min(...v), 0)}% to ${fx(Math.max(...v), 0)}%` : "—"; };
     $("#kpis13").innerHTML = [
       ["Drawdown before", ddr("antes"), "all paths", "bad"], ["Drawdown after", ddr("despues"), "all paths", "good"],
-      ["This path, before", a ? fmtP(a.return_pct, 0) : "—", a ? `DD ${a.max_dd_pct.toFixed(0)}%` : "", ""], ["This path, after", d ? fmtP(d.return_pct, 0) : "—", d ? `DD ${d.max_dd_pct.toFixed(0)}%` : "", ""],
+      ["This path, before", a ? fmtP(a.return_pct, 0) : "—", a ? `DD ${fx(a.max_dd_pct, 0)}%` : "", ""], ["This path, after", d ? fmtP(d.return_pct, 0) : "—", d ? `DD ${fx(d.max_dd_pct, 0)}%` : "", ""],
     ].map(([t, v, s, c]) => `<div class="kpi ${c}"><span>${t}</span><b>${v}</b><small>${s}</small></div>`).join("");
   }
   r13();
@@ -895,7 +896,7 @@ python scripts/export_runs.py …</pre>
 
   /* ── C5 · Cuenta short ──────────────────────────────────────────── */
   const HG = P.hedge || { summary: [], beta: {}, groups: {}, levs: [] };
-  const TX = {"loc": "en-US", "groups": [["completa", "All accounts"], ["nucleo", "Core only"]], "hedges": {"sin": "No short account", "antes": "Original SUB5 (stopped)"}, "cols": ["SUB5", "Gain in the worst drop", "Portfolio DD (worst)", "Portfolio 3 years", "SUB5 worst DD", "SUB5 3 years"], "title": "SUB5 at {L}x: what the hedge needs, without risking the account", "k": [["Recommended leverage", "{L}x", "margin ≤ 20% → up to {E}× the account short"], ["What the others lose", "{B}", "% of one account per 1% BTC drop (worst case {B90})"], ["Calculation", "{B} ÷ 0.20 = {Lx}", "beta of the others ÷ max margin"], ["SUB5 worst DD at {L}x", "{D}", "at 10x: {D10} (near the hard stop)"]], "note": "Worst 30-day BTC drop in each path ({C}). In that window the other accounts made {O} of the portfolio (median): their pauses and stops already protect them. The short gets in late (the macro signal lags 30 days), so more leverage doesn't hedge more, it only adds risk to SUB5 itself. Above {Lmax}x it makes no sense.", "sets": [["antes", "Before the fixes"], ["despues", "After · current leverage"], ["despues2", "After · costs ×2"], ["x7m20", "7x · 20% margin"], ["x7m20r", "7x · 20% margin · scaled positions"], ["sub5", "SUB5 from 2x to 10x"]], "sc": {"ciclo": "Cycle", "bear": "Bear", "lateral": "Sideways"}, "seed": "path", "rcols": ["Account", "Lev.", "BTC", "Return", "Max DD", "Sharpe", "Trades"], "rnote": "{N} runs in total. Each row is a 10,000 USDT account over 3 years. SUB4 is only tested in the worst month. Click the buttons to change configuration, scenario and path."};
+  const TX = {"loc": "en-US", "groups": [["completa", "All accounts"], ["nucleo", "Core only"]], "hedges": {"sin": "No short account", "antes": "Original SUB5 (stopped)"}, "cols": ["SUB5", "Gain in the worst drop", "Portfolio DD (worst)", "Portfolio 3 years", "SUB5 worst DD", "SUB5 3 years"], "title": "SUB5 at {L}x: what the hedge needs, without risking the account", "k": [["Recommended leverage", "{L}x", "margin ≤ 20% → up to {E}× the account short"], ["What the others lose", "{B}", "% of one account per 1% BTC drop (worst case {B90})"], ["Calculation", "{B} ÷ 0.20 = {Lx}", "beta of the others ÷ max margin"], ["SUB5 worst DD at {L}x", "{D}", "at 10x: {D10} (near the hard stop)"]], "note": "Worst 30-day BTC drop in each path ({C}). In that window the other accounts made {O} of the portfolio (median): their pauses and stops already protect them. The short gets in late (the macro signal lags 30 days), so more leverage doesn't hedge more, it only adds risk to SUB5 itself. Above {Lmax}x it makes no sense.", "sets": [["antes", "Before the fixes"], ["despues", "After · current leverage"], ["despues2", "After · costs ×2"], ["x7m20", "7x · 20% margin"], ["x7m20r", "7x · 20% margin · scaled positions"], ["sub5", "SUB5 from 2x to 10x"], ["mi", "My strategy · 3x, ramp, 48H"]], "sc": {"ciclo": "Cycle", "bear": "Bear", "lateral": "Sideways"}, "seed": "path", "rcols": ["Account", "Lev.", "BTC", "Return", "Max DD", "Sharpe", "Trades"], "rnote": "{N} runs in total. Each row is a 10,000 USDT account over 3 years. SUB4 is only tested in the worst month. Click the buttons to change configuration, scenario and path."};
   const num = (v, d = 2) => (+v).toLocaleString(TX.loc, { minimumFractionDigits: d, maximumFractionDigits: d });
   const sgn = (v, d = 1) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${num(Math.abs(v), d)}%`;
   let hg = "completa";
@@ -968,7 +969,7 @@ python scripts/export_runs.py …</pre>
 
   /* ── 17 · Calculadora ───────────────────────────────────────────── */
   const K = { cap: 1000000, mar: 20, lev: 7, ret: 1, crash: 25 };
-  const fmtK = { cap: v => `${nf(v)} USDT`, mar: v => `${v}%`, lev: v => `${v}x`, ret: v => `${(+v).toFixed(1)}%`, crash: v => `−${v}%` };
+  const fmtK = { cap: v => `${nf(v)} USDT`, mar: v => `${v}%`, lev: v => `${v}x`, ret: v => `${fx(v, 1)}%`, crash: v => `−${v}%` };
   Object.keys(K).forEach(k => { const el = $("#k-" + k); el.value = K[k]; $("#o-" + k).textContent = fmtK[k](K[k]); el.addEventListener("input", () => { K[k] = +el.value; $("#o-" + k).textContent = fmtK[k](K[k]); r17(); }); });
   function r17() {
     const exp = K.mar / 100 * K.lev, notional = K.cap * exp;
@@ -976,13 +977,13 @@ python scripts/export_runs.py …</pre>
     const liq = 100 / K.lev, crashLoss = Math.min(K.crash, liq) / 100 * notional;
     const crashPct = crashLoss / K.cap * 100;
     $("#kpis17").innerHTML = [
-      ["Exposure", `${exp.toFixed(2)}×`, `${nf(notional)} USDT deployed`, exp > 2 ? "bad" : exp > 1.4 ? "warn" : "good"],
+      ["Exposure", `${fx(exp, 2)}×`, `${nf(notional)} USDT deployed`, exp > 2 ? "bad" : exp > 1.4 ? "warn" : "good"],
       ["Monthly account return", fmtP(month, 2), `${fmtP(year, 0)} a year, compounded`, month >= 3 ? "good" : ""],
-      ["Move that liquidates", `−${liq.toFixed(1)}%`, "against a position", liq < 15 ? "bad" : ""],
-      ["Loss in the simulated crash", `−${crashPct.toFixed(1)}%`, `of the account (${nf(crashLoss)} USDT) without a stop`, crashPct > 25 ? "bad" : crashPct > 10 ? "warn" : "good"],
+      ["Move that liquidates", `−${fx(liq, 1)}%`, "against a position", liq < 15 ? "bad" : ""],
+      ["Loss in the simulated crash", `−${fx(crashPct, 1)}%`, `of the account (${nf(crashLoss)} USDT) without a stop`, crashPct > 25 ? "bad" : crashPct > 10 ? "warn" : "good"],
     ].map(([t, v, s, c]) => `<div class="kpi ${c}"><span>${t}</span><b>${v}</b><small>${s}</small></div>`).join("");
     const need = 3 / exp, need5 = 5 / exp;
-    $("#note17").textContent = `For 3–5% a month at this exposure, the capital deployed must return between ${need.toFixed(1)}% and ${need5.toFixed(1)}% a month, sustained. Stops reduce the crash loss, but at 7x a price gap can jump past them.`;
+    $("#note17").textContent = `For 3–5% a month at this exposure, the capital deployed must return between ${fx(need, 1)}% and ${fx(need5, 1)}% a month, sustained. Stops reduce the crash loss, but at 7x a price gap can jump past them.`;
   }
   r17();
 
@@ -997,7 +998,7 @@ python scripts/export_runs.py …</pre>
   const NEXT = [
     ["Allow api.bitget.com in the environment", "unblocks the backtest with real history"], ["Hire a Salvadoran lawyer", "company and token structure"],
     ["Tax adviser in Spain", "tax residence of management"], ["Request quotes from 2–3 auditors", "smart contract (CertiK or others)"],
-    ["Run the core bot on Bitget Demo", "SUB5, SUB6, SUB9, SUB10 with margin ≤ 20%"], ["Set DATABASE_URL on Railway", "enables the website's interest list"],
+    ["Run the 5 agents on Bitget Demo", "SUB5, 6, 8, 9, 10 at 3x, capital ramp and 48H"], ["Set DATABASE_URL on Railway", "enables the website's interest list"],
     ["Decide partners, capital and vesting", "basis of the shareholders' agreement"], ["Set a privacy contact", "to delete data from the interest list"],
   ];
   const KEY = "puda-plan-next";

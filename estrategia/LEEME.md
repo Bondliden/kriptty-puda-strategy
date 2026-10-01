@@ -2,27 +2,30 @@
 
 | Archivo | Qué es |
 |---|---|
-| `estrategia.html` | Presentación completa en español: sociedad en El Salvador, ICO, bot, backtest, test de estrés, cuenta short y rentabilidad mensual. Se abre con doble clic. |
+| `estrategia.html` | Presentación completa en español, en pestañas: Resumen, Sociedad, ICO, Bot y backtest, Test de estrés, Rentabilidad, Mi estrategia, Riesgos y pasos. Se abre con doble clic. |
 | `estrategia.en.html` | La misma presentación en inglés (botón ES/EN arriba a la derecha). |
 | `datos/ejecuciones.csv` | Todas las ejecuciones del test de estrés, una fila por cuenta, escenario, trayectoria y configuración. Se abre en Excel (separador `;`). |
 | `datos/cobertura_short.json` | Cálculo del apalancamiento de la cuenta short (SUB5) frente a las demás. |
 | `datos/rentabilidad_mensual.json` | Rentabilidad mes a mes de cada cartera y configuración. |
+| `datos/mi_estrategia.json` | La propuesta: cinco agentes con 1 M$ por subcuenta, 20% en juego por tramos y operaciones de 48H como mucho. |
 
-Navegación: flechas ← →, espacio, `F` para pantalla completa. En el móvil se ve como una página
-con scroll.
+Navegación: pestañas arriba (también con las flechas ← → del teclado sobre ellas) y botones de
+pestaña anterior/siguiente al final de cada una. Se recuerda la última pestaña abierta.
 
 ## Cómo comprobar el test de estrés
 
-1. **En la presentación**: la diapositiva 16 («Compruébalo tú») muestra cada ejecución. Elige la
-   configuración (antes / después / 7x con margen del 20% / SUB5 de 2x a 10x), el escenario y la
-   trayectoria.
+1. **En la presentación**: pestaña «Test de estrés», sección «Compruébalo tú». Muestra cada
+   ejecución: elige la configuración (antes / después / 7x con margen del 20% / SUB5 de 2x a 10x /
+   mi estrategia), el escenario y la trayectoria.
 2. **En Excel**: abre `datos/ejecuciones.csv`. Columnas principales:
    - `conjunto`: `antes` (código original), `despues` (con los arreglos), `x7m20` (7x, margen ≤ 20%,
      mismo tamaño de posición), `x7m20r` (7x, margen ≤ 20%, posiciones escaladas al apalancamiento),
-     `sub5` (la cuenta short de 2x a 10x).
+     `sub5` (la cuenta short de 2x a 10x), `mi` (la propuesta: 3x, margen ≤ 20%, rampa, pausa al 10%,
+     parada dura al 20% y operaciones de 48H como mucho).
    - `escenario` / `semilla`: mercado sintético. Misma semilla = mismo mercado para todas las cuentas.
    - `rentabilidad_pct`, `max_drawdown_pct`, `sharpe`, `operaciones`, `comisiones_usdt`: resultado de
-     una cuenta de 10.000 USDT durante 3 años (oct 2023 – oct 2026).
+     una cuenta de 10.000 USDT durante 3 años (oct 2023 – oct 2026). Los porcentajes valen igual para
+     una subcuenta de 1 M$ (multiplica las cifras en USDT por 100).
    - `archivo`: el JSON con la curva diaria completa que genera `kriptty-stress`.
 3. **Reproduciéndolo** (Python 3.11+, desde la carpeta del repositorio). Es determinista: la misma
    semilla da exactamente las mismas cifras.
@@ -35,7 +38,11 @@ kriptty-stress --strategies SUB2,SUB5,SUB6,SUB9,SUB10,SUB11 --leverage 7 --max-m
 kriptty-stress --strategies SUB2,SUB9,SUB10,SUB11 --leverage 7 --max-margin 0.2 --scale-risk --out data/stress_x7m20r
 for L in 2 3 5 7 10; do kriptty-stress --strategies SUB5 --leverage $L --max-margin 0.2 --scale-risk --out data/stress_sub5; done
 python scripts/hedge_short.py --others data/stress_x7m20 --sub8 data/stress_despues --sweep data/stress_sub5
-python scripts/export_runs.py despues=data/stress_despues x7m20=data/stress_x7m20 sub5=data/stress_sub5
+kriptty-stress --strategies SUB5,SUB6,SUB8,SUB9,SUB10 --leverage 3 --max-margin 0.2 --scale-risk \
+  --set capital_ramp=0.25,0.5,0.75,1 --set max_drawdown_pct=0.1 --set max_total_drawdown_pct=0.2 \
+  --set max_hold_hours=48 --tag mi --out data/stress_mi
+python scripts/plan_agents.py data/stress_mi
+python scripts/export_runs.py despues=data/stress_despues x7m20=data/stress_x7m20 sub5=data/stress_sub5 mi=data/stress_mi
 ```
 
 Para comparar con el código original («antes»), ejecuta lo mismo desde el commit anterior a los
@@ -55,4 +62,16 @@ arreglos (`git log -- src/kriptty/backtest/stress.py`).
 Es la cuenta que opera en corto cuando hay caída y las demás se paran. Apalancamiento recomendado:
 **3x** con margen ≤ 20% (hasta 0,6× la cuenta en corto). Cálculo: la beta a la baja de las demás
 cuentas suma ≈ 0,47 (pierden 0,47% de una cuenta por cada 1% que cae BTC) → 0,47 / 0,20 ≈ 2,4 → 3x.
-Más de 5x no cubre más y solo aumenta el riesgo de la propia SUB5. Detalle en la diapositiva 15.
+Más de 5x no cubre más y solo aumenta el riesgo de la propia SUB5. Detalle en la pestaña «Mi estrategia».
+
+## Configuración propuesta (`.env`)
+
+```
+ENABLED_STRATEGIES=SUB5,SUB6,SUB8,SUB9,SUB10
+MAX_MARGIN_PCT=0.2                # 200.000 $ de cada subcuenta de 1 M$
+CAPITAL_RAMP=0.25,0.5,0.75,1      # 50k → 100k → 150k → 200k, un escalón por mes en beneficio
+LEVERAGE=SUB6=3,SUB9=3,SUB10=3    # SUB5 ya va a 3x; SUB8 opera en spot
+MAX_DRAWDOWN_PCT=0.10             # pausa de 14 días al −10%
+MAX_TOTAL_DRAWDOWN_PCT=0.20       # parada dura al −20%: como mucho 200.000 $ por subcuenta
+MAX_HOLD_HOURS=48                 # compras y ventas en 48H (SUB6, SUB8 y SUB9 exentas por diseño)
+```
