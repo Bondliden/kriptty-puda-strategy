@@ -10,7 +10,7 @@ import pandas as pd
 
 TOP_LIQ = 40                      # universo diario: las 40 monedas con más volumen de los últimos 30 días
 REGIMENES = ("alcista", "lateral", "bajista", "incertidumbre")
-CRITERIOS = ("scalper", "momentum", "weak", "lag_long", "lag_short")
+CRITERIOS = ("scalper", "momentum", "weak", "lag_long", "lag_short", "hype", "pico")   # hype y pico: detector de memes
 
 
 def features(daily: pd.DataFrame, btc_daily_close: pd.Series) -> pd.DataFrame:
@@ -73,7 +73,7 @@ def rankings(feat: dict[str, pd.DataFrame], exclude=("BTC", "ETH")) -> dict[str,
     """Para cada día y criterio, las monedas ordenadas de mejor a peor."""
     cols = ["liq", "chop", "ret30", "atr_pct", "lag7"]
     panel = pd.concat({c: f[cols] for c, f in feat.items() if c not in exclude}, names=["coin", "day"])
-    out: dict[str, dict] = {k: {} for k in CRITERIOS}
+    out: dict[str, dict] = {k: {} for k in CRITERIOS if k not in ("hype", "pico")}
     for day, g in panel.groupby(level="day"):
         ranks = rank_day(g.droplevel("day"))
         for k, v in ranks.items():

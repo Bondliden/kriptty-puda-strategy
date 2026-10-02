@@ -60,3 +60,19 @@ nombre = "Scalper · mercado lateral"
 estrategia = "scalper_lateral"      # solo en lateral; stop escalonado más corto
 exchange_id = 104
 bots = [1007]
+
+[memes]                      # detector de memecoins, cada hora: kriptty-agentes memes
+R = 0.25
+V = 2.0
+nuevas = true
+R_pico = 1.0
+D = 0.10
+D_max = 0.30
+
+# Cuenta pequeña de memecoins, en su propia subcuenta y con poco dinero; cierre a las 24 h como máximo.
+# meme_pico = cortos tras el pico (la única positiva en el backtest) · meme_hype = largos en el hype (pierde)
+[[cuentas]]
+nombre = "Memecoins · cortos tras el pico"
+estrategia = "meme_pico"
+exchange_id = 105
+bots = [1008, 1009]

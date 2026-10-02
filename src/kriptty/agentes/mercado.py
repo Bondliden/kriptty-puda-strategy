@@ -5,6 +5,7 @@ Solo lectura. Nada de aquí envía órdenes.
 from __future__ import annotations
 
 import json
+import re
 import time
 import urllib.parse
 import urllib.request
@@ -41,6 +42,14 @@ class Ticker:
     last: float
     usdt_volume_24h: float
     funding: float
+    change24h: float = 0.0   # variación en 24 h (0,25 = +25%)
+    high24h: float = 0.0
+    low24h: float = 0.0
+
+
+def base_coin(coin: str) -> str:
+    """1000PEPE → PEPE, 10000SATS → SATS (para cruzar con CoinGecko)."""
+    return re.sub(r"^1(0{3,6})", "", coin)
 
 
 class Bitget:
@@ -55,7 +64,8 @@ class Bitget:
                 continue
             coin = sym[:-4]
             out[coin] = Ticker(sym, coin, float(t["lastPr"] or 0), float(t.get("usdtVolume") or 0),
-                               float(t.get("fundingRate") or 0))
+                               float(t.get("fundingRate") or 0), float(t.get("change24h") or 0),
+                               float(t.get("high24h") or 0), float(t.get("low24h") or 0))
         return out
 
     def daily(self, coin: str, days: int = 90) -> pd.DataFrame:

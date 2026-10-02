@@ -10,6 +10,7 @@ import types
 from datetime import date
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from kriptty.agentes import lectura as lectura_mod
@@ -63,7 +64,8 @@ def test_ejemplo_carga_con_valores_de_la_estrategia():
     cortos = nombres["cortos_vasos"]
     assert cortos.lado == "short" and cortos.criterio == "lag_short" and cortos.regimenes == ["bajista"]
     assert nombres["scalper_lateral"].graceful_sl == 0.05
-    assert cfg.exchanges() == {101: [1001, 1002], 102: [1003, 1004], 103: [1005, 1006], 104: [1007]}
+    assert cfg.exchanges() == {101: [1001, 1002], 102: [1003, 1004], 103: [1005, 1006], 104: [1007], 105: [1008, 1009]}
+    assert [c.estrategia for c in cfg.cuentas_memes()] == ["meme_pico"]
 
 
 def test_config_rechaza_bot_en_dos_cuentas(tmp_path):
@@ -267,6 +269,7 @@ def test_universo_filtra_memes_kraken_top_y_listas(monkeypatch):
     monkeypatch.setattr(orquestador, "top_marketcap", lambda n: {c: 50 for c in
                                                                  ["ZEC", "PEPE", "FARTCOIN", "USDC", "INJ", "LUNA"]})
     monkeypatch.setattr(orquestador, "kraken_assets", lambda: {"ZEC", "PEPE", "FARTCOIN", "LUNA", "USDC"})
+    monkeypatch.setattr(orquestador, "memes_coingecko", lambda: {"FARTCOIN"})
     cfg = Config(exchange_id=8, lista_negra=["LUNA"])
     disp, _ = orquestador.universo(cfg, orquestador.Bitget())
     assert disp == {"ZEC"}                     # INJ no está en Kraken (en este caso inventado)
@@ -351,3 +354,62 @@ def test_informes_se_generan():
     assert "ALGO → ZEC" in texto and "lm=n" in texto
     al = vigilar(cfg_con(c), {1: bot(1, "ALGO", lm="p")}, {8: {}}, {}, {})
     assert "Manual" in informe_vigilancia(al, False)
+
+
+# ── memecoins: detector, cuenta de cortos tras el pico y cierre por tiempo ──
+
+def _velas(precios: list[float], volumen: list[float], fin: str = "2026-10-02 10:00") -> pd.DataFrame:
+    idx = pd.date_range(end=pd.Timestamp(fin, tz="UTC"), periods=len(precios), freq="1h")
+    c = pd.Series(precios, index=idx)
+    return pd.DataFrame({"open": c.shift().fillna(c.iloc[0]), "high": c * 1.01, "low": c * 0.99, "close": c,
+                         "base_vol": 0.0, "quote_vol": volumen}, index=idx)
+
+
+def test_detector_hype_y_pico():
+    from kriptty.agentes.memes import es_hype, es_pico, medir
+    ahora = pd.Timestamp("2026-10-02 11:00", tz="UTC")
+    # una semana tranquila y un día de +60% con 5 veces el volumen
+    df = _velas([1.0] * 180 + [1.0 + 0.025 * i for i in range(1, 25)], [1e5] * 180 + [5e5] * 24)
+    m = medir(df, ahora)
+    assert m["ret24"] > 0.5 and m["vratio"] > 4 and not m["nueva"]
+    assert es_hype(m, R=0.25, V=2.0) and not es_pico(m, R_pico=1.0, D=0.1)
+    # dobla en 24 h y ya cae un 15% desde el máximo → pico para cortos
+    subida = [1.0 + i / 12 for i in range(1, 13)]
+    df = _velas([1.0] * 180 + subida + [2.0 - 0.025 * i for i in range(1, 13)], [1e5] * 180 + [6e5] * 24)
+    m = medir(df, ahora)
+    assert m["pico24"] >= 1.0 and m["caida"] >= 0.1 and es_pico(m, R_pico=1.0, D=0.1, D_max=0.3)
+    assert not es_pico({**m, "caida": 0.76}, R_pico=1.0, D=0.1, D_max=0.3)        # llegaríamos tarde
+    # recién listada: 30 horas, +80% desde la primera vela y 40 M$ → hype de moneda nueva
+    df = _velas([1.0 + 0.8 * i / 29 for i in range(30)], [1.5e6] * 30)
+    m = medir(df, ahora)
+    assert m["nueva"] and es_hype(m, R=0.25, V=2.0, nuevas=True) and not es_hype(m, R=0.25, V=2.0, nuevas=False)
+
+
+def test_cuenta_de_memes_va_aparte_y_opera_cortos_tras_el_pico(tmp_path):
+    p = tmp_path / "a.toml"
+    p.write_text('[general]\nexchange_id = 8\n'
+                 '[[cuentas]]\nnombre = "Momentum"\nestrategia = "recursive_momentum"\nbots = [1]\n'
+                 '[[cuentas]]\nnombre = "Memes"\nestrategia = "meme_pico"\nexchange_id = 23\nbots = [7]\n', encoding="utf-8")
+    cfg = cargar(p)
+    memes_c, = cfg.cuentas_memes()
+    assert [c.nombre for c in cfg.cuentas_diarias()] == ["Momentum"]
+    assert memes_c.lado == "short" and memes_c.max_horas == 24 and memes_c.stop_catastrofe == 0.20
+    contexto = Contexto(date(2026, 10, 2), "alcista", Lectura(), {"pico": ["NEWMEME"]}, {"NEWMEME"})
+    d, = decidir_cuenta(memes_c, cfg, contexto, {7: bot(7, "XRP", swe=0.15)}, {})
+    assert d.cambios == {"symbol": "NEWMEMEUSDT", "name": "NEWMEME", "swe": 0.4}
+    assert d.propuesta == {"sm": "n"}
+
+
+def test_cierre_por_tiempo_a_las_24_horas():
+    from datetime import UTC, datetime, timedelta
+    c = Cuenta(nombre="Memes", estrategia="meme_pico", bots=[7], lado="short", criterio="pico",
+               regimenes=["alcista"], max_horas=24, stop_catastrofe=0.20)
+    cfg = cfg_con(c)
+    bots = {7: bot(7, "NEWMEME", sm="n")}
+    posiciones = {8: {("NEWMEME", "short"): pos("NEWMEME", "short", entry=1.0)}}
+    estado: dict = {}
+    t0 = datetime(2026, 10, 2, 10, tzinfo=UTC)
+    assert vigilar(cfg, bots, posiciones, {"NEWMEME": 1.0}, estado, ahora=t0) == []
+    assert vigilar(cfg, bots, posiciones, {"NEWMEME": 1.0}, estado, ahora=t0 + timedelta(hours=23)) == []
+    al = vigilar(cfg, bots, posiciones, {"NEWMEME": 1.0}, estado, ahora=t0 + timedelta(hours=24))
+    assert al[0].accion == "panic" and al[0].cambios == {"sm": "p"} and "tiempo" in al[0].motivo

@@ -1,6 +1,7 @@
 """Informe diario en Markdown (para Obsidian o para leer en el servidor)."""
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .agente import MODOS, Contexto, Decision
@@ -9,6 +10,19 @@ from .riesgo import Alerta
 
 def _modo(m: str) -> str:
     return MODOS.get(m, m)
+
+
+def _tabla(decisiones: list[Decision]) -> list[str]:
+    lin = ["| Cuenta | Bot | Moneda | Modo | Exposición | Motivo | Aplicado | Pendiente de permiso |",
+           "|---|---|---|---|---|---|---|---|"]
+    for d in decisiones:
+        moneda = d.moneda_actual if d.moneda == d.moneda_actual else f"{d.moneda_actual} → {d.moneda}"
+        modo = _modo(d.modo_actual) if d.modo == d.modo_actual else f"{_modo(d.modo_actual)} → {_modo(d.modo)}"
+        expo = f"{d.expo_actual:g}" if abs(d.expo - d.expo_actual) < 1e-9 else f"{d.expo_actual:g} → {d.expo:g}"
+        apl = ", ".join([f"{k}={v}" for k, v in d.cambios.items()] + (["arrancar"] if d.arrancar else [])) or "—"
+        pen = ", ".join(f"{k}={v}" for k, v in d.propuesta.items()) or "—"
+        lin.append(f"| {d.cuenta} | {d.bot_id} | {moneda} | {modo} | {expo} | {d.motivo} | {apl} | {pen} |")
+    return lin
 
 
 def informe_diario(ctx: Contexto, decisiones: list[Decision], aplicado: bool, permitir_normal: bool,
@@ -27,21 +41,36 @@ def informe_diario(ctx: Contexto, decisiones: list[Decision], aplicado: bool, pe
         lin += ["## Monedas vetadas hoy", ""] + [f"- **{m}**: {motivo}" for m, motivo in lec.vetadas.items()] + [""]
     for criterio, lista in sorted(ctx.ranking.items()):
         lin.append(f"- Top {criterio}: {', '.join(lista[:8]) or '—'}")
-    lin += ["", "## Decisiones por cuenta", "",
-            "| Cuenta | Bot | Moneda | Modo | Exposición | Motivo | Aplicado | Pendiente de permiso |",
-            "|---|---|---|---|---|---|---|---|"]
-    for d in decisiones:
-        moneda = d.moneda_actual if d.moneda == d.moneda_actual else f"{d.moneda_actual} → {d.moneda}"
-        modo = _modo(d.modo_actual) if d.modo == d.modo_actual else f"{_modo(d.modo_actual)} → {_modo(d.modo)}"
-        expo = f"{d.expo_actual:g}" if abs(d.expo - d.expo_actual) < 1e-9 else f"{d.expo_actual:g} → {d.expo:g}"
-        apl = ", ".join([f"{k}={v}" for k, v in d.cambios.items()] + (["arrancar"] if d.arrancar else [])) or "—"
-        pen = ", ".join(f"{k}={v}" for k, v in d.propuesta.items()) or "—"
-        lin.append(f"| {d.cuenta} | {d.bot_id} | {moneda} | {modo} | {expo} | {d.motivo} | {apl} | {pen} |")
+    lin += ["", "## Decisiones por cuenta", ""] + _tabla(decisiones)
     if errores:
         lin += ["", "## Errores", ""] + [f"- {e}" for e in errores]
     if lec.titulares:
         lin += ["", "<details><summary>Titulares leídos</summary>", ""]
         lin += [f"- [{t.fuente}] {t.titulo}" for t in lec.titulares[:60]] + ["", "</details>"]
+    return "\n".join(lin) + "\n"
+
+
+def informe_memes(senales: dict, decisiones: list[Decision], aplicado: bool, errores: list[str] | None = None) -> str:
+    lin = [f"### Memecoins · {datetime.now(UTC).strftime('%Y-%m-%d %H:%M')} UTC "
+           f"({'aplicado' if aplicado else 'simulación'})", ""]
+    nombres = {"hype": "Hype (subida + volumen)", "pico": "Pico (ya cae desde el máximo: corto)"}
+    for tipo, lista in senales.items():
+        if not lista:
+            continue
+        lin += [f"**{nombres.get(tipo, tipo)}**", "",
+                "| Moneda | 24 h | Pico 24 h | Cae desde máx. | Volumen ×media | Volumen 24 h | Nueva | Tendencia |",
+                "|---|---|---|---|---|---|---|---|"]
+        for s in lista[:10]:
+            vr = f"{s.vratio:.1f}" if s.vratio is not None else "—"
+            lin.append(f"| {s.coin} | {s.ret24:+.0%} | {s.pico24:+.0%} | {s.caida:.0%} | {vr} | {s.vol24 / 1e6:,.1f} M$ | "
+                       f"{'sí' if s.nueva else ''} | {'sí' if s.tendencia else ''} |")
+        lin.append("")
+    if not any(senales.values()):
+        lin += ["Sin señales.", ""]
+    if decisiones:
+        lin += _tabla(decisiones) + [""]
+    if errores:
+        lin += ["Errores:"] + [f"- {e}" for e in errores] + [""]
     return "\n".join(lin) + "\n"
 
 

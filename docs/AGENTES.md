@@ -48,6 +48,40 @@ que se opera es lo que se probó.
 - Un lado en Panic que ya no tiene posición vuelve a Manual.
 - El agente diario no toca un lado en Panic con posición: el vigilante lo está cerrando.
 
+## Cuenta de memecoins (cada hora)
+
+Va en su propia subcuenta, con poco dinero, y cierra **como mucho a las 24 horas**: el vigilante pasa a Panic
+cualquier posición abierta más de `max_horas`. La orden es `kriptty-agentes memes`, cada hora.
+
+**Universo:**
+
+- la categoría «meme-token» de CoinGecko (se actualiza sola con las nuevas);
+- la lista fija;
+- cualquier moneda **recién listada** en Bitget (menos de 3 días).
+
+Las memecoins que aguantan (DOGE, PEPE, SHIB, BONK…) siguen dentro.
+
+**Señales:**
+
+- **hype**: sube un 25% en 24 h con el doble de volumen que su media de la semana anterior, o es nueva, sube
+  un 25% desde la primera vela y mueve más de 20 M$;
+- **pico**: ha llegado a doblar en 24 h y ya cae entre un 10% y un 30% desde el máximo.
+
+**Backtest** (`scripts/descargar_memes.py` + `scripts/meme_hype.py`, 33 memecoins de Bitget, de diciembre de
+2023 a septiembre de 2026, 180 variantes):
+
+- **Comprar el hype pierde.** 115 de 120 variantes acaban en negativo: aciertan un 35% de las veces y la
+  caída mediana es del −77%. En TRUMP y MELANIA, los stops saltaban en la primera hora por la volatilidad.
+- **Cortos tras el pico** (`meme_pico`: stop del 20%, objetivo del 20%, 24 h): es la única regla positiva
+  en el ajuste y en la prueba. Da +24,6% y una caída máxima del −16%, pero con solo 21 operaciones.
+
+Estrategias:
+
+- `meme_pico`: cortos tras el pico (recomendada);
+- `meme_hype`: largos en el hype (no recomendada).
+
+Sin cuentas de memecoins en la configuración, `memes` solo escribe las señales en `memes-AAAA-MM-DD.md`.
+
 ## Seguridad
 
 - **`permitir_normal = false`** (por defecto). El agente aplica solo lo que reduce riesgo:
@@ -59,8 +93,8 @@ que se opera es lo que se probó.
   como **propuesta** en el informe. Activarlo es decisión de una persona.
 - **`modo = "simulacion"`** (por defecto): no envía nada a Kriptty, solo escribe el informe. Con
   `modo = "aplicar"` envía los cambios del punto anterior.
-- Los agentes **solo tocan los bots que aparecen en la configuración**: Kriptty tiene más de 500 bots de
-  varios usuarios. Un bot no puede estar en dos cuentas.
+- Los agentes **solo tocan los bots que aparecen en la configuración**: Kriptty tiene más de 500 bots en
+  varias subcuentas. Un bot no puede estar en dos cuentas.
 - Cada cuenta opera un solo lado. Si el lado contrario de uno de sus bots está en Normal, pasa a
   Gracefully stop (con posición) o a Manual (sin ella).
 - Los secretos van solo en variables de entorno, nunca en archivos ni informes:
@@ -109,7 +143,8 @@ git) y ejecuta la orden:
 python scripts/ejecutar_agentes.py diario -c config/agentes.toml
 ```
 
-En el PC está programada la tarea de Windows «Kriptty agentes (simulacion)», todos los días a las 02:20. Lo
+En el PC están programadas dos tareas de Windows: «Kriptty agentes (simulacion)», todos los días a las
+02:20, y «Kriptty memes (simulacion)», cada hora. Lo
 que aplica lo decide `general.modo`. El servidor de Kriptty (n1, CentOS 7) tiene Python 3.6 y no puede
 ejecutar los agentes.
 

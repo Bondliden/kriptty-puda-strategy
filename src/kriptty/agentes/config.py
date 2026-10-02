@@ -22,7 +22,16 @@ ESTRATEGIAS: dict[str, dict] = {
     # el scalper neat siempre encendido pierde en altcoins: solo en mercado lateral y con stop escalonado
     "scalper_lateral": {"lado": "long", "criterio": "scalper", "regimenes": ["lateral"], "incertidumbre": False,
                         "graceful_sl": 0.05, "modo_grid": "neat"},
+    # cuenta pequeña de memecoins, cierre a las 24 h como máximo (detector cada hora: ``kriptty-agentes memes``).
+    # En el backtest solo la de cortos tras el pico es positiva; la de largos en el hype pierde (ver memes.py).
+    "meme_pico": {"lado": "short", "criterio": "pico", "regimenes": list(REGIMENES), "incertidumbre": True,
+                  "graceful_sl": 0.10, "stop_catastrofe": 0.20, "max_horas": 24, "modo_grid": "neat",
+                  "exposicion": dict.fromkeys(REGIMENES, 0.4)},
+    "meme_hype": {"lado": "long", "criterio": "hype", "regimenes": list(REGIMENES), "incertidumbre": True,
+                  "graceful_sl": 0.08, "stop_catastrofe": 0.15, "max_horas": 24, "modo_grid": "neat",
+                  "exposicion": dict.fromkeys(REGIMENES, 0.4)},
 }
+CRITERIOS_MEMES = ("hype", "pico")
 
 
 @dataclass
@@ -39,6 +48,7 @@ class Cuenta:
     grid_id: int | None = None         # configuración de Kriptty para esta estrategia (opcional)
     exposicion: dict[str, float] | None = None   # por régimen; si falta, la general
     exchange_id: int | None = None     # subcuenta de Kriptty; si falta, la general
+    max_horas: int | None = None       # cierre por tiempo (Panic) de una posición abierta más de estas horas
 
     def validar(self) -> None:
         if self.lado not in ("long", "short"):
@@ -70,6 +80,9 @@ class Config:
     informe_dir: str = "informes"
     estado: str = "estado_agentes.json"
     cuentas: list[Cuenta] = field(default_factory=list)
+    # detector de hype de memecoins (cuenta «meme_hype»): subida en 24 h, veces el volumen normal, nuevas
+    memes: dict = field(default_factory=lambda: {"R": 0.25, "V": 2.0, "nuevas": True, "R_pico": 1.0, "D": 0.10,
+                                                 "D_max": 0.30})
 
     @property
     def aplicar(self) -> bool:
@@ -78,12 +91,18 @@ class Config:
     def exchange_de(self, cuenta: Cuenta) -> int:
         return cuenta.exchange_id if cuenta.exchange_id is not None else self.exchange_id
 
-    def exchanges(self) -> dict[int, list[int]]:
+    def exchanges(self, cuentas: list[Cuenta] | None = None) -> dict[int, list[int]]:
         """Subcuenta → bots de las cuentas que operan en ella."""
         out: dict[int, list[int]] = {}
-        for c in self.cuentas:
+        for c in self.cuentas if cuentas is None else cuentas:
             out.setdefault(self.exchange_de(c), []).extend(c.bots)
         return out
+
+    def cuentas_diarias(self) -> list[Cuenta]:
+        return [c for c in self.cuentas if c.criterio not in CRITERIOS_MEMES]
+
+    def cuentas_memes(self) -> list[Cuenta]:
+        return [c for c in self.cuentas if c.criterio in CRITERIOS_MEMES]
 
 
 def cargar(path: str | Path) -> Config:
@@ -106,6 +125,8 @@ def cargar(path: str | Path) -> Config:
     )
     if "exposicion" in raw:
         cfg.exposicion.update({k: float(v) for k, v in raw["exposicion"].items()})
+    if "memes" in raw:
+        cfg.memes.update(raw["memes"])
     if cfg.modo not in ("simulacion", "aplicar"):
         raise ValueError("general.modo debe ser 'simulacion' o 'aplicar'")
     usados: set[int] = set()

@@ -7,6 +7,8 @@
 * Stop de catástrofe: si el precio va ``stop_catastrofe`` (15%) en contra del precio de entrada,
   Panic directamente, esté en el modo que esté.
 * Un lado en Panic sin posición vuelve a Manual (si no, Passivbot sigue «en pánico» sin nada que cerrar).
+* Cierre por tiempo (``max_horas``, la cuenta de memecoins: 24 h): Panic cuando la posición lleva abierta más
+  de esas horas desde que el vigilante la vio por primera vez.
 
 Todo lo que hace este módulo reduce riesgo, así que en modo «aplicar» se ejecuta sin ``permitir_normal``.
 """
@@ -38,11 +40,13 @@ def _adverso(lado: str, ref: float, precio: float) -> float:
 
 
 def vigilar(cfg: Config, bots: dict[int, BotInfo], posiciones: dict[int, dict[tuple[str, str], Posicion]],
-            precios: dict[str, float], estado: dict) -> list[Alerta]:
+            precios: dict[str, float], estado: dict, ahora: datetime | None = None) -> list[Alerta]:
     """``posiciones``: subcuenta (exchange_id) → {(moneda, lado): posición}."""
     graceful = estado.setdefault("graceful", {})
+    entradas = estado.setdefault("entradas", {})          # desde cuándo se ve abierta cada posición
     alertas: list[Alerta] = []
-    ahora = datetime.now(UTC).isoformat(timespec="minutes")
+    ya = ahora or datetime.now(UTC)
+    ahora_txt = ya.isoformat(timespec="minutes")
     for cuenta in cfg.cuentas:
         modo_k = "lm" if cuenta.lado == "long" else "sm"
         pos_cuenta = posiciones.get(cfg.exchange_de(cuenta), {})
@@ -58,16 +62,27 @@ def vigilar(cfg: Config, bots: dict[int, BotInfo], posiciones: dict[int, dict[tu
 
             if not con_pos:
                 graceful.pop(clave, None)
+                entradas.pop(clave, None)
                 if modo == "p":
                     alertas.append(Alerta(cuenta.nombre, bot_id, b.coin, cuenta.lado, "manual",
                                           "posición cerrada tras Panic: vuelve a Manual", {modo_k: "m"}))
                 continue
+            e = entradas.get(clave)
+            if e is None or e.get("moneda") != b.coin:
+                entradas[clave] = e = {"moneda": b.coin, "desde": ahora_txt}
+            if cuenta.max_horas and modo != "p":
+                horas = (ya - datetime.fromisoformat(e["desde"])).total_seconds() / 3600
+                if horas >= cuenta.max_horas:
+                    alertas.append(Alerta(cuenta.nombre, bot_id, b.coin, cuenta.lado, "panic",
+                                          f"cierre por tiempo: {horas:.0f} h abierta (máximo {cuenta.max_horas} h)",
+                                          {modo_k: "p"}))
+                    continue
             if precio is None:
                 continue
             if modo == "gs":
                 ref = graceful.get(clave)
                 if ref is None or ref.get("moneda") != b.coin:
-                    graceful[clave] = {"moneda": b.coin, "precio": precio, "desde": ahora}
+                    graceful[clave] = {"moneda": b.coin, "precio": precio, "desde": ahora_txt}
                     alertas.append(Alerta(cuenta.nombre, bot_id, b.coin, cuenta.lado, "registrar_graceful",
                                           f"en gracefully stop: referencia {precio:g}", {}))
                     ref = graceful[clave]

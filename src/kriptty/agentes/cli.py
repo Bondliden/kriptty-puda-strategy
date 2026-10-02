@@ -6,12 +6,12 @@ import logging
 import sys
 
 from .config import Config, cargar
-from .orquestador import diario, solo_mercado, vigilancia
+from .orquestador import diario, memes, solo_mercado, vigilancia
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="kriptty-agentes", description="Agentes diarios de Kriptty")
-    p.add_argument("orden", choices=["mercado", "plan", "diario", "vigilar"])
+    p.add_argument("orden", choices=["mercado", "plan", "diario", "vigilar", "memes"])
     p.add_argument("-c", "--config", default="agentes.toml")
     p.add_argument("--llm", action="store_true", help="en «mercado»: revisar noticias con Claude")
     p.add_argument("-v", "--verbose", action="store_true")
@@ -20,12 +20,12 @@ def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
 
-    if a.orden == "mercado":
+    if a.orden in ("mercado", "memes"):
         try:
             cfg = cargar(a.config)
         except FileNotFoundError:
             cfg = Config()
-        print(solo_mercado(cfg, usar_llm=a.llm))
+        print(solo_mercado(cfg, usar_llm=a.llm) if a.orden == "mercado" else memes(cfg, aplicar=True))
         return 0
     cfg = cargar(a.config)
     if a.orden == "plan":
