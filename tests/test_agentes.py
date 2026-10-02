@@ -413,3 +413,21 @@ def test_cierre_por_tiempo_a_las_24_horas():
     assert vigilar(cfg, bots, posiciones, {"NEWMEME": 1.0}, estado, ahora=t0 + timedelta(hours=23)) == []
     al = vigilar(cfg, bots, posiciones, {"NEWMEME": 1.0}, estado, ahora=t0 + timedelta(hours=24))
     assert al[0].accion == "panic" and al[0].cambios == {"sm": "p"} and "tiempo" in al[0].motivo
+
+
+def test_cuenta_de_bull_run_solo_opera_en_bull_extremo():
+    c = Cuenta(nombre="Bull", estrategia="bull_extremo", bots=[1], lado="long", criterio="momentum",
+               regimenes=["alcista", "lateral", "bajista", "incertidumbre"], incertidumbre=True, solo_bull_extremo=True)
+    tranquilo = ctx("alcista", ranking={"momentum": ["SUI"]})
+    d, = decidir_cuenta(c, cfg_con(c), tranquilo, {1: bot(1, "ALGO", lm="n")}, {})
+    assert d.cambios.get("lm") == "m"                                  # sin bull run fuerte, no abre ciclos
+    euforia = Contexto(date(2026, 10, 2), "alcista", Lectura(), {"momentum": ["SUI"]}, set(), bull_extremo=True)
+    d, = decidir_cuenta(c, cfg_con(c), euforia, {1: bot(1, "ALGO")}, {})
+    assert d.moneda == "SUI" and d.propuesta == {"lm": "n"}
+
+
+def test_bull_extremo_de_btc():
+    from kriptty.agentes.senales import bull_extremo
+    btc = pd.DataFrame({"ret30": [0.1, 0.25, 0.25], "close": [100, 120, 90], "ema50": [95, 100, 100]})
+    assert bull_extremo(btc, desplazar=False).tolist() == [False, True, False]
+    assert bull_extremo(btc).tolist() == [False, False, True]

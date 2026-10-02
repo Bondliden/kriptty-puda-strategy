@@ -23,7 +23,7 @@ from .lectura import Lectura, lectura_del_dia
 from .memes import detectar, memes_coingecko
 from .mercado import MEMECOINS, NO_ALTS, Bitget, base_coin, kraken_assets, top_marketcap
 from .riesgo import vigilar
-from .senales import features, rank_day, regimes
+from .senales import bull_extremo, features, rank_day, regimes
 
 log = logging.getLogger("kriptty.agentes")
 MAX_UNIVERSO = 60          # monedas con más volumen (tras los filtros) de las que se calculan señales
@@ -56,10 +56,11 @@ def universo(cfg: Config, bitget: Bitget, simbolos_kriptty: set[str] | None = No
     return disp, tick
 
 
-def senales_del_dia(bitget: Bitget, disponibles: set[str], tickers: dict) -> tuple[str, dict[str, list[str]]]:
+def senales_del_dia(bitget: Bitget, disponibles: set[str], tickers: dict) -> tuple[str, dict[str, list[str]], bool]:
     btc = bitget.daily("BTC", days=700)
     btc_f = features(btc, btc["close"])
     regimen = str(regimes(btc_f, desplazar=False).iloc[-1])
+    euforia = bool(bull_extremo(btc_f, desplazar=False).iloc[-1])
     elegidas = sorted(disponibles, key=lambda c: -tickers[c].usdt_volume_24h)[:MAX_UNIVERSO]
     filas = {}
     for coin in elegidas:
@@ -73,7 +74,7 @@ def senales_del_dia(bitget: Bitget, disponibles: set[str], tickers: dict) -> tup
         f = features(d, btc["close"].reindex(d.index))
         filas[coin] = f.iloc[-1][["liq", "chop", "ret30", "atr_pct", "lag7"]]
     ranking = rank_day(pd.DataFrame(filas).T.astype(float)) if filas else {}
-    return regimen, ranking
+    return regimen, ranking, euforia
 
 
 def _cargar_estado(path: str) -> dict:
@@ -106,12 +107,12 @@ def contexto(cfg: Config, api: Kriptty | None, usar_llm: bool | None = None) -> 
     bitget = Bitget()
     simbolos = _simbolos(cfg, api, cfg.cuentas_diarias()) if api else None
     disp, tick = universo(cfg, bitget, simbolos)
-    regimen, ranking = senales_del_dia(bitget, disp, tick)
+    regimen, ranking, euforia = senales_del_dia(bitget, disp, tick)
     criterios = {cu.criterio for cu in cfg.cuentas_diarias()} or set(ranking)
     candidatas = sorted({c for crit in criterios for c in ranking.get(crit, [])[:15]})
     llm = cfg.usar_llm if usar_llm is None else usar_llm
     lec = lectura_del_dia(regimen, candidatas, cfg.youtube, usar_llm=llm)
-    return Contexto(datetime.now(UTC).date(), regimen, lec, ranking, disp), tick
+    return Contexto(datetime.now(UTC).date(), regimen, lec, ranking, disp, euforia), tick
 
 
 def _estado_kriptty(cfg: Config, api: Kriptty, cuentas=None) -> tuple[dict[int, BotInfo], dict[int, dict]]:
@@ -173,7 +174,7 @@ def memes(cfg: Config, aplicar: bool) -> str:
     if cuentas:
         api = Kriptty(cfg.kriptty_url)
         simbolos = _simbolos(cfg, api, cuentas) or set()
-        ranking = {k: [s.coin for s in v if f"{s.coin}USDT" in simbolos] for k, v in senales.items()}
+        ranking = {k: [s.coin for s in senales[k] if f"{s.coin}USDT" in simbolos] for k in ("hype", "pico")}
         estado = _cargar_estado(cfg.estado)
         dia = estado.get("ultimo_diario", {})
         lec = Lectura(riesgo=dia.get("riesgo", "normal"), vetadas=dict(dia.get("vetadas", {})))

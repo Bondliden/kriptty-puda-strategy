@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import re
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -21,14 +22,20 @@ NO_ALTS = {"USDT", "USDC", "DAI", "FDUSD", "TUSD", "USDE", "PYUSD", "USDS", "USD
            "WSTETH", "WEETH", "CBBTC", "XAUT", "PAXG", "BTCB", "SUSDE", "USDD", "LEO"}
 
 
-def _get(url: str, params: dict | None = None, timeout: float = 20.0, retries: int = 3):
+def _get(url: str, params: dict | None = None, timeout: float = 20.0, retries: int = 3,
+         headers: dict | None = None):
     q = f"{url}?{urllib.parse.urlencode(params)}" if params else url
     last = None
     for i in range(retries):
         try:
-            req = urllib.request.Request(q, headers={"User-Agent": "kriptty-agentes/1.0", "Accept": "application/json"})
-            with urllib.request.urlopen(req, timeout=timeout) as r:
+            h = {"User-Agent": "kriptty-agentes/1.0", "Accept": "application/json", **(headers or {})}
+            with urllib.request.urlopen(urllib.request.Request(q, headers=h), timeout=timeout) as r:
                 return json.loads(r.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 402, 403):              # sin permiso o fuera del plan: no tiene sentido repetir
+                raise RuntimeError(f"GET {url} → {e.code}") from e
+            last = e
+            time.sleep(1.5 * (i + 1))
         except Exception as e:  # noqa: BLE001 — red: reintento con espera
             last = e
             time.sleep(1.5 * (i + 1))

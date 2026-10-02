@@ -24,13 +24,18 @@ Resultado del backtest (2023-12 → 2026-09, 33 memecoins):
 """
 from __future__ import annotations
 
+import logging
+import os
 from dataclasses import dataclass
 
 import pandas as pd
 
 from .mercado import BITGET, COINGECKO, MEMECOINS, PRODUCT, Bitget, _get, base_coin
 
+log = logging.getLogger("kriptty.agentes.memes")
 NUEVA_H, NUEVA_VOL = 72, 20e6
+CMC = "https://pro-api.coinmarketcap.com"
+GECKOTERMINAL = "https://api.geckoterminal.com/api/v2/networks/trending_pools"
 REGLAS = {"R": 0.25, "V": 2.0, "nuevas": True, "R_pico": 1.0, "D": 0.10, "D_max": 0.30}
 
 
@@ -44,7 +49,7 @@ class Senal:
     vratio: float | None          # volumen de 24 h / media diaria de la semana anterior
     vol24: float                  # USDT en 24 h
     nueva: bool                   # menos de 3 días cotizando en Bitget
-    tendencia: bool               # en «trending» de CoinGecko
+    tendencia: str                # fuentes donde está en tendencia: CoinGecko, GeckoTerminal, CMC
 
     @property
     def fuerza(self) -> float:
@@ -62,10 +67,69 @@ def memes_coingecko(paginas: int = 1) -> set[str]:
 
 
 def tendencia_coingecko() -> set[str]:
+    """Las más buscadas en CoinGecko en las últimas 24 h (gratis)."""
     try:
         return {c["item"]["symbol"].upper() for c in _get("https://api.coingecko.com/api/v3/search/trending").get("coins", [])}
     except RuntimeError:
         return set()
+
+
+def tendencia_geckoterminal() -> dict[str, dict]:
+    """Pools en tendencia en los DEX (GeckoTerminal, gratis): símbolo → subida, volumen y liquidez. Casi todo son
+    tokens de horas o días con poca liquidez: sirven para ver la narrativa, no para operar."""
+    try:
+        datos = _get(GECKOTERMINAL, {"page": 1}).get("data", [])
+    except RuntimeError:
+        return {}
+    out = {}
+    for p in datos:
+        a = p.get("attributes", {})
+        sym = str(a.get("name", "")).split("/")[0].strip().upper()
+        if sym and sym not in out:
+            out[sym] = {"cambio24": float((a.get("price_change_percentage") or {}).get("h24") or 0) / 100,
+                        "vol24": float((a.get("volume_usd") or {}).get("h24") or 0),
+                        "liquidez": float(a.get("reserve_in_usd") or 0)}
+    return out
+
+
+def tendencia_cmc() -> set[str]:
+    """«Trending» de CoinMarketCap con ``CMC_API_KEY``: el oficial (plan Startup o superior) o, con la clave
+    gratuita, la categoría de memecoins ordenada por subida y volumen de 24 h. Sin clave, vacío."""
+    clave = os.environ.get("CMC_API_KEY", "")
+    if not clave:
+        return set()
+    h = {"X-CMC_PRO_API_KEY": clave}
+    try:
+        datos = _get(f"{CMC}/v1/cryptocurrency/trending/latest", {"limit": 100}, headers=h, retries=1).get("data", [])
+        return {str(c.get("symbol", "")).upper() for c in datos}
+    except RuntimeError as e:
+        log.info("Trending de CMC no disponible con esta clave (%s): uso la categoría de memecoins", e)
+    try:
+        cats = _get(f"{CMC}/v1/cryptocurrency/categories", {"limit": 5000}, headers=h, retries=1).get("data", [])
+        meme = next((c for c in cats if str(c.get("name", "")).lower() in ("memes", "meme")), None)
+        if meme is None:
+            return set()
+        coins = _get(f"{CMC}/v1/cryptocurrency/category", {"id": meme["id"], "limit": 200}, headers=h,
+                     retries=1).get("data", {}).get("coins", [])
+    except RuntimeError as e:
+        log.warning("CoinMarketCap no disponible: %s", str(e).replace(clave, "***"))
+        return set()
+    puntos = []
+    for c in coins:
+        q = (c.get("quote") or {}).get("USD") or {}
+        cambio, vol = float(q.get("percent_change_24h") or 0) / 100, float(q.get("volume_24h") or 0)
+        if cambio > 0.10 and vol > 5e6:
+            puntos.append((cambio * vol, str(c.get("symbol", "")).upper()))
+    return {s for _, s in sorted(puntos, reverse=True)[:30]}
+
+
+def tendencias() -> dict[str, set[str]]:
+    return {"CoinGecko": tendencia_coingecko(), "GeckoTerminal": set(tendencia_geckoterminal()),
+            "CMC": tendencia_cmc()}
+
+
+def en_tendencia(simbolo: str, fuentes: dict[str, set[str]]) -> str:
+    return ", ".join(n for n, s in fuentes.items() if simbolo in s)
 
 
 def velas_1h(coin: str, horas: int = 200) -> pd.DataFrame:
@@ -115,7 +179,7 @@ def detectar(bitget: Bitget | None = None, reglas: dict | None = None,
         except RuntimeError:
             universo_memes = set()
     memes = universo_memes | MEMECOINS
-    trending = tendencia_coingecko()
+    fuentes = tendencias()
     out: dict[str, list[Senal]] = {"hype": [], "pico": []}
     umbral = min(r["R"], r["R_pico"] / 2)
     for coin, t in tick.items():
@@ -133,9 +197,14 @@ def detectar(bitget: Bitget | None = None, reglas: dict | None = None,
         if b not in memes and not m["nueva"]:
             continue
         base = dict(coin=coin, ret24=m["ret24"], pico24=m["pico24"], caida=m["caida"], vratio=m["vratio"],
-                    vol24=m["vol24"], nueva=m["nueva"], tendencia=b in trending)
+                    vol24=m["vol24"], nueva=m["nueva"], tendencia=en_tendencia(b, fuentes))
         if es_hype(m, r["R"], r["V"], r["nuevas"]):
             out["hype"].append(Senal(tipo="hype", **base))
         if es_pico(m, r["R_pico"], r["D"], r["D_max"]):
             out["pico"].append(Senal(tipo="pico", **base))
-    return {k: sorted(v, key=lambda s: -s.fuerza) for k, v in out.items()}
+    res = {k: sorted(v, key=lambda s: -s.fuerza) for k, v in out.items()}
+    # en tendencia pero sin futuros en Bitget: solo para mirar (si Bitget la lista, entra como «nueva»)
+    en_bitget = {base_coin(c) for c in tick}
+    res["vigilar"] = sorted({s for n, ss in fuentes.items() for s in ss if s not in en_bitget})[:25]
+    res["tendencia_bitget"] = sorted({base_coin(c) for c in tick if en_tendencia(base_coin(c), fuentes)})
+    return res

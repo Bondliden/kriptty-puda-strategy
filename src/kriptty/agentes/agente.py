@@ -34,6 +34,7 @@ class Contexto:
     lectura: Lectura
     ranking: dict[str, list[str]]            # criterio → monedas de mejor a peor (ya filtradas)
     disponibles: set[str] = field(default_factory=set)
+    bull_extremo: bool = False               # BTC +20% en 30 días y por encima de su media de 50
 
 
 @dataclass
@@ -73,6 +74,8 @@ def exposicion_del_dia(cuenta: Cuenta, cfg: Config, ctx: Contexto) -> float:
 def activa(cuenta: Cuenta, ctx: Contexto) -> bool:
     if ctx.lectura.riesgo == "extremo":
         return False
+    if cuenta.solo_bull_extremo:
+        return ctx.bull_extremo
     return ctx.regimen in cuenta.regimenes or (cuenta.incertidumbre and ctx.regimen == "incertidumbre")
 
 
@@ -119,10 +122,12 @@ def decidir_cuenta(cuenta: Cuenta, cfg: Config, ctx: Contexto, bots: dict[int, B
         if modo_actual == "p" and con_pos:
             motivo = "Panic en curso: no se toca hasta que la posición se cierre"
         elif not on:
+            causa = ("sin bull run fuerte" if cuenta.solo_bull_extremo and ctx.lectura.riesgo != "extremo"
+                     else f"régimen {ctx.regimen} / riesgo {ctx.lectura.riesgo}")
             if con_pos:
-                modo, motivo = "gs", f"régimen {ctx.regimen} / riesgo {ctx.lectura.riesgo}: cerrar con calma"
+                modo, motivo = "gs", f"{causa}: cerrar con calma"
             else:
-                modo, motivo = "m", f"régimen {ctx.regimen} / riesgo {ctx.lectura.riesgo}: sin ciclos nuevos"
+                modo, motivo = "m", f"{causa}: sin ciclos nuevos"
         elif b.coin in vetadas:
             modo = "gs" if con_pos else "m"
             motivo = f"{b.coin} vetada: {ctx.lectura.vetadas[b.coin]}"

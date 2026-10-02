@@ -27,6 +27,9 @@ ESTRATEGIAS: dict[str, dict] = {
     "meme_pico": {"lado": "short", "criterio": "pico", "regimenes": list(REGIMENES), "incertidumbre": True,
                   "graceful_sl": 0.10, "stop_catastrofe": 0.20, "max_horas": 24, "modo_grid": "neat",
                   "exposicion": dict.fromkeys(REGIMENES, 0.4)},
+    # solo en bull run fuerte (BTC +20% en 30 días): para probar KRIPTTY SCALPER y KRIPTTY ALL IN 3.0
+    "bull_extremo": {"lado": "long", "criterio": "momentum", "regimenes": list(REGIMENES), "incertidumbre": True,
+                     "graceful_sl": 0.08, "solo_bull_extremo": True, "modo_grid": "neat"},
     "meme_hype": {"lado": "long", "criterio": "hype", "regimenes": list(REGIMENES), "incertidumbre": True,
                   "graceful_sl": 0.08, "stop_catastrofe": 0.15, "max_horas": 24, "modo_grid": "neat",
                   "exposicion": dict.fromkeys(REGIMENES, 0.4)},
@@ -49,6 +52,7 @@ class Cuenta:
     exposicion: dict[str, float] | None = None   # por régimen; si falta, la general
     exchange_id: int | None = None     # subcuenta de Kriptty; si falta, la general
     max_horas: int | None = None       # cierre por tiempo (Panic) de una posición abierta más de estas horas
+    solo_bull_extremo: bool = False    # solo opera en bull run fuerte (BTC +20% en 30 días)
 
     def validar(self) -> None:
         if self.lado not in ("long", "short"):

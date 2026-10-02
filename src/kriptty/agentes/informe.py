@@ -29,7 +29,7 @@ def informe_diario(ctx: Contexto, decisiones: list[Decision], aplicado: bool, pe
                    errores: list[str] | None = None) -> str:
     lec = ctx.lectura
     lin = [f"# Agentes Kriptty · {ctx.fecha.isoformat()}", "",
-           f"- **Régimen del mercado:** {ctx.regimen}",
+           f"- **Régimen del mercado:** {ctx.regimen}" + (" · **bull run fuerte** (BTC +20% en 30 días)" if ctx.bull_extremo else ""),
            f"- **Miedo y codicia:** {lec.fear_greed if lec.fear_greed is not None else '—'} ({lec.fear_greed_texto or '—'})",
            f"- **Riesgo del día:** {lec.riesgo}" + (" (revisado con Claude)" if lec.revisada_por_llm else " (solo reglas)"),
            f"- **Modo:** {'APLICAR' if aplicado else 'simulación (no se ha cambiado nada)'}"
@@ -55,7 +55,7 @@ def informe_memes(senales: dict, decisiones: list[Decision], aplicado: bool, err
            f"({'aplicado' if aplicado else 'simulación'})", ""]
     nombres = {"hype": "Hype (subida + volumen)", "pico": "Pico (ya cae desde el máximo: corto)"}
     for tipo, lista in senales.items():
-        if not lista:
+        if not lista or tipo not in nombres:
             continue
         lin += [f"**{nombres.get(tipo, tipo)}**", "",
                 "| Moneda | 24 h | Pico 24 h | Cae desde máx. | Volumen ×media | Volumen 24 h | Nueva | Tendencia |",
@@ -63,10 +63,14 @@ def informe_memes(senales: dict, decisiones: list[Decision], aplicado: bool, err
         for s in lista[:10]:
             vr = f"{s.vratio:.1f}" if s.vratio is not None else "—"
             lin.append(f"| {s.coin} | {s.ret24:+.0%} | {s.pico24:+.0%} | {s.caida:.0%} | {vr} | {s.vol24 / 1e6:,.1f} M$ | "
-                       f"{'sí' if s.nueva else ''} | {'sí' if s.tendencia else ''} |")
+                       f"{'sí' if s.nueva else ''} | {s.tendencia} |")
         lin.append("")
-    if not any(senales.values()):
-        lin += ["Sin señales.", ""]
+    if not senales.get("hype") and not senales.get("pico"):
+        lin += ["Sin señales de hype ni de pico.", ""]
+    if senales.get("tendencia_bitget"):
+        lin += ["En tendencia y con futuros en Bitget: " + ", ".join(senales["tendencia_bitget"]), ""]
+    if senales.get("vigilar"):
+        lin += ["En tendencia sin futuros en Bitget (solo para vigilar): " + ", ".join(senales["vigilar"]), ""]
     if decisiones:
         lin += _tabla(decisiones) + [""]
     if errores:

@@ -56,6 +56,13 @@ def regimes(btc: pd.DataFrame, desplazar: bool = True) -> pd.Series:
     return reg.shift(1).fillna("lateral") if desplazar else reg          # se usa al día siguiente
 
 
+def bull_extremo(btc: pd.DataFrame, desplazar: bool = True) -> pd.Series:
+    """Bull run fuerte: BTC sube más de un 20% en 30 días y está por encima de su media de 50 días. Es el filtro
+    con el que KRIPTTY ALL IN 3.0 a ×6 dio +20,5% anual en el backtest (``bull_extremo.csv``)."""
+    s = (btc.ret30 > 0.20) & (btc.close > btc.ema50)
+    return s.shift(1).fillna(False).astype(bool) if desplazar else s
+
+
 def rank_day(g: pd.DataFrame) -> dict[str, list[str]]:
     """Ordena las monedas de un día por cada criterio (``g``: una fila por moneda con liq, chop, ret30,
     atr_pct y lag7). El universo son las ``TOP_LIQ`` más líquidas."""
