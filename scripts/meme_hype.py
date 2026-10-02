@@ -29,7 +29,8 @@ import pandas as pd
 TAKER = 0.0006
 CAPITAL = 100_000.0
 MARGEN, APALANC, MAX_ABIERTAS = 0.20, 2.0, 3
-HORAS = 24
+HORAS = 24                 # ventana de las señales (subida y pico en 24 h)
+MAX_HORAS = 24             # cierre por tiempo de cada operación
 CORTE = pd.Timestamp("2025-07-01", tz="UTC")          # ajuste antes, prueba después
 NUEVA_H, NUEVA_VOL = 72, 20e6
 
@@ -68,7 +69,7 @@ def salida(x: dict, i0: int, lado: int, sl: float, modo: str, nivel: float | Non
     stop = p0 * (1 - lado * sl)
     tp = p0 * (1 + lado * nivel) if modo == "tp" else None
     mejor = p0
-    fin = min(i0 + HORAS, len(c)) - 1
+    fin = min(i0 + MAX_HORAS, len(c)) - 1
     for j in range(i0, fin + 1):
         adverso, favor = (lo[j], h[j]) if lado > 0 else (h[j], lo[j])
         nivel_ts = mejor * (1 - lado * nivel) if modo == "trail" else None

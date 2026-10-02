@@ -38,6 +38,36 @@ que se opera es lo que se probó.
    - la exposición es la del régimen: lateral 0,08, alcista 0,07, incertidumbre 0,04, bajista 0,04.
 6. **Informe** en Markdown en `informe_dir` (uno por día) y estado en `estado_agentes.json`.
 
+## Ficha de cada moneda
+
+Antes de operar una moneda, el agente le hace una ficha (`src/kriptty/agentes/fichas.py`) y la puntúa de 0 a 10.
+
+**Qué mira:**
+
+- antigüedad;
+- capitalización y valoración diluida (desbloqueos pendientes);
+- si cotiza en Kraken y en los exchanges grandes;
+- libro blanco y código;
+- fondos que la respaldan;
+- avisos de CoinMarketCap;
+- el **escaneo de seguridad de CoinMarketCap** (GoPlus);
+- el **número de carteras y la concentración**: cuánto tiene la mayor cartera personal y cuánto las 10 mayores.
+
+**Qué hace con la nota:**
+
+| Ficha | Exposición |
+|---|---|
+| Sólida (≥ 7) | ×1,5 |
+| Normal (4–7) | ×1 |
+| Especulativa (< 4) | ×0,5 |
+| **Bloqueada** | no se opera |
+
+Queda bloqueada si el escaneo da riesgo alto, si tiene menos de 1.000 carteras o si una sola cartera tiene más
+del 30% y podría tumbar el precio.
+
+Subir la exposición sigue siendo una propuesta mientras no haya `permitir_normal`. Las fichas aparecen en el
+informe diario y se guardan un día en `data/fichas_cache.json`. Se desactivan con `fichas = false` en `[general]`.
+
 ## Vigilante (cada hora)
 
 - **Fase 1**: un lado en Gracefully stop guarda el precio de referencia.
