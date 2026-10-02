@@ -574,9 +574,9 @@ def main() -> None:
     slug = re.sub(r"\W+", " ", a.name).strip()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    archivos = {f"Kriptty agents - Stress test - for {slug}.html": doc("en", a.name, M),
-                f"Kriptty agentes - Estres test - para {slug}.html": doc("es", a.name, M),
-                f"Kriptty agents - Stress test - for {slug} (EN-ES).html": bilingual(a.name, M)}
+    archivos = {f"Update for {slug} - Kriptty and PUDA (October 2026).html": doc("en", a.name, M),
+                f"Actualizacion para {slug} - Kriptty y PUDA (octubre 2026).html": doc("es", a.name, M),
+                f"Update for {slug} - Kriptty and PUDA (October 2026) (EN-ES).html": bilingual(a.name, M)}
     for nombre, html in archivos.items():
         ruta = out / nombre
         ruta.write_text(html, encoding="utf-8")
