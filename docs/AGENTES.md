@@ -34,6 +34,7 @@ que se opera es lo que se probó.
      en ningún lado;
    - si no tiene posición, toma la mejor candidata libre. Nunca la de otro bot de la misma subcuenta,
      aunque ese bot no lo gestione un agente.
+   - en incertidumbre, las cuentas que la operan (las recursive) usan BTC y ETH, como en el backtest;
    - la exposición es la del régimen: lateral 0,08, alcista 0,07, incertidumbre 0,04, bajista 0,04.
 6. **Informe** en Markdown en `informe_dir` (uno por día) y estado en `estado_agentes.json`.
 

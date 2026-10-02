@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -48,19 +49,25 @@ class Kriptty:
         if not self.token:
             raise KripttyError("Falta KRIPTTY_ADMIN_TOKEN en el entorno")
 
-    def _req(self, method: str, path: str, body: dict | None = None):
+    def _req(self, method: str, path: str, body: dict | None = None, intentos: int = 4):
         data = json.dumps(body).encode() if body is not None else None
-        req = urllib.request.Request(self.base + path, data=data, method=method, headers={
-            "Authorization": f"Bearer {self.token}", "Accept": "application/json",
-            "Content-Type": "application/json", "User-Agent": "kriptty-agentes/1.0"})
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as r:
-                return json.loads(r.read().decode() or "null")
-        except urllib.error.HTTPError as e:
-            detalle = e.read().decode(errors="replace")[:300]
-            raise KripttyError(f"{method} {path} → {e.code}: {detalle}") from e
-        except urllib.error.URLError as e:
-            raise KripttyError(f"{method} {path} → sin conexión: {e.reason}") from e
+        for i in range(intentos):
+            req = urllib.request.Request(self.base + path, data=data, method=method, headers={
+                "Authorization": f"Bearer {self.token}", "Accept": "application/json",
+                "Content-Type": "application/json", "User-Agent": "kriptty-agentes/1.0"})
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout) as r:
+                    return json.loads(r.read().decode() or "null")
+            except urllib.error.HTTPError as e:
+                # la API de Laravel limita a 60 peticiones por minuto: esperar lo que pide y repetir
+                if e.code == 429 and i < intentos - 1:
+                    time.sleep(min(float(e.headers.get("Retry-After") or 20), 65))
+                    continue
+                detalle = e.read().decode(errors="replace")[:300]
+                raise KripttyError(f"{method} {path} → {e.code}: {detalle}") from e
+            except urllib.error.URLError as e:
+                raise KripttyError(f"{method} {path} → sin conexión: {e.reason}") from e
+        raise KripttyError(f"{method} {path} → sin respuesta tras {intentos} intentos")
 
     # ── lectura ──
     def bots(self, exchange_id: int, ids: list[int] | None = None) -> dict[int, BotInfo]:

@@ -123,6 +123,18 @@ def test_con_permiso_se_aplica_todo_y_arranca_si_estaba_parado():
     assert d.arrancar is True and d.reiniciar is False
 
 
+def test_grid_de_la_cuenta_se_prepara_en_bots_parados_y_se_propone_en_los_que_operan():
+    c = cuenta_larga([1, 2], grid_id=230)
+    bots = {1: bot(1, "ZEC"), 2: bot(2, "BCH", lm="n")}
+    bots[1].grid_id = bots[2].grid_id = 181
+    ds = {d.bot_id: d for d in decidir_cuenta(c, cfg_con(c), ctx(ranking={"lag_long": ["ZEC", "BCH"]}), bots, {})}
+    assert ds[1].cambios.get("grid_id") == 230                     # en manual: se deja preparado
+    assert ds[2].propuesta.get("grid_id") == 230 and "grid_id" not in ds[2].cambios
+    con_pos = decidir_cuenta(c, cfg_con(c, permitir_normal=True), ctx(ranking={"lag_long": ["ZEC", "BCH"]}),
+                             bots, {("BCH", "long"): pos("BCH")})
+    assert all("grid_id" not in d.cambios for d in con_pos if d.bot_id == 2)
+
+
 def test_bot_con_posicion_nunca_cambia_de_moneda():
     c = cuenta_larga([1])
     d, = decidir_cuenta(c, cfg_con(c, permitir_normal=True), ctx(ranking={"lag_long": ["ZEC", "BCH"]}),
@@ -165,6 +177,17 @@ def test_regimen_fuera_de_la_estrategia_cierra_con_calma():
                         {("ALGO", "long"): pos("ALGO")})
     modos = {d.moneda: d.cambios.get("lm") for d in ds}
     assert modos == {"ALGO": "gs", "LDO": "m"}
+
+
+def test_incertidumbre_opera_btc_y_eth_con_exposicion_baja():
+    c = cuenta_larga([1, 2])                       # recursive con incertidumbre = True
+    ds = decidir_cuenta(c, cfg_con(c), ctx("incertidumbre", ranking={"lag_long": ["ZEC", "BCH"]}),
+                        {1: bot(1, "ALGO"), 2: bot(2, "LDO")}, {})
+    assert sorted(d.moneda for d in ds) == ["BTC", "ETH"]
+    assert all(d.expo == 0.04 for d in ds)
+    sin = cuenta_larga([1], incertidumbre=False)
+    d, = decidir_cuenta(sin, cfg_con(sin), ctx("incertidumbre", ranking={"lag_long": ["ZEC"]}), {1: bot(1, "ALGO")}, {})
+    assert d.moneda == "ALGO" and d.modo == "m"
 
 
 def test_riesgo_extremo_apaga_todas_las_cuentas():

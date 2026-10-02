@@ -24,6 +24,7 @@ from .lectura import Lectura
 
 MODOS = {"n": "Normal", "m": "Manual", "gs": "Gracefully stop", "p": "Panic", "t": "Solo take profit"}
 REDUCEN = {"gs", "p", "m", "t"}
+INCERTIDUMBRE = ("BTC", "ETH")            # monedas de las cuentas con modo incertidumbre
 
 
 @dataclass
@@ -86,8 +87,12 @@ def decidir_cuenta(cuenta: Cuenta, cfg: Config, ctx: Contexto, bots: dict[int, B
     on = activa(cuenta, ctx)
     expo = exposicion_del_dia(cuenta, cfg, ctx)
     vetadas = set(ctx.lectura.vetadas)
-    candidatas = [c for c in ctx.ranking.get(cuenta.criterio, [])
-                  if c not in vetadas and (not ctx.disponibles or c in ctx.disponibles)]
+    if ctx.regimen == "incertidumbre" and cuenta.incertidumbre:
+        # como en el backtest: en incertidumbre, recursive prudente en BTC y ETH (exposición de incertidumbre)
+        candidatas = [c for c in INCERTIDUMBRE if c not in vetadas]
+    else:
+        candidatas = [c for c in ctx.ranking.get(cuenta.criterio, [])
+                      if c not in vetadas and (not ctx.disponibles or c in ctx.disponibles)]
     n = len(cuenta.bots)
     mantener = set(candidatas[: 2 * n])                 # histéresis: no cambiar por una caída leve en el ranking
     # un bot libre no puede quitarle la moneda a otro bot de la misma subcuenta
@@ -139,7 +144,7 @@ def decidir_cuenta(cuenta: Cuenta, cfg: Config, ctx: Contexto, bots: dict[int, B
         asignadas.add(moneda)
 
         d = Decision(cuenta.nombre, bot_id, cuenta.lado, b.coin, moneda, modo_actual, modo, expo_actual, e, motivo)
-        _permisos(d, b, cfg, modo_k, expo_k, con_pos or con_pos_otro)
+        _permisos(d, b, cfg, modo_k, expo_k, con_pos or con_pos_otro, cuenta.grid_id)
         _renombrar(d, b)
         _lado_contrario(d, b, otro_lado, otro_k, con_pos_otro)
         d.reiniciar = bool(d.cambios) and b.running
@@ -152,17 +157,21 @@ def _abierta(p: Posicion | None) -> bool:
     return p is not None and p.size > 0
 
 
-def _permisos(d: Decision, b: BotInfo, cfg: Config, modo_k: str, expo_k: str, bloqueada: bool) -> None:
+def _permisos(d: Decision, b: BotInfo, cfg: Config, modo_k: str, expo_k: str, bloqueada: bool,
+              grid_id: int | None = None) -> None:
     """Reparte los cambios entre lo que se aplica y lo que queda como propuesta."""
     deseado: dict = {}
     if d.moneda != d.moneda_actual:
         deseado["symbol"] = f"{d.moneda}USDT"
+    if grid_id and b.grid_id != grid_id:
+        deseado["grid_id"] = grid_id            # configuración de grid de la estrategia de la cuenta
     if d.modo != d.modo_actual:
         deseado[modo_k] = d.modo
     if abs(d.expo - d.expo_actual) > 1e-9:
         deseado[expo_k] = d.expo
-    if bloqueada:                       # nunca: el cambio de moneda espera a que no haya posición
+    if bloqueada:                       # nunca: moneda y grid esperan a que no haya posición
         deseado.pop("symbol", None)
+        deseado.pop("grid_id", None)
 
     if cfg.permitir_normal:
         d.cambios = deseado
@@ -173,8 +182,8 @@ def _permisos(d: Decision, b: BotInfo, cfg: Config, modo_k: str, expo_k: str, bl
             (d.cambios if v in REDUCEN else d.propuesta)[k] = v
         elif k == expo_k:
             (d.cambios if v < d.expo_actual else d.propuesta)[k] = v
-        elif k == "symbol":
-            # cambiar la moneda solo es inocuo si el bot no opera o deja de operar con este cambio
+        elif k in ("symbol", "grid_id"):
+            # cambiar moneda o grid solo es inocuo si el bot no opera o deja de operar con este cambio
             seguro = not operando or d.modo == "m"
             (d.cambios if seguro else d.propuesta)[k] = v
     # sin permiso, un bot que debía activarse se queda en manual con la moneda y exposición listas

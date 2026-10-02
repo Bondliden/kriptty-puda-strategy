@@ -40,6 +40,7 @@ class GridCfg:
     grid_span: float = 0.025
     n_entries: int = 6
     eqty_exp_base: float = 2.15
+    eprice_exp_base: float = 1.0    # 1 = entradas equidistantes; > 1 = cada vez más separadas
     # recursive
     initial_qty_pct: float = 0.02
     ddown_factor: float = 0.8
@@ -115,8 +116,10 @@ class _Bot:
         self.cycle_start = self.realized
         if c.mode == "neat":
             self.buy(price, self.cap_notional * self.neat_w[0], TAKER)
-            self.entries = [(price * (1 - self.sgn * c.grid_span * i / (c.n_entries - 1)),
-                             self.cap_notional * self.neat_w[i]) for i in range(1, c.n_entries)]
+            n, e = c.n_entries, c.eprice_exp_base
+            frac = [(i / (n - 1)) if abs(e - 1) < 1e-9 else (e ** i - 1) / (e ** (n - 1) - 1) for i in range(1, n)]
+            self.entries = [(price * (1 - self.sgn * c.grid_span * f), self.cap_notional * self.neat_w[i])
+                            for i, f in zip(range(1, n), frac, strict=True)]
         else:
             self.buy(price, self.cap_notional * c.initial_qty_pct, TAKER)
             self.next_recursive()
