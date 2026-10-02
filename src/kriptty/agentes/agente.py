@@ -35,6 +35,7 @@ class Contexto:
     ranking: dict[str, list[str]]            # criterio → monedas de mejor a peor (ya filtradas)
     disponibles: set[str] = field(default_factory=set)
     bull_extremo: bool = False               # BTC +20% en 30 días y por encima de su media de 50
+    fichas: dict = field(default_factory=dict)  # moneda → Ficha (calidad del proyecto, carteras, seguridad)
 
 
 @dataclass
@@ -96,6 +97,9 @@ def decidir_cuenta(cuenta: Cuenta, cfg: Config, ctx: Contexto, bots: dict[int, B
     else:
         candidatas = [c for c in ctx.ranking.get(cuenta.criterio, [])
                       if c not in vetadas and (not ctx.disponibles or c in ctx.disponibles)]
+    # monedas bloqueadas por su ficha (riesgo alto, muy pocas carteras o una sola con casi todo): fuera
+    bloqueadas = {c for c, f in ctx.fichas.items() if getattr(f, "bloqueada", False)}
+    candidatas = [c for c in candidatas if c not in bloqueadas]
     n = len(cuenta.bots)
     mantener = set(candidatas[: 2 * n])                 # histéresis: no cambiar por una caída leve en el ranking
     # un bot libre no puede quitarle la moneda a otro bot de la misma subcuenta
@@ -131,8 +135,11 @@ def decidir_cuenta(cuenta: Cuenta, cfg: Config, ctx: Contexto, bots: dict[int, B
         elif b.coin in vetadas:
             modo = "gs" if con_pos else "m"
             motivo = f"{b.coin} vetada: {ctx.lectura.vetadas[b.coin]}"
+        elif b.coin in bloqueadas:
+            modo = "gs" if con_pos else "m"
+            motivo = f"{b.coin} bloqueada por su ficha: " + "; ".join(ctx.fichas[b.coin].motivos[-2:])
         elif b.coin in mantener and b.coin not in asignadas:
-            modo, e, motivo = "n", expo, f"{b.coin} sigue entre las mejores ({cuenta.criterio})"
+            modo, e, motivo = "n", _expo_moneda(expo, b.coin, ctx), f"{b.coin} sigue entre las mejores ({cuenta.criterio})"
         elif con_pos:
             modo, motivo = "gs", f"{b.coin} ya no está entre las mejores: se cierra antes de cambiar de moneda"
         elif con_pos_otro:
@@ -142,7 +149,7 @@ def decidir_cuenta(cuenta: Cuenta, cfg: Config, ctx: Contexto, bots: dict[int, B
             if libre is None:
                 modo, motivo = "m", "sin candidatas disponibles hoy"
             else:
-                moneda, modo, e = libre, "n", expo
+                moneda, modo, e = libre, "n", _expo_moneda(expo, libre, ctx)
                 motivo = f"nueva moneda {libre} ({cuenta.criterio}, puesto {candidatas.index(libre) + 1})"
                 ocupadas.discard(b.coin)
                 ocupadas.add(libre)
@@ -156,6 +163,12 @@ def decidir_cuenta(cuenta: Cuenta, cfg: Config, ctx: Contexto, bots: dict[int, B
         d.arrancar = cfg.permitir_normal and d.modo == "n" and not b.running
         decisiones.append(d)
     return decisiones
+
+
+def _expo_moneda(expo: float, coin: str, ctx: Contexto) -> float:
+    """Exposición de la cuenta × factor de la ficha de la moneda (sólida ×1,5, especulativa ×0,5)."""
+    f = ctx.fichas.get(coin)
+    return round(expo * (f.factor if f is not None else 1.0), 4)
 
 
 def _abierta(p: Posicion | None) -> bool:

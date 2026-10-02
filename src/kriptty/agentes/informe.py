@@ -41,6 +41,14 @@ def informe_diario(ctx: Contexto, decisiones: list[Decision], aplicado: bool, pe
         lin += ["## Monedas vetadas hoy", ""] + [f"- **{m}**: {motivo}" for m, motivo in lec.vetadas.items()] + [""]
     for criterio, lista in sorted(ctx.ranking.items()):
         lin.append(f"- Top {criterio}: {', '.join(lista[:8]) or '—'}")
+    if ctx.fichas:
+        lin += ["", "## Fichas de las candidatas", "",
+                "| Moneda | Puntos | Clase | Exposición | Carteras | Mayor cartera | Motivos |", "|---|---|---|---|---|---|---|"]
+        for c, f in sorted(ctx.fichas.items(), key=lambda kv: -kv[1].puntos):
+            clase = "BLOQUEADA" if f.bloqueada else f.clase
+            carteras = f"{f.carteras:,}".replace(",", ".") if f.carteras else "—"
+            mayor = f"{f.mayor_cartera:g}%" if f.mayor_cartera is not None else "—"
+            lin.append(f"| {c} | {f.puntos:g} | {clase} | ×{f.factor:g} | {carteras} | {mayor} | {'; '.join(f.motivos)[:220]} |")
     lin += ["", "## Decisiones por cuenta", ""] + _tabla(decisiones)
     if errores:
         lin += ["", "## Errores", ""] + [f"- {e}" for e in errores]

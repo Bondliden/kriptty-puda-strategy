@@ -431,3 +431,37 @@ def test_bull_extremo_de_btc():
     btc = pd.DataFrame({"ret30": [0.1, 0.25, 0.25], "close": [100, 120, 90], "ema50": [95, 100, 100]})
     assert bull_extremo(btc, desplazar=False).tolist() == [False, True, False]
     assert bull_extremo(btc).tolist() == [False, False, True]
+
+
+# ── fichas: calidad del proyecto, carteras y seguridad ──
+
+def test_ficha_puntua_y_bloquea_por_concentracion():
+    from datetime import UTC, datetime
+
+    from kriptty.agentes.fichas import puntuar
+    ahora = datetime(2026, 10, 2, tzinfo=UTC)
+    cg = {"market_cap_rank": 37, "market_cap": 3.4e9, "fully_diluted_valuation": 3.4e9, "name": "Quant"}
+    cmc = {"first_historical_data": "2018-08-10T00:00:00.000Z", "urls": {"source_code": ["x"]}, "tags": []}
+    sana = {"holder_count": "181703", "holders": [{"percent": "0.21", "is_contract": 1}, {"percent": "0.013", "is_contract": 0}]}
+    f = puntuar("QNT", cg, {"sentiment_votes_up_percentage": 73}, cmc, {"QNT"}, 1e8, ahora,
+                dex={"rl": "safe", "cexs": [{"slug": s} for s in ("binance", "okx", "kraken")]}, goplus=sana)
+    assert f.clase == "sólida" and f.factor == 1.5 and not f.bloqueada and f.carteras == 181703
+    # una sola cartera personal con el 45% → bloqueada aunque lo demás sea bueno
+    mala = {"holder_count": "50000", "holders": [{"percent": "0.45", "is_contract": 0}]}
+    f = puntuar("XYZ", cg, {}, cmc, {"XYZ"}, 1e8, ahora, dex={"rl": "safe"}, goplus=mala)
+    assert f.bloqueada and f.factor == 0.0 and any("tumbar" in m for m in f.motivos)
+    # muy pocas carteras → bloqueada; escaneo de alto riesgo → bloqueada
+    assert puntuar("A", cg, {}, cmc, None, 0, ahora, goplus={"holder_count": "300", "holders": []}).bloqueada
+    assert puntuar("B", cg, {}, cmc, None, 0, ahora, dex={"rl": "highrisk"}).bloqueada
+
+
+def test_agente_no_opera_monedas_bloqueadas_y_ajusta_exposicion():
+    from kriptty.agentes.fichas import Ficha
+    c = cuenta_larga([1, 2])
+    fich = {"ZEC": Ficha("ZEC", puntos=9, clase="sólida"), "BCH": Ficha("BCH", puntos=1, clase="especulativa", bloqueada=True),
+            "INJ": Ficha("INJ", puntos=3, clase="especulativa")}
+    contexto = Contexto(date(2026, 10, 2), "alcista", Lectura(), {"lag_long": ["ZEC", "BCH", "INJ"]}, set(), fichas=fich)
+    ds = {d.moneda: d for d in decidir_cuenta(c, cfg_con(c, permitir_normal=True), contexto,
+                                               {1: bot(1, "ALGO"), 2: bot(2, "LDO")}, {})}
+    assert set(ds) == {"ZEC", "INJ"}                          # BCH bloqueada, se salta
+    assert ds["ZEC"].expo == round(0.07 * 1.5, 4) and ds["INJ"].expo == round(0.07 * 0.5, 4)

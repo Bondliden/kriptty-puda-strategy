@@ -17,6 +17,7 @@ import pandas as pd
 
 from .agente import Contexto, Decision, decidir_cuenta
 from .config import Config
+from .fichas import fichas
 from .informe import guardar, informe_diario, informe_memes, informe_vigilancia
 from .kriptty_api import BotInfo, Kriptty, KripttyError, Posicion
 from .lectura import Lectura, lectura_del_dia
@@ -112,7 +113,24 @@ def contexto(cfg: Config, api: Kriptty | None, usar_llm: bool | None = None) -> 
     candidatas = sorted({c for crit in criterios for c in ranking.get(crit, [])[:15]})
     llm = cfg.usar_llm if usar_llm is None else usar_llm
     lec = lectura_del_dia(regimen, candidatas, cfg.youtube, usar_llm=llm)
-    return Contexto(datetime.now(UTC).date(), regimen, lec, ranking, disp, euforia), tick
+    fich = _fichas(cfg, candidatas, tick)
+    return Contexto(datetime.now(UTC).date(), regimen, lec, ranking, disp, euforia, fich), tick
+
+
+def _fichas(cfg: Config, monedas, tick: dict) -> dict:
+    """Ficha de cada moneda (calidad del proyecto, carteras y seguridad); vacía si se desactiva o falla."""
+    if not cfg.fichas or not monedas:
+        return {}
+    try:
+        kraken = kraken_assets()
+    except RuntimeError:
+        kraken = None
+    try:
+        vol = {base_coin(c): t.usdt_volume_24h for c, t in tick.items()}
+        return fichas([base_coin(c) for c in monedas], kraken=kraken, volumenes=vol)
+    except Exception as e:  # noqa: BLE001 — sin fichas el agente sigue con las reglas
+        log.warning("fichas no disponibles: %s", e)
+        return {}
 
 
 def _estado_kriptty(cfg: Config, api: Kriptty, cuentas=None) -> tuple[dict[int, BotInfo], dict[int, dict]]:
@@ -175,11 +193,12 @@ def memes(cfg: Config, aplicar: bool) -> str:
         api = Kriptty(cfg.kriptty_url)
         simbolos = _simbolos(cfg, api, cuentas) or set()
         ranking = {k: [s.coin for s in senales[k] if f"{s.coin}USDT" in simbolos] for k in ("hype", "pico")}
+        fich = _fichas(cfg, sorted({c for v in ranking.values() for c in v}), Bitget().tickers())
         estado = _cargar_estado(cfg.estado)
         dia = estado.get("ultimo_diario", {})
         lec = Lectura(riesgo=dia.get("riesgo", "normal"), vetadas=dict(dia.get("vetadas", {})))
         ctx = Contexto(datetime.now(UTC).date(), dia.get("regimen", "lateral"), lec, ranking,
-                       {c for v in ranking.values() for c in v})
+                       {c for v in ranking.values() for c in v}, fichas=fich)
         bots, pos = _estado_kriptty(cfg, api, cuentas)
         ocupadas = {ex: set(api.monedas_en_uso(ex).values()) for ex in cfg.exchanges(cuentas)}
         for cuenta in cuentas:

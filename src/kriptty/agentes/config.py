@@ -76,6 +76,7 @@ class Config:
     top_marketcap: int = 200
     exigir_kraken: bool = True         # solo monedas listadas en Kraken
     excluir_memes: bool = True         # fuera las memecoins (sin proyecto detrás)
+    fichas: bool = True                # ficha de cada moneda: calidad, carteras y seguridad (ajusta la exposición)
     lista_blanca: list[str] = field(default_factory=list)
     lista_negra: list[str] = field(default_factory=list)
     youtube: dict[str, str] = field(default_factory=dict)
@@ -121,6 +122,7 @@ def cargar(path: str | Path) -> Config:
         top_marketcap=int(g.get("top_marketcap", 200)),
         exigir_kraken=bool(g.get("exigir_kraken", True)),
         excluir_memes=bool(g.get("excluir_memes", True)),
+        fichas=bool(g.get("fichas", True)),
         lista_blanca=[s.upper() for s in g.get("lista_blanca", [])],
         lista_negra=[s.upper() for s in g.get("lista_negra", [])],
         youtube=dict(g.get("youtube", {})),
