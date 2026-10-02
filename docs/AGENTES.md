@@ -102,6 +102,17 @@ kriptty-agentes diario  -c config/agentes.toml        # igual, y aplica si modo 
 kriptty-agentes vigilar -c config/agentes.toml        # stop en dos fases
 ```
 
+Para el Programador de tareas o cron, `scripts/ejecutar_agentes.py` carga los secretos de `.env` (fuera de
+git) y ejecuta la orden:
+
+```bash
+python scripts/ejecutar_agentes.py diario -c config/agentes.toml
+```
+
+En el PC está programada la tarea de Windows «Kriptty agentes (simulacion)», todos los días a las 02:20. Lo
+que aplica lo decide `general.modo`. El servidor de Kriptty (n1, CentOS 7) tiene Python 3.6 y no puede
+ejecutar los agentes.
+
 Programación recomendada (UTC):
 
 - `diario` a las 00:20, después del cierre de la vela diaria;
