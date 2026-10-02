@@ -273,7 +273,7 @@ def _anthropic_falso(monkeypatch, datos: dict, stop: str = "end_turn"):
     class _Err(Exception):
         status_code = 500
 
-    for nombre in ("AuthenticationError", "RateLimitError", "APIStatusError", "APIConnectionError"):
+    for nombre in ("AuthenticationError", "RateLimitError", "APIStatusError", "APIConnectionError", "AnthropicError"):
         setattr(mod, nombre, type(nombre, (_Err,), {}))
 
     class _Mensajes:
@@ -288,6 +288,7 @@ def _anthropic_falso(monkeypatch, datos: dict, stop: str = "end_turn"):
 
     mod.Anthropic = Anthropic
     monkeypatch.setitem(sys.modules, "anthropic", mod)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "clave-de-prueba")
 
 
 def test_llm_sube_riesgo_y_veta_solo_candidatas(monkeypatch):
@@ -311,6 +312,13 @@ def test_llm_rechazo_deja_solo_reglas(monkeypatch):
 
 
 # ── informes ──
+
+def test_sin_clave_de_anthropic_solo_reglas(monkeypatch):
+    _anthropic_falso(monkeypatch, {"riesgo": "extremo", "resumen": "", "vetadas": []})
+    monkeypatch.delenv("ANTHROPIC_API_KEY")
+    lec = revisar_con_llm(Lectura(), "alcista", ["ZEC"])
+    assert lec.riesgo == "normal" and not lec.revisada_por_llm
+
 
 def test_informes_se_generan():
     c = cuenta_larga([1])

@@ -190,6 +190,9 @@ def revisar_con_llm(lectura: Lectura, regimen: str, candidatas: list[str], model
     except ImportError:
         log.info("Paquete anthropic no instalado: revisión de noticias desactivada")
         return lectura
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        log.info("Sin ANTHROPIC_API_KEY: revisión de noticias desactivada (solo reglas)")
+        return lectura
     titulares = "\n".join(f"- [{t.fuente}] {t.titulo}" for t in lectura.titulares[:120]) or "(sin titulares)"
     usuario = (f"Régimen del mercado según las reglas: {regimen}\n"
                f"Índice de miedo y codicia: {lectura.fear_greed} ({lectura.fear_greed_texto})\n"
@@ -217,6 +220,9 @@ def revisar_con_llm(lectura: Lectura, regimen: str, candidatas: list[str], model
         return lectura
     except anthropic.APIConnectionError:
         log.warning("Sin conexión con Anthropic: hoy solo reglas")
+        return lectura
+    except anthropic.AnthropicError as e:
+        log.warning("Revisión con Claude no disponible (%s): hoy solo reglas", type(e).__name__)
         return lectura
     if resp.stop_reason == "refusal":
         log.warning("Revisión rechazada por el modelo: hoy solo reglas")
