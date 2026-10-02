@@ -54,6 +54,9 @@ td.r, th.r { text-align: right; white-space: nowrap; }
 tr.tot td { background: #0A0F1E; color: #FFFFFF; font-weight: 700; } tr.tot td.pos { color: #6EE7A0; } tr.tot td.neg { color: #FCA5A5; }
 tr.hl td { background: #FFF8DB; font-weight: 600; }
 tr.btc td { color: #7C8498; }
+p, li, .sub, .box, .card p, .fase p, .tramo p { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+th, .kicker, h1, h2, h3, .kpi span, .foot span { text-align: left; }
+table.estres td { padding: 2.6mm 1.6mm; font-size: 9pt; line-height: 1.4; } table.estres td.r { vertical-align: top; }
 .aireada { font-size: 10.4pt; } .aireada .card { padding: 4mm 4.4mm; } .aireada .card p { font-size: 9.7pt; } .aireada h2 { margin-top: 7mm; }
 .aireada td, .aireada th { padding: 1.9mm 1.8mm; } .aireada table.apretada td, .aireada table.apretada th { padding: 1.9mm 1.1mm; }
 .aireada .box { padding: 4mm 4.5mm; font-size: 10.2pt; } .aireada .kpi { padding: 3.6mm 3.6mm; } .aireada ol.steps li { margin-bottom: 2mm; }
@@ -71,7 +74,7 @@ ol.steps, ul.lst { margin: 0; padding-left: 5mm; } ol.steps li, ul.lst li { marg
 .puda .hero { padding-bottom: 7mm; margin-bottom: 4mm; }
 .box { border-left: 1.2mm solid #FBD641; background: #FFFBEA; padding: 2.6mm 3.6mm; border-radius: 0 2mm 2mm 0; margin: 2mm 0; }
 .logo { position: absolute; right: 16mm; top: 11mm; width: 19mm; height: 19mm; border-radius: 50%; box-shadow: 0 0 0 1mm rgba(251,214,65,.35); }
-.hero { position: relative; } .hero h1, .hero .sub { padding-right: 24mm; }
+.hero { position: relative; } .hero h1, .hero .sub, .hero .kicker { padding-right: 24mm; }
 table.presu td { padding: 1.05mm 2mm; font-size: 8.7pt; line-height: 1.35; } table.presu tr.hl td { background: #FFF8DB; }
 .tabs { display: none; }
 @media screen {
@@ -110,15 +113,15 @@ TRAMOS = {
 
 COSTES = {
     "en": {"h": "Budget to the launch: €50,000", "tab": "Budget",
-           "intro": ("Two stages. This month sets up the company and the token; the second stage takes PUDA to the exchange "
-                     "listing, with the first contract audit included. Further audits come after the launch."),
+           "intro": ("Two stages. This month sets up the company and the token; the second stage takes PUDA to its pre-launch, "
+                     "with the first contract audit included. Further audits come after the launch."),
            "f1": "This month", "f1_tot": "€15,000",
            "l1": [("Company in El Salvador (S.A. de C.V.): lawyer, notary and registrations", "≈ €5,500 ($6,000)"),
                   ("Token creation: smart contract with supply, vesting, liquidity lock and sale limits, tested on testnet", "≈ €3,500"),
-                  ("Pre-marketing: brand, website, community channels and first content in English and Spanish", "≈ €4,000"),
+                  ("Pre-marketing: brand, community channels and first content in English and Spanish (the website is already live)", "≈ €4,000"),
                   ("Legal and tax advice, corporate documents and anti-money-laundering manual", "≈ €2,000")],
-           "f2": "To the exchange listing", "f2_tot": "€35,000",
-           "l2": [("First smart-contract audit (CertiK or Hacken), required to list on the exchange", "≈ €8,000 – 12,000"),
+           "f2": "To the pre-launch", "f2_tot": "€35,000",
+           "l2": [("First smart-contract audit (CertiK or Hacken), required before the pre-launch", "≈ €8,000 – 12,000"),
                   ("Launch marketing: community, content, crypto press, partners and events in El Salvador", "≈ €18,000 – 22,000"),
                   ("Margin: CNAD registration fee, proof of reserves of the funds on Bitget and contingencies", "≈ €5,000")],
            "tot": "Total", "tot_v": "€50,000",
@@ -127,15 +130,15 @@ COSTES = {
                     "that they are there. The offering certifier, the structurer and the licensed sale platforms are paid from the "
                     "sale itself (2–4% of the amount raised).")},
     "es": {"h": "Presupuesto hasta el lanzamiento: 50.000 €", "tab": "Presupuesto",
-           "intro": ("Dos etapas. Este mes se montan la sociedad y el token; la segunda etapa lleva PUDA hasta su cotización en el "
-                     "exchange, con la primera auditoría del contrato incluida. El resto de auditorías llegan después del lanzamiento."),
+           "intro": ("Dos etapas. Este mes se montan la sociedad y el token; la segunda etapa lleva PUDA hasta su prelanzamiento, "
+                     "con la primera auditoría del contrato incluida. El resto de auditorías llegan después del lanzamiento."),
            "f1": "Este mes", "f1_tot": "15.000 €",
            "l1": [("Sociedad en El Salvador (S.A. de C.V.): abogado, notario y registros", "≈ 5.500 € (6.000 $)"),
                   ("Creación del token: contrato con suministro, vesting, bloqueo de liquidez y límites de venta, probado en testnet", "≈ 3.500 €"),
-                  ("Premarketing: marca, web, canales de comunidad y primeros contenidos en inglés y español", "≈ 4.000 €"),
+                  ("Premarketing: marca, canales de comunidad y primeros contenidos en inglés y español (la web ya está hecha)", "≈ 4.000 €"),
                   ("Asesoría legal y fiscal, documentos societarios y manual antiblanqueo", "≈ 2.000 €")],
-           "f2": "Hasta la cotización en el exchange", "f2_tot": "35.000 €",
-           "l2": [("Primera auditoría del contrato (CertiK o Hacken), necesaria para cotizar en el exchange", "≈ 8.000 – 12.000 €"),
+           "f2": "Hasta el prelanzamiento", "f2_tot": "35.000 €",
+           "l2": [("Primera auditoría del contrato (CertiK o Hacken), necesaria antes del prelanzamiento", "≈ 8.000 – 12.000 €"),
                   ("Marketing de lanzamiento: comunidad, contenidos, prensa cripto, socios y eventos en El Salvador", "≈ 18.000 – 22.000 €"),
                   ("Margen: tasa de registro en la CNAD, prueba de reservas de los fondos en Bitget e imprevistos", "≈ 5.000 €")],
            "tot": "Total", "tot_v": "50.000 €",
@@ -144,8 +147,43 @@ COSTES = {
                     "que están ahí. El certificador de la oferta, el estructurador y las plataformas de venta con licencia se pagan "
                     "con la propia venta (2–4% de lo captado).")},
 }
-PESTANAS = {"en": ["PUDA", "Budget", "The system", "Results", "Risk and next steps"],
-            "es": ["PUDA", "Presupuesto", "El sistema", "Resultados", "Riesgo y siguientes pasos"]}
+PESTANAS = {"en": ["PUDA", "Budget", "The system", "Stress test", "Results", "Risk and next steps"],
+            "es": ["PUDA", "Presupuesto", "El sistema", "Estrés test", "Resultados", "Riesgo y siguientes pasos"]}
+
+ESTRES = {
+    "en": {"h": "The stress test, year by year",
+           "intro": ("All the strategies were run together, as they will trade live, on six years of real hourly prices of more "
+                     "than 100 coins: from October 2020 to September 2026, including coins that collapsed (LUNA, FTT). Each "
+                     "subaccount's agent chose its coins every day with the information it would have had at the time, with "
+                     "exchange fees, stops, pauses and the 25% hard stop. These are the years it went through:"),
+           "th": ["Year", "What the market went through", "Bitcoin", "Cons.", "Bal.", "Dyn.", "Dynamic profile: best · worst"],
+           "anos": {2020: "October–December. Start of the bull market: Bitcoin goes from $10,000 to $29,000.",
+                    2021: "Bull market with a 50% crash in May (China's mining ban) and the top in November.",
+                    2022: "Bear market: LUNA collapses (May), Celsius and 3AC (June) and FTX (November). Bitcoin −64%.",
+                    2023: "Recovery after FTX and the March banking crisis (USDC loses its peg for a few days).",
+                    2024: "Spot Bitcoin ETFs (January), halving (April), yen crash (August) and the rally after the US election.",
+                    2025: "Volatile year with the largest liquidation day in history (10 October).",
+                    2026: "January–September. Correction and sideways market; fall in January and February."},
+           "fin": ("In every year of the six the portfolio limited the falls: its worst year was {peor} while Bitcoin lost up to 64%. "
+                   "When the shorts lose (bull years), the trend and bull-run subaccounts win, and the other way round."),
+           "tab": "Stress test"},
+    "es": {"h": "El estrés test, año a año",
+           "intro": ("Todas las estrategias se ejecutaron a la vez, como operarán en vivo, sobre seis años de precios reales por hora "
+                     "de más de 100 monedas: de octubre de 2020 a septiembre de 2026, incluidas monedas que se hundieron (LUNA, FTT). "
+                     "El agente de cada subcuenta eligió sus monedas cada día con la información que habría tenido en ese momento, "
+                     "con comisiones del exchange, stops, pausas y la parada del 25%. Estos son los años que atravesó:"),
+           "th": ["Año", "Qué vivió el mercado", "Bitcoin", "Cons.", "Equil.", "Dinám.", "Perfil Dinámico: mejor · peor"],
+           "anos": {2020: "Octubre–diciembre. Arranca el mercado alcista: Bitcoin pasa de 10.000 $ a 29.000 $.",
+                    2021: "Mercado alcista con un crack del 50% en mayo (prohibición de la minería en China) y el máximo en noviembre.",
+                    2022: "Mercado bajista: caen LUNA (mayo), Celsius y 3AC (junio) y FTX (noviembre). Bitcoin −64%.",
+                    2023: "Recuperación tras FTX y la crisis bancaria de marzo (USDC pierde su paridad unos días).",
+                    2024: "ETF de Bitcoin al contado (enero), halving (abril), crack del yen (agosto) y subida tras las elecciones de EE. UU.",
+                    2025: "Año volátil con la mayor jornada de liquidaciones de la historia (10 de octubre).",
+                    2026: "Enero–septiembre. Corrección y mercado lateral; caída en enero y febrero."},
+           "fin": ("En los seis años la cartera limitó las caídas: su peor año fue un {peor} mientras Bitcoin llegó a perder un 64%. "
+                   "Cuando los cortos pierden (años alcistas), ganan las subcuentas de tendencia y de bull run, y al revés."),
+           "tab": "Estrés test"},
+}
 
 CRACKS = {"luna": ("2022-05-05", "2022-05-15"), "celsius": ("2022-06-10", "2022-06-20"), "ftx": ("2022-11-06", "2022-11-12"),
           "aug24": ("2024-08-01", "2024-08-08"), "oct25": ("2025-10-09", "2025-10-12")}
@@ -321,7 +359,7 @@ def paginas(lang: str, name: str, M: dict) -> str:
     foot = t["foot"].format(name=name)
     ycols = "".join(f'<th class="r">{y}</th>' for y in years)
 
-    pie = lambda n: f'<div class="foot"><span>{foot}</span><span>{n} / 5</span></div></div>'  # noqa: E731
+    pie = lambda n: f'<div class="foot"><span>{foot}</span><span>{n} / 6</span></div></div>'  # noqa: E731
     pest = PESTANAS[lang]
     pagina = lambda n, extra="": f'<div class="page {extra}" data-tab="{n}"><div class="bar"></div>'  # noqa: E731
     marca = f'<img class="logo" src="{LOGO}" alt="PUDA">'
@@ -396,14 +434,14 @@ def paginas(lang: str, name: str, M: dict) -> str:
         clase = "tot" if c == "dinamico" else ""
         ufilas += (f'<tr class="{clase}"><td><b>{t["kpi_nm"][c]}</b></td>' + "".join(f'<td class="r">{money(v)}</td>' for v in vals)
                    + f'<td class="r"><b>{money(sum(vals))}</b></td></tr>')
-    p4 = (pagina(4, "aireada") + f'<h2 style="margin-top:0">{t["h_res"]}</h2><table class="apretada"><colgroup><col style="width:13%">' + '<col style="width:7.3%">' * len(years)
+    p4 = (pagina(5, "aireada") + f'<h2 style="margin-top:0">{t["h_res"]}</h2><table class="apretada"><colgroup><col style="width:13%">' + '<col style="width:7.3%">' * len(years)
           + '<col style="width:8.4%"><col style="width:7.6%"><col style="width:8.6%"><col style="width:9.3%"></colgroup>'
           f'<tr><th>{tr[0]}</th>{ycols}<th class="r">{tr[1]}</th><th class="r">{tr[2]}</th><th class="r">{tr[3]}</th><th class="r">{tr[4]}</th></tr>{rows}</table>'
           f'<p class="small" style="margin-top:2mm">{t["res_note"]}</p>'
           f'<h2>{t["h_w"]}</h2><table class="apretada"><colgroup><col style="width:23%">' + '<col style="width:11%">' * len(years)
           + f'</colgroup><tr><th></th>{ycols}</tr>{wfilas}</table><p class="small" style="margin-top:2mm">{t["w_note"]}</p>'
           f'<h2>{t["h_usd"]}</h2><table class="apretada"><colgroup><col style="width:14%">' + '<col style="width:10.8%">' * len(years)
-          + f'<col style="width:10.4%"></colgroup><tr><th></th>{ycols}<th class="r">Total</th></tr>{ufilas}</table>' + pie(4))
+          + f'<col style="width:10.4%"></colgroup><tr><th></th>{ycols}<th class="r">Total</th></tr>{ufilas}</table>' + pie(5))
 
     # ── 5 · cracks, lectura y siguientes pasos ──
     cfilas = "".join(f'<tr><td><b>{t["crash"][k][0]}</b></td><td class="muted">{t["crash"][k][1]}</td>'
@@ -414,14 +452,29 @@ def paginas(lang: str, name: str, M: dict) -> str:
     f = {"d_cagr": p(M["cagr"]["dinamico"]), "d_dd": p(M["dd"]["dinamico"]), "d_dd_abs": absp(M["dd"]["dinamico"]),
          "d_usd": money(cap).lstrip("+"), "btc_dd": absp(M["dd"]["btc"])}
     lect = "".join(f'<div class="card"><h3>{a.format(**f)}</h3><p>{b.format(**f)}</p></div>' for a, b in t["read"])
-    p5 = (pagina(5, "aireada") + f'<h2 style="margin-top:0">{t["h_crash"]}</h2><table><tr><th>{tc[0]}</th><th>{tc[1]}</th>'
+    p5 = (pagina(6, "aireada") + f'<h2 style="margin-top:0">{t["h_crash"]}</h2><table><tr><th>{tc[0]}</th><th>{tc[1]}</th>'
           + "".join(f'<th class="r">{x}</th>' for x in tc[2:]) + f'</tr>{cfilas}</table>'
           f'<h2>{t["h_read"]}</h2><div class="grid2">{lect}</div>'
           f'<h2>{t["h_next"]}</h2><ol class="steps">' + "".join(f"<li>{x}</li>" for x in t["next"]) + "</ol>"
-          f'<p class="small" style="margin-top:5mm">{t["legal"]}</p>' + pie(5))
+          f'<p class="small" style="margin-top:5mm">{t["legal"]}</p>' + pie(6))
     nav = ('<nav class="tabs">' + "".join(f'<button type="button" data-t="{n}"{" class=on" if n == 1 else ""}>{x}</button>'
                                           for n, x in enumerate(pest, 1)) + "</nav>")
-    return nav + p1 + p2 + p3 + p4 + p5
+    es_ = ESTRES[lang]
+    filas_e = ""
+    for y in years:
+        dyn = {k: M["anual"][f"dinamico:{k}"].get(y, 0) * M["perfiles"]["dinamico"]["pesos"][k] for k in SUBS}
+        mejor, peor = max(dyn, key=dyn.get), min(dyn, key=dyn.get)
+        filas_e += (f'<tr><td><b>{y}</b></td><td>{es_["anos"][y]}</td><td class="r neg-suave {cls(M["anual"]["btc"].get(y, 0))}">{p(M["anual"]["btc"].get(y, 0))}</td>'
+                    + "".join(f'<td class="r {cls(M["anual"][c].get(y, 0))}"><b>{p(M["anual"][c].get(y, 0))}</b></td>' for c in PERF)
+                    + f'<td class="muted">{t["subs"][mejor][0]} · {t["subs"][peor][0]}</td></tr>')
+    peor_ano = min(M["anual"][c].get(y, 0) for c in PERF for y in years if 2021 <= y <= 2025)
+    te = es_["th"]
+    p_estres = (pagina(4, "aireada") + f'<h2 style="margin-top:0">{es_["h"]}</h2><div class="box">{es_["intro"]}</div>'
+                f'<table class="estres"><colgroup><col style="width:6.5%"><col style="width:44.5%"><col style="width:9%"><col style="width:7.5%">'
+                f'<col style="width:7.5%"><col style="width:7.5%"><col style="width:17.5%"></colgroup><tr><th>{te[0]}</th><th>{te[1]}</th>'
+                + "".join(f'<th class="r">{x}</th>' for x in te[2:6]) + f'<th>{te[6]}</th></tr>{filas_e}</table>'
+                f'<div class="box" style="margin-top:4mm">{es_["fin"].format(peor=p(peor_ano))}</div>' + pie(4))
+    return nav + p1 + p2 + p3 + p_estres + p4 + p5
 
 
 PESTANAS_JS = ("<script>function verTab(root,n){root.querySelectorAll('.page[data-tab]').forEach(p=>p.classList.toggle('visible',p.dataset.tab==n));"
