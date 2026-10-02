@@ -1,0 +1,62 @@
+# Agentes diarios de Kriptty · configuración de ejemplo
+#
+# Copiar a config/agentes.toml (no se sube a git) y poner los ids reales de bots y subcuentas.
+# Secretos, solo por variables de entorno (nunca en este archivo):
+#   KRIPTTY_ADMIN_TOKEN   token de la API de administración de Kriptty (obligatorio salvo para «mercado»)
+#   ANTHROPIC_API_KEY     revisión de noticias con Claude (opcional; sin ella, solo reglas)
+#   YOUTUBE_API_KEY       títulos de los canales de YouTube (opcional)
+#
+# Cada cuenta es un agente con su estrategia. Un bot solo puede estar en una cuenta, y los agentes no tocan
+# ningún bot que no aparezca aquí.
+
+[general]
+kriptty_url = "https://kripttygold.com"
+exchange_id = 0              # subcuenta por defecto; cada cuenta puede llevar la suya (exchange_id)
+modo = "simulacion"          # "simulacion": solo informe · "aplicar": envía los cambios a Kriptty
+permitir_normal = false      # true = el agente puede poner bots en Normal (dinero real). Lo decide una persona.
+usar_llm = true              # revisión de noticias con Claude: solo puede subir el riesgo o vetar monedas
+top_marketcap = 200          # solo monedas del top 200 por capitalización (CoinGecko)…
+exigir_kraken = true         # …listadas en Kraken…
+excluir_memes = true         # …y que no sean memecoins (lista en kriptty/agentes/mercado.py)
+lista_negra = ["LUNA", "LUNC", "USTC", "FTT", "SRM"]
+lista_blanca = []            # si se rellena, SOLO estas monedas (p. ej. las auditadas por CertiK o Hacken)
+informe_dir = "informes"
+estado = "estado_agentes.json"
+
+[general.youtube]            # canales cuyos títulos se leen cada día: nombre = id del canal («UC…»)
+# "Coin Bureau" = "UCqK_GSMbpiV8spgD3ZGloSw"
+
+[exposicion]                 # wallet exposure de cada bot según el régimen (fracción del saldo de la subcuenta)
+lateral = 0.08
+alcista = 0.07
+incertidumbre = 0.04
+bajista = 0.04
+
+# ── Cuentas (una por subcuenta y estrategia) ──
+# Estrategias: recursive_vasos · recursive_momentum · cortos_vasos · scalper_lateral
+# Cualquier valor de la estrategia se puede cambiar en la cuenta: lado, criterio, regimenes,
+# incertidumbre, graceful_sl, stop_catastrofe, exposicion = { alcista = 0.08, … }.
+
+[[cuentas]]
+nombre = "Recursive · vasos comunicantes"
+estrategia = "recursive_vasos"      # largos en las altcoins rezagadas cuando BTC sube
+exchange_id = 101
+bots = [1001, 1002]
+
+[[cuentas]]
+nombre = "Recursive · momentum"
+estrategia = "recursive_momentum"   # largos en las que más suben en 30 días
+exchange_id = 102
+bots = [1003, 1004]
+
+[[cuentas]]
+nombre = "Cortos · vasos comunicantes"
+estrategia = "cortos_vasos"         # cortos en las altcoins que aún no han caído cuando BTC cae
+exchange_id = 103
+bots = [1005, 1006]
+
+[[cuentas]]
+nombre = "Scalper · mercado lateral"
+estrategia = "scalper_lateral"      # solo en lateral; stop escalonado más corto
+exchange_id = 104
+bots = [1007]

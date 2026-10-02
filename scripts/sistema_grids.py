@@ -32,12 +32,12 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from kriptty.agentes.senales import TOP_LIQ, features_all, rankings, regimes  # noqa: E402,F401
 from kriptty.backtest.gridsim import CoinRunner, GridCfg  # noqa: E402
 
 DATA = Path("data/history")
 START, END, SPLIT = "2020-10-01", "2026-09-01", "2024-01-01"
 CAPITAL = 1_000_000.0
-TOP_LIQ = 40          # universo diario: las 40 monedas con más volumen de los últimos 30 días
 
 
 # ── Datos ──────────────────────────────────────────────────────────────
@@ -60,61 +60,10 @@ def load_all() -> tuple[pd.DatetimeIndex, dict[str, pd.DataFrame], dict[str, np.
 
 
 def daily_features(bars: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
-    out = {}
-    btc_d = bars["BTC"]["close"].resample("1D").last()
-    btc_r = btc_d.pct_change()
-    for coin, df in bars.items():
-        d = df.resample("1D").agg({"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum"})
-        tr = pd.concat([d.high - d.low, (d.high - d.close.shift()).abs(), (d.low - d.close.shift()).abs()], axis=1).max(axis=1)
-        atr = tr.rolling(14).mean()
-        chop = tr.rolling(14).sum() / (d.high.rolling(14).max() - d.low.rolling(14).min())
-        out[coin] = pd.DataFrame({
-            "close": d.close, "liq": (d.volume * d.close).rolling(30).mean(),
-            "atr_pct": atr / d.close, "chop": chop,
-            "ret7": d.close.pct_change(7), "ret30": d.close.pct_change(30),
-            "ema50": d.close.ewm(span=50).mean(), "ema200": d.close.ewm(span=200).mean(),
-        })
-        r = d.close.pct_change()
-        beta = (r.rolling(60).cov(btc_r) / btc_r.rolling(60).var()).clip(0.3, 3)
-        # «vasos comunicantes»: lo que la moneda va por detrás (−) o por delante (+) de lo que le tocaría
-        # moverse con BTC en los últimos 7 días
-        out[coin]["lag7"] = d.close.pct_change(7) - beta * btc_d.pct_change(7)
-    return out
-
-
-def regimes(btc: pd.DataFrame) -> pd.Series:
-    """Régimen de cada día, decidido con los datos hasta el cierre del día anterior."""
-    r = btc.close.pct_change()
-    vol = r.rolling(14).std() * np.sqrt(365)
-    vol_rank = vol.rolling(365, min_periods=120).rank(pct=True)
-    drop3 = btc.close / btc.close.rolling(3).max() - 1
-    reg = pd.Series("lateral", index=btc.index)
-    bull = (btc.close > btc.ema200) & (btc.ema50 > btc.ema200) & (btc.ret30 > 0.05)
-    bear = (btc.close < btc.ema200) & ((btc.ema50 < btc.ema200) | (btc.ret30 < -0.10))
-    unc = (vol_rank > 0.9) | (drop3 < -0.08)
-    reg[bull] = "alcista"
-    reg[bear] = "bajista"
-    reg[unc] = "incertidumbre"
-    return reg.shift(1).fillna("lateral")          # se usa al día siguiente
-
-
-# ── Selección diaria ───────────────────────────────────────────────────
-def rankings(feat: dict[str, pd.DataFrame]) -> dict[str, dict[pd.Timestamp, list[str]]]:
-    """Para cada día y criterio, las monedas ordenadas de mejor a peor (universo: las más líquidas)."""
-    cols = ["liq", "chop", "ret30", "atr_pct", "lag7"]
-    panel = pd.concat({c: f[cols] for c, f in feat.items() if c not in ("BTC", "ETH")}, names=["coin", "day"])
-    out = {"scalper": {}, "momentum": {}, "weak": {}, "lag_long": {}, "lag_short": {}}
-    for day, g in panel.groupby(level="day"):
-        g = g.droplevel("day").dropna()
-        if g.empty:
-            continue
-        g = g.nlargest(TOP_LIQ, "liq")
-        out["scalper"][day] = g[(g.atr_pct > 0.02) & (g.atr_pct < 0.10)].sort_values("chop", ascending=False).index.tolist()
-        out["momentum"][day] = g[g.atr_pct < 0.12].sort_values("ret30", ascending=False).index.tolist()
-        out["weak"][day] = g.sort_values("ret30").index.tolist()
-        out["lag_long"][day] = g[g.atr_pct < 0.12].sort_values("lag7").index.tolist()          # las más rezagadas
-        out["lag_short"][day] = g.sort_values("lag7", ascending=False).index.tolist()          # las que aún no han caído
-    return out
+    """Velas horarias → diarias → indicadores (los mismos que usan los agentes en vivo)."""
+    daily = {coin: df.resample("1D").agg({"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum"})
+             for coin, df in bars.items()}
+    return features_all(daily)
 
 
 # ── Cuentas ────────────────────────────────────────────────────────────

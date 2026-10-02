@@ -25,12 +25,14 @@ dependencies = [
 [project.optional-dependencies]
 finbert = ["transformers>=4.50", "torch>=2.6"]
 dev = ["pytest>=8.3", "pytest-asyncio>=0.25", "ruff>=0.8"]
+agentes = ["anthropic>=1.0"]   # revisión de noticias con Claude (opcional)
 
 [project.scripts]
 kriptty-engine = "kriptty.engine:cli"
 kriptty-mcp = "kriptty.mcp_server:cli"
 kriptty-backtest = "kriptty.backtest:cli"
 kriptty-stress = "kriptty.backtest.stress_run:cli"
+kriptty-agentes = "kriptty.agentes.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kriptty"]
