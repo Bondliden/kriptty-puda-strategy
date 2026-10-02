@@ -24,9 +24,12 @@ Resultado del backtest (2023-12 → 2026-09, 33 memecoins):
 """
 from __future__ import annotations
 
+import json
 import logging
 import os
 from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 
 import pandas as pd
 
@@ -92,28 +95,53 @@ def tendencia_geckoterminal() -> dict[str, dict]:
     return out
 
 
+def _cache_cmc() -> Path:
+    return Path(os.environ.get("KRIPTTY_CACHE", "data")) / "cmc_cache.json"
+
+
 def tendencia_cmc() -> set[str]:
     """«Trending» de CoinMarketCap con ``CMC_API_KEY``: el oficial (plan Startup o superior) o, con la clave
-    gratuita, la categoría de memecoins ordenada por subida y volumen de 24 h. Sin clave, vacío."""
+    gratuita, la categoría de memecoins ordenada por subida y volumen de 24 h. Sin clave, vacío.
+
+    El plan gratuito da 15.000 créditos al mes: el id de la categoría y si el plan tiene «trending» se guardan
+    un día en ``data/cmc_cache.json`` para gastar ~2 créditos por hora."""
     clave = os.environ.get("CMC_API_KEY", "")
     if not clave:
         return set()
     h = {"X-CMC_PRO_API_KEY": clave}
+    ruta = _cache_cmc()
     try:
-        datos = _get(f"{CMC}/v1/cryptocurrency/trending/latest", {"limit": 100}, headers=h, retries=1).get("data", [])
-        return {str(c.get("symbol", "")).upper() for c in datos}
-    except RuntimeError as e:
-        log.info("Trending de CMC no disponible con esta clave (%s): uso la categoría de memecoins", e)
+        cache = json.loads(ruta.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        cache = {}
+    hoy = datetime.now(UTC).date().isoformat()
+    if cache.get("dia") != hoy:
+        cache = {"dia": hoy}
+    if cache.get("trending", True):
+        try:
+            datos = _get(f"{CMC}/v1/cryptocurrency/trending/latest", {"limit": 100}, headers=h, retries=1).get("data", [])
+            return {str(c.get("symbol", "")).upper() for c in datos}
+        except RuntimeError as e:
+            log.info("Trending de CMC no disponible con esta clave (%s): uso la categoría de memecoins", e)
+            cache["trending"] = False
     try:
-        cats = _get(f"{CMC}/v1/cryptocurrency/categories", {"limit": 5000}, headers=h, retries=1).get("data", [])
-        meme = next((c for c in cats if str(c.get("name", "")).lower() in ("memes", "meme")), None)
-        if meme is None:
+        if "meme_id" not in cache:
+            cats = _get(f"{CMC}/v1/cryptocurrency/categories", {"limit": 5000}, headers=h, retries=1).get("data", [])
+            meme = next((c for c in cats if str(c.get("name", "")).lower() in ("memes", "meme")), None)
+            cache["meme_id"] = meme["id"] if meme else None
+        if not cache["meme_id"]:
             return set()
-        coins = _get(f"{CMC}/v1/cryptocurrency/category", {"id": meme["id"], "limit": 200}, headers=h,
+        coins = _get(f"{CMC}/v1/cryptocurrency/category", {"id": cache["meme_id"], "limit": 200}, headers=h,
                      retries=1).get("data", {}).get("coins", [])
     except RuntimeError as e:
         log.warning("CoinMarketCap no disponible: %s", str(e).replace(clave, "***"))
         return set()
+    finally:
+        try:
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+            ruta.write_text(json.dumps(cache), encoding="utf-8")
+        except OSError:
+            pass
     puntos = []
     for c in coins:
         q = (c.get("quote") or {}).get("USD") or {}
