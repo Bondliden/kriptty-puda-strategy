@@ -143,8 +143,11 @@ git) y ejecuta la orden:
 python scripts/ejecutar_agentes.py diario -c config/agentes.toml
 ```
 
-En el PC están programadas dos tareas de Windows: «Kriptty agentes (simulacion)», todos los días a las
-02:20, y «Kriptty memes (simulacion)», cada hora. Lo
+En el PC hay tres tareas de Windows programadas:
+
+- «Kriptty agentes (simulacion)», todos los días a las 02:20;
+- «Kriptty memes (simulacion)», cada hora en el minuto 5;
+- «Kriptty vigilante (simulacion)», cada hora en el minuto 10. Lo
 que aplica lo decide `general.modo`. El servidor de Kriptty (n1, CentOS 7) tiene Python 3.6 y no puede
 ejecutar los agentes.
 
